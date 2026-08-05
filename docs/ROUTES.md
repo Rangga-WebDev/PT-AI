@@ -2,14 +2,15 @@
 
 # ROUTES — PT-AI Learning Management System
 
-## 1. Route Aktif (PHASE 1)
+## 1. Route Aktif (PHASE 2)
 
-| URL                  | File                    | Jenis                              | Akses  | Keterangan                           |
-| -------------------- | ----------------------- | ---------------------------------- | ------ | ------------------------------------ |
-| `/`                  | `src/app/page.tsx`      | Server Component, static           | Publik | Placeholder fondasi Bahasa Indonesia |
-| `*` (tidak cocok)    | `src/app/not-found.tsx` | Server Component                   | Publik | 404 Bahasa Indonesia                 |
-| — (error boundary)   | `src/app/error.tsx`     | Client Component (kontrak Next.js) | Publik | Error umum tanpa stack trace         |
-| — (loading boundary) | `src/app/loading.tsx`   | Server Component                   | Publik | Indikator memuat                     |
+| URL                  | File                             | Jenis                              | Akses              | Keterangan                                                              |
+| -------------------- | -------------------------------- | ---------------------------------- | ------------------ | ----------------------------------------------------------------------- |
+| `/`                  | `src/app/page.tsx`               | Server Component, static           | Publik             | Placeholder fondasi Bahasa Indonesia                                    |
+| `/design-system`     | `src/app/design-system/page.tsx` | Server Component, static           | Publik (sementara) | **Preview internal** galeri design system; digate/dihapus pada PHASE 15 |
+| `*` (tidak cocok)    | `src/app/not-found.tsx`          | Server Component                   | Publik             | 404 Bahasa Indonesia                                                    |
+| — (error boundary)   | `src/app/error.tsx`              | Client Component (kontrak Next.js) | Publik             | Error umum tanpa stack trace                                            |
+| — (loading boundary) | `src/app/loading.tsx`            | Server Component                   | Publik             | Indikator memuat                                                        |
 
 ## 2. Route Map Target (LOCKED — dibangun bertahap)
 

@@ -18,7 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} h-full antialiased`}
+      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -4,6 +4,37 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 2] — 2026-08-05 — Design System and Application Shell
+
+### Ditambahkan
+
+- Design tokens tema "Civic Intelligence" di `src/app/globals.css`: seluruh palet LOCKED (shell gelap + reading canvas hangat), token semantik aqua/violet/amber/mint/coral/blue, skala tipografi (display 48 → caption 12), dimensi layout (sidebar 17rem/5rem, topbar 4.5rem, context panel 22.5rem, container shell 100rem, reading 47.5rem), radius dasar 12px, scope `.reading-surface`, utility `reading-prose`.
+- Kustomisasi penuh `Button` (primary aqua 44px/radius 12px/weight 600, ai violet tinted, outline, ghost, danger, link) — LOCK-TECH-011.
+- Komponen shadcn: `card`, `badge`, `skeleton`, `sheet`, `separator`, `tooltip` (disalin via CLI, tanpa dependency npm baru).
+- `StatusBadge` (9 status semantik), 6 komponen state (`LoadingState`, `SkeletonState`, `EmptyState`, `ErrorState`, `ForbiddenState`, `LockedState`) dengan `StateShell` bersama.
+- Application shell: `AppShell`, `Sidebar`/`SidebarNav`, `Topbar`, `MobileNavigation`, `PageContainer`, `PageHeader`, `BentoGrid`; konfigurasi navigasi serializable `src/lib/navigation.ts`; skip link + focus-visible + toggle keyboard.
+- Halaman galeri internal `/design-system` (berlabel, akan digate sebelum produksi).
+- Test baru: `button`, `status-badge`, `states`, `app-shell` (RTL) dan `e2e/design-system.spec.ts` (desktop + viewport mobile).
+
+### Diubah
+
+- `src/app/layout.tsx`: class `dark` pada `<html>` (tema tunggal gelap — NOTE-006).
+- `src/app/page.tsx`: badge fase + tautan ke galeri design system.
+- `.dark` block dihapus dari globals.css; `:root` menjadi satu-satunya sumber token.
+
+### Keputusan teknis dalam fase
+
+- Tema aplikasi adalah gelap permanen; reading canvas adalah scope permukaan, bukan theme switch (NOTE-006).
+- State collapse sidebar memakai React state lokal — Zustand belum diperlukan (LOCK-TECH-016: state lokal terlebih dahulu).
+- Ikon navigasi dikirim lintas batas RSC sebagai string key (`NavIconKey`), bukan fungsi komponen.
+
+### Hasil verifikasi (dijalankan nyata)
+
+- `npm run lint` → exit 0; `npm run typecheck` → exit 0.
+- `npm run test` → 6 file, 23 test lulus.
+- `npm run build` → sukses (3 route static).
+- `npm run test:e2e` → 5 test lulus (sidebar 272↔80px terukur; touch target ≥44px pada viewport 390×844).
+
 ## [PHASE 1] — 2026-08-05 — Next.js Foundation
 
 ### Ditambahkan

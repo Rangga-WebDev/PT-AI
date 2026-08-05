@@ -9,8 +9,8 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | Fase | Nama                                | Status                                    | Mulai      | Selesai    |
 | ---- | ----------------------------------- | ----------------------------------------- | ---------- | ---------- |
 | 0    | Repository Audit and Planning       | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
-| 1    | Next.js Foundation                  | ✅ SELESAI — menunggu persetujuan PHASE 2 | 2026-08-05 | 2026-08-05 |
-| 2    | Design System and Application Shell | ⬜ Belum dimulai                          | —          | —          |
+| 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
+| 2    | Design System and Application Shell | ✅ SELESAI — menunggu persetujuan PHASE 3 | 2026-08-05 | 2026-08-05 |
 | 3    | Visual Prototype                    | ⬜ Belum dimulai                          | —          | —          |
 | 4    | Database Architecture               | ⬜ Belum dimulai                          | —          | —          |
 | 5    | Supabase SSR Authentication         | ⬜ Belum dimulai                          | —          | —          |
@@ -24,6 +24,32 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 13   | Analytics                           | ⬜ Belum dimulai                          | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
+
+## Log PHASE 2 — Design System and Application Shell (2026-08-05)
+
+### Yang dikerjakan
+
+- Design tokens Civic Intelligence lengkap di `globals.css`: palet shell gelap + reading canvas hangat (scope `.reading-surface`), token semantik (aqua/violet/amber/mint/coral/blue), skala tipografi LOCKED (display→caption), dimensi layout (sidebar 272/80, topbar 72, context panel 360, max 1600, reading 760), radius dasar 12px, utility `reading-prose`.
+- Tema tunggal gelap: block `.dark` dihapus, class `dark` dipasang di `<html>` (NOTE-006).
+- Button dikustomisasi penuh: primary aqua 44px/12px/600, ai violet tinted, outline, ghost, danger coral, link; `data-variant` untuk testing.
+- Komponen shadcn ditambahkan + terkena token kustom: card, badge, skeleton, sheet, separator, tooltip (tanpa paket npm baru).
+- `StatusBadge` 9 varian semantik; 6 komponen state (Loading/Skeleton/Empty/Error/Forbidden/Locked) berbasis `StateShell` server-compatible.
+- AppShell responsif: `Sidebar`+`SidebarNav` (272↔80px, tooltip saat rail, indikator aktif aqua), `Topbar` 72px, `MobileNavigation` bottom nav ≥44px, drawer Sheet mobile, skip link, `PageContainer`, `PageHeader`, `BentoGrid` asimetris; navigasi berbasis icon key yang serializable (`src/lib/navigation.ts`).
+- Halaman galeri `/design-system` berlabel "Preview internal" (bukan fitur produk).
+
+### Hasil verifikasi (dijalankan nyata, bukan klaim)
+
+| Perintah            | Hasil                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| `npm run lint`      | ✅ exit 0                                                                                |
+| `npm run typecheck` | ✅ exit 0 (1 error exactOptionalPropertyTypes ditemukan lalu diperbaiki)                 |
+| `npm run test`      | ✅ 6 file, 23 test lulus                                                                 |
+| `npm run build`     | ✅ sukses; route `/`, `/_not-found`, `/design-system` static                             |
+| `npm run test:e2e`  | ✅ 5 test lulus — termasuk ukur sidebar 272↔80px & touch target ≥44px (viewport 390×844) |
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 3 — Visual Prototype.
 
 ## Log PHASE 1 — Next.js Foundation (2026-08-05)
 

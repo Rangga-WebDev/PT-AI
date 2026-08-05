@@ -32,13 +32,20 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 1)
+## 4. Status Saat Ini (PHASE 2)
 
-| Suite                    | Jumlah | Hasil terakhir |
-| ------------------------ | ------ | -------------- |
-| Unit (`cn`)              | 3 test | ✅ lulus       |
-| Component (`HomePage`)   | 2 test | ✅ lulus       |
-| E2E smoke (beranda, 404) | 2 test | ✅ lulus       |
+| Suite                                        | Jumlah | Hasil terakhir |
+| -------------------------------------------- | ------ | -------------- |
+| Unit (`cn`)                                  | 3 test | ✅ lulus       |
+| Component (`HomePage`)                       | 2 test | ✅ lulus       |
+| Component (`Button`)                         | 5 test | ✅ lulus       |
+| Component (`StatusBadge`)                    | 4 test | ✅ lulus       |
+| Component (states)                           | 5 test | ✅ lulus       |
+| Component (`AppShell`)                       | 4 test | ✅ lulus       |
+| E2E smoke (beranda, 404)                     | 2 test | ✅ lulus       |
+| E2E design system (desktop + mobile 390×844) | 3 test | ✅ lulus       |
+
+Total: 23 unit/component test + 5 E2E test.
 
 ## 5. Rencana Berikutnya
 

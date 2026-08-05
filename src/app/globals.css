@@ -31,6 +31,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -43,6 +44,50 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Token khusus Civic Intelligence (DSN-002/DSN-003) */
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-active: var(--surface-active);
+  --color-primary-hover: var(--primary-hover);
+  --color-ai: var(--ai);
+  --color-ai-hover: var(--ai-hover);
+  --color-evidence: var(--evidence);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-subtle: var(--subtle);
+  --color-reading-canvas: var(--reading-canvas);
+  --color-reading-surface: var(--reading-surface);
+  --color-reading-foreground: var(--reading-foreground);
+  --color-reading-secondary: var(--reading-secondary);
+  --color-reading-border: var(--reading-border);
+  --color-reading-highlight: var(--reading-highlight);
+  --color-reading-selected: var(--reading-selected);
+
+  /* Skala tipografi LOCKED (DSN-004) */
+  --text-display: 3rem;
+  --text-display--line-height: 1.15;
+  --text-display--letter-spacing: -0.02em;
+  --text-h1: 2.25rem;
+  --text-h1--line-height: 1.2;
+  --text-h1--letter-spacing: -0.015em;
+  --text-h2: 1.75rem;
+  --text-h2--line-height: 1.25;
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.3;
+  --text-h4: 1.125rem;
+  --text-h4--line-height: 1.4;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.7;
+
+  /* Dimensi layout LOCKED (DSN-007) */
+  --spacing-sidebar: 17rem; /* 272px */
+  --spacing-sidebar-collapsed: 5rem; /* 80px */
+  --spacing-topbar: 4.5rem; /* 72px */
+  --spacing-context-panel: 22.5rem; /* 360px (rentang 340-380) */
+  --container-shell: 100rem; /* 1600px */
+  --container-reading: 47.5rem; /* 760px (rentang 720-780) */
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -52,73 +97,98 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Tema tunggal "Civic Intelligence" (DSN-001):
+ * dark application shell + warm reading canvas sebagai scope.
+ * Tidak ada mode terang aplikasi; class `dark` dipasang di <html>
+ * agar penyesuaian komponen bawaan untuk permukaan gelap ikut aktif.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #09111f; /* application background */
+  --foreground: #f5f7fb; /* main text */
+  --card: #142137; /* main surface */
+  --card-foreground: #f5f7fb;
+  --popover: #1a2942; /* elevated surface */
+  --popover-foreground: #f5f7fb;
+  --primary: #63e6e2; /* aqua - tindakan manusia */
+  --primary-foreground: #09111f;
+  --primary-hover: #86f1ed;
+  --secondary: #203554; /* active surface sebagai secondary netral */
+  --secondary-foreground: #f5f7fb;
+  --muted: #1a2942;
+  --muted-foreground: #a9b6cb; /* secondary text */
+  --accent: #203554;
+  --accent-foreground: #f5f7fb;
+  --destructive: #ff7185; /* coral - danger/incident */
+  --destructive-foreground: #09111f;
+  --border: #293a55;
+  --input: #293a55;
+  --ring: #63e6e2;
+  --chart-1: #63e6e2; /* aqua */
+  --chart-2: #9b8cff; /* violet */
+  --chart-3: #f4c95d; /* amber */
+  --chart-4: #45d6a8; /* mint */
+  --chart-5: #68a7ff; /* blue */
+  --radius: 0.75rem; /* 12px - radius dasar (button LOCKED) */
+  --sidebar: #0e192b;
+  --sidebar-foreground: #a9b6cb;
+  --sidebar-primary: #63e6e2;
+  --sidebar-primary-foreground: #09111f;
+  --sidebar-accent: #203554;
+  --sidebar-accent-foreground: #f5f7fb;
+  --sidebar-border: #293a55;
+  --sidebar-ring: #63e6e2;
+
+  --surface: #142137;
+  --surface-elevated: #1a2942;
+  --surface-active: #203554;
+  --ai: #9b8cff; /* violet - bantuan AI */
+  --ai-hover: #b2a7ff;
+  --evidence: #f4c95d; /* amber - bukti/sumber */
+  --success: #45d6a8; /* mint - verified/completed */
+  --info: #68a7ff; /* blue - informasi netral */
+  --subtle: #71809a; /* muted text */
+
+  --reading-canvas: #f7f3e9;
+  --reading-surface: #fffcf5;
+  --reading-foreground: #202631;
+  --reading-secondary: #667085;
+  --reading-border: #ded8cb;
+  --reading-highlight: #fff0bd;
+  --reading-selected: #ddf8f5;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/*
+ * Scope kanvas baca hangat: pasang class ini pada area teks pembelajaran
+ * panjang (CaseReader, SourceViewer). Token semantik dipetakan ulang agar
+ * komponen di dalamnya otomatis menyesuaikan.
+ */
+.reading-surface {
+  --background: var(--reading-canvas);
+  --foreground: var(--reading-foreground);
+  --card: var(--reading-surface);
+  --card-foreground: var(--reading-foreground);
+  --popover: var(--reading-surface);
+  --popover-foreground: var(--reading-foreground);
+  --muted: color-mix(
+    in oklab,
+    var(--reading-canvas) 55%,
+    var(--reading-border)
+  );
+  --muted-foreground: var(--reading-secondary);
+  --secondary: color-mix(
+    in oklab,
+    var(--reading-canvas) 55%,
+    var(--reading-border)
+  );
+  --secondary-foreground: var(--reading-foreground);
+  --accent: var(--reading-selected);
+  --accent-foreground: var(--reading-foreground);
+  --border: var(--reading-border);
+  --input: var(--reading-border);
+  --subtle: var(--reading-secondary);
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 @layer base {
@@ -131,4 +201,13 @@
   html {
     @apply font-sans;
   }
+  ::selection {
+    background-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+}
+
+/* Lebar dan kerapatan baris untuk teks pembelajaran panjang (DSN-004). */
+@utility reading-prose {
+  max-width: var(--container-reading);
+  line-height: 1.7;
 }
