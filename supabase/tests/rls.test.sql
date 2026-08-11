@@ -153,16 +153,23 @@ select is(
   'Mahasiswa A tidak dapat membaca attempt mahasiswa B'
 );
 
--- 2. Mahasiswa tidak dapat mengubah attempt-nya sendiri (baseline terkunci).
-select throws_ok(
-  $$update public.attempts set content = 'diubah' where id = 'a0000000-0000-0000-0000-00000000000b'$$,
-  'Mahasiswa tidak dapat mengubah baseline attempt'
+-- 2. Tanpa policy UPDATE, perintah mahasiswa mengenai nol baris sehingga tidak
+--    melempar error; yang dijamin adalah isi baseline tetap utuh.
+update public.attempts set content = 'diubah mahasiswa'
+where id = 'a0000000-0000-0000-0000-00000000000b';
+
+select is(
+  (select content from public.attempts where id = 'a0000000-0000-0000-0000-00000000000b'),
+  'Jawaban mahasiswa A',
+  'Baseline attempt tidak berubah meskipun mahasiswa menjalankan UPDATE'
 );
 
 -- 3. Bahkan koneksi tanpa RLS pun ditolak trigger append-only.
 select pg_temp.act_as_service();
 select throws_ok(
   $$update public.attempts set content = 'diubah service' where id = 'a0000000-0000-0000-0000-00000000000b'$$,
+  '23001',
+  null,
   'Koneksi service tetap tidak dapat mengubah baseline attempt'
 );
 
@@ -170,6 +177,8 @@ select throws_ok(
 select throws_ok(
   $$insert into public.revisions (attempt_id, student_id, revision_number, content)
     values (gen_random_uuid(), '11111111-1111-1111-1111-111111111111', 1, 'Revisi tanpa attempt')$$,
+  '23001',
+  null,
   'Revisi tanpa attempt yang sah ditolak'
 );
 
@@ -185,6 +194,8 @@ select is(
 select throws_ok(
   $$insert into public.assessment_scores (assessment_id, student_id, scored_by, score)
     values ('a0000000-0000-0000-0000-00000000000d', '22222222-2222-2222-2222-222222222222', '44444444-4444-4444-4444-444444444444', 90)$$,
+  '42501',
+  null,
   'Dosen non-pengampu tidak dapat memberi nilai'
 );
 
@@ -200,6 +211,8 @@ select is(
 select throws_ok(
   $$insert into public.mastery_results (activity_id, student_id, evaluator_kind, evaluator_id, outcome)
     values ('a0000000-0000-0000-0000-00000000000a', '11111111-1111-1111-1111-111111111111', 'lecturer', '55555555-5555-5555-5555-555555555555', 'met')$$,
+  '42501',
+  null,
   'Administrator tidak dapat menulis hasil ketuntasan'
 );
 
@@ -208,6 +221,8 @@ select pg_temp.act_as_service();
 select throws_ok(
   $$insert into public.branching_decisions (student_id, activity_id, action, reason, decided_by)
     values ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-00000000000a', 'remedial', '   ', 'system')$$,
+  '23514',
+  null,
   'Keputusan branching tanpa alasan ditolak'
 );
 
@@ -215,6 +230,8 @@ select throws_ok(
 select throws_ok(
   $$insert into public.lecturer_overrides (lecturer_id, subject_kind, subject_id, previous_value, new_value, reason)
     values ('33333333-3333-3333-3333-333333333333', 'mastery_result', gen_random_uuid(), null, '{}'::jsonb, 'Alasan override yang memadai')$$,
+  '23502',
+  null,
   'Override tanpa nilai lama ditolak'
 );
 
@@ -224,6 +241,8 @@ select throws_ok(
       (student_id, activity_id, attempt_id, function, prompt_template_id, model, purpose, request_digest, status)
     values ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-00000000000a', null,
             'hint', gen_random_uuid(), 'model-uji', 'uji', 'digest', 'success')$$,
+  '23001',
+  null,
   'Interaksi AI tanpa attempt ditolak'
 );
 
@@ -270,6 +289,8 @@ select throws_ok(
       'cukup panjang', 'cukup panjang', 'cukup panjang', 'cukup panjang',
       'cukup panjang', 'cukup panjang'
     )$$,
+  '23514',
+  null,
   'Refleksi dengan unsur wajib kosong ditolak'
 );
 
@@ -277,6 +298,8 @@ select throws_ok(
 select throws_ok(
   $$insert into public.attempts (activity_id, student_id, attempt_number, content, content_hash)
     values ('a0000000-0000-0000-0000-00000000000a', '11111111-1111-1111-1111-111111111111', 2, 'Baseline kedua', 'hash-c')$$,
+  '23505',
+  null,
   'Baseline kedua untuk aktivitas yang sama ditolak'
 );
 

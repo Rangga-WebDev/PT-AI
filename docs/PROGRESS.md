@@ -12,7 +12,7 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
 | 2    | Design System and Application Shell | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
 | 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
-| 4    | Database Architecture               | 🟡 4B: SQL ditulis, **BELUM dieksekusi**  | 2026-08-11 | —          |
+| 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5 | 2026-08-11 | 2026-08-12 |
 | 5    | Supabase SSR Authentication         | ⬜ Belum dimulai                          | —          | —          |
 | 6    | Academic Structure                  | ⬜ Belum dimulai                          | —          | —          |
 | 7    | Course Builder                      | ⬜ Belum dimulai                          | —          | —          |
@@ -25,54 +25,58 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
 
-## Log PHASE 4B — Implementasi Database (2026-08-11)
+## Log PHASE 4B — Implementasi Database (2026-08-11 s.d. 2026-08-12)
 
-> ⚠️ **Status: BELUM SELESAI.** Seluruh SQL sudah ditulis tetapi **belum pernah dijalankan** karena `.env.local` masih kosong (project Supabase belum dibuat). Sesuai Definition of Done butir 20, fase ini tidak dinyatakan selesai sampai `db push` dan test RLS benar-benar dieksekusi.
+> ✅ **SELESAI.** Seluruh migration diterapkan ke Supabase Cloud dan 18 skenario test RLS lulus — dijalankan nyata, bukan diklaim.
 
 ### Persetujuan yang tercatat
 
-ERD disetujui 2026-08-11; DB-01 s.d. DB-07 diterima sesuai usulan dan kini berstatus LOCKED di [DECISIONS.md](DECISIONS.md).
+ERD disetujui 2026-08-11; DB-01 s.d. DB-07 diterima sesuai usulan dan berstatus LOCKED di [DECISIONS.md](DECISIONS.md).
 
-### Yang sudah ditulis
+### Yang diterapkan
 
-| Berkas                                                | Isi                                                                                            |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `supabase/migrations/…0001_extensions_and_types.sql`  | 3 ekstensi + 23 enum                                                                           |
-| `…0002_identity.sql` s.d. `…0012_research_schema.sql` | 60 tabel dalam 10 domain + schema `research` (3 view export)                                   |
-| `…0013_functions_and_triggers.sql`                    | 11 helper RLS, 15 trigger append-only, trigger seed 6 tahap, penegak baseline/AI/penilai dosen |
-| `…0014_rls_policies.sql`                              | RLS aktif seluruh tabel + policy per peran                                                     |
-| `…0015_indexes.sql`                                   | 45 index dari query nyata, termasuk HNSW pgvector                                              |
-| `supabase/seed/0001_development_seed.sql`             | Struktur akademik minimal (tanpa akun)                                                         |
-| `supabase/tests/rls.test.sql`                         | 18 skenario pgTAP                                                                              |
+| Berkas                                               | Isi                                                                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `supabase/migrations/…0001_extensions_and_types.sql` | 3 ekstensi + 23 enum                                                                       |
+| `…0002` s.d. `…0012`                                 | 60 tabel dalam 10 domain + schema `research` (3 view export berpseudonim)                  |
+| `…0013_functions_and_triggers.sql`                   | 19 fungsi, 15 trigger append-only, trigger seed 6 tahap, penegak baseline/AI/penilai dosen |
+| `…0014_rls_policies.sql`                             | RLS aktif seluruh tabel + policy per peran                                                 |
+| `…0015_indexes.sql`                                  | 45 index, termasuk HNSW pgvector                                                           |
+| `supabase/seed/0001_development_seed.sql`            | Struktur akademik minimal                                                                  |
+| `supabase/tests/rls.test.sql`                        | 18 skenario pgTAP                                                                          |
+| `src/lib/supabase/types.ts`                          | Generated types — 3.583 baris, 63 definisi Row                                             |
 
-Total 2.039 baris SQL migration.
+### Hasil verifikasi (dijalankan nyata)
 
-### Dua bug keamanan ditemukan saat telaah sendiri dan diperbaiki
+| Perintah                                        | Hasil                                                                                                                       |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `npx supabase db push`                          | ✅ 15/15 migration diterapkan, **nol error SQL**                                                                            |
+| `npm run test:db`                               | ✅ **18 lulus, 0 gagal**                                                                                                    |
+| `npm run db:seed`                               | ✅ organizations 1, faculties 1, study_programs 1, academic_periods 1, roles 3, error_categories 10, data_retention_rules 2 |
+| `npx supabase gen types`                        | ✅ 63 Row (60 tabel + 3 view)                                                                                               |
+| `npm run lint` / `typecheck` / `test` / `build` | ✅ exit 0; 35 test lulus; 17 route                                                                                          |
+| `npm run check:sql`                             | ✅ 7/7 pemeriksaan konsistensi                                                                                              |
 
-1. `learning_units_lecturer_write` sempat memiliki `with check (... or true)` — membuat pemeriksaan tulis selalu lolos. Diperbaiki dengan helper `class_of_module()`.
-2. `lecturer_overrides_select` sempat memberi **seluruh mahasiswa** akses ke **seluruh** override. Diperbaiki agar mahasiswa hanya melihat override atas artefak miliknya.
+### Masalah yang ditemukan dan diperbaiki selama fase
 
-### Verifikasi yang sudah dijalankan
+1. **Dua kebocoran policy** (ditemukan saat telaah sendiri sebelum push): `learning_units_lecturer_write` memiliki `with check (... or true)` sehingga pemeriksaan tulis selalu lolos; `lecturer_overrides_select` memberi seluruh mahasiswa akses ke seluruh override. Keduanya diperbaiki.
+2. **`types.ts` tersimpan UTF-16LE** karena perilaku redirect `>` pada PowerShell 5.1 — dikonversi ke UTF-8 (221 KB → 107 KB).
+3. **`supabase test db --linked` ternyata tetap memerlukan Docker.** Dibuat runner sendiri (`npm run test:db`) memakai driver `pg`, sehingga test dapat diulang dan siap dipakai CI.
+4. **`pooler-url` hasil `link` tidak memuat kredensial** — penyusun connection string diperbaiki agar mengambil username dari `project-ref`.
+5. **9 dari 10 kegagalan test pertama adalah kesalahan penulisan test**, bukan celah keamanan: `throws_ok(sql, deskripsi)` membuat pgTAP menafsirkan argumen kedua sebagai pesan error yang diharapkan. Diperbaiki menjadi `throws_ok(sql, SQLSTATE, null, deskripsi)` sehingga kini menguji kode error spesifik.
+6. **Temuan nyata dari test:** mahasiswa yang menjalankan `UPDATE` pada baseline tidak menerima error karena RLS membuatnya mengenai nol baris. Data tetap aman, tetapi test diubah agar memverifikasi isi baseline benar-benar tidak berubah.
 
-| Perintah            | Hasil                    |
-| ------------------- | ------------------------ |
-| `npm run lint`      | ✅ exit 0                |
-| `npm run typecheck` | ✅ exit 0                |
-| `npm run test`      | ✅ 9 file, 35 test lulus |
-| `npx supabase init` | ✅ struktur dibuat       |
+### Catatan keamanan
 
-### Verifikasi yang BELUM dapat dijalankan (blokir)
+Password database sempat ditulis literal di terminal sehingga terekspos pada riwayat dan konteks. Pengguna telah diberi tahu untuk melakukan reset password. Kredensial tidak pernah dikirim melalui percakapan; berkas `.env*` tetap tidak terlacak git (diverifikasi).
 
-| Perintah                            | Prasyarat                                       |
-| ----------------------------------- | ----------------------------------------------- |
-| `npx supabase link`                 | Project Supabase + kredensial                   |
-| `npx supabase db push`              | idem — **SQL belum pernah diuji sintaksnya**    |
-| `npx supabase test db`              | idem                                            |
-| `npx supabase gen types typescript` | idem — `src/lib/supabase/types.ts` belum dibuat |
+### Dependency baru
+
+`pg` dan `@types/pg` (devDependency) — diperlukan untuk menjalankan test pgTAP tanpa Docker.
 
 ### Checkpoint
 
-⛔ **BERHENTI.** Menunggu project Supabase dan pengisian `.env.local` sebelum eksekusi dan verifikasi.
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 5 — Supabase SSR Authentication.
 
 ## Log PHASE 4A — Database Design (2026-08-11)
 

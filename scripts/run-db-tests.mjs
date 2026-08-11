@@ -6,53 +6,24 @@
 // Jalankan: npm run test:db
 
 import { readdir, readFile } from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
 import pg from "pg";
 
+import { CREDENTIAL_HELP, resolveConnectionString } from "./db-connection.mjs";
+
 const TESTS_DIR = path.resolve("supabase/tests");
-const POOLER_URL_FILE = path.resolve("supabase/.temp/pooler-url");
 
 function fail(message) {
   console.error(`\n[GAGAL] ${message}\n`);
   process.exit(1);
 }
 
-// Menyusun connection string dari hasil `supabase link` + password, agar
-// pengguna cukup menyimpan password alih-alih URL panjang.
-function buildFromPoolerUrl(password) {
-  if (!existsSync(POOLER_URL_FILE)) return null;
-  const template = readFileSync(POOLER_URL_FILE, "utf8").trim();
-  if (!template) return null;
-  return template.replace(
-    /:\/\/([^:]+):[^@]*@/,
-    (_match, user) => `://${user}:${encodeURIComponent(password)}@`,
-  );
-}
-
-function resolveConnectionString() {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-  if (process.env.SUPABASE_DB_PASSWORD) {
-    const built = buildFromPoolerUrl(process.env.SUPABASE_DB_PASSWORD);
-    if (built) return built;
-  }
-  return null;
-}
-
 const connectionString = resolveConnectionString();
 
 if (!connectionString) {
-  fail(
-    "Kredensial database belum tersedia.\n\n" +
-      "Pilih salah satu, tambahkan ke .env.local:\n\n" +
-      "  (a) SUPABASE_DB_PASSWORD=<password database>\n" +
-      "      Host diambil otomatis dari hasil `supabase link`.\n\n" +
-      "  (b) DATABASE_URL=postgresql://postgres.<ref>:<password>@<host>:5432/postgres\n" +
-      "      Ambil dari Supabase Dashboard -> Connect -> Session pooler.\n\n" +
-      "Jangan menempelkan nilai ini ke percakapan mana pun.\n",
-  );
+  fail(CREDENTIAL_HELP);
 }
 
 const client = new pg.Client({

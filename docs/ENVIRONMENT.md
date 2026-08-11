@@ -56,8 +56,21 @@ Belum diinstal (menunggu fase yang membutuhkan): `zod`, `zustand`, `@tanstack/re
 | `npx supabase test db --db-url "<connection>"`                           | Menjalankan `supabase/tests/*.sql` (pgTAP) | Connection string    |
 | `npx supabase gen types typescript --linked > src/lib/supabase/types.ts` | Generated database types                   | Sudah link           |
 
-**Docker tidak diperlukan** karena kita memakai Supabase Cloud, bukan stack lokal.
-Kredensial dimasukkan langsung oleh pengguna di terminal — tidak pernah melalui chat.
+**Docker tidak diperlukan** untuk `push`, `diff`, dan `gen types` karena kita memakai Supabase Cloud.
+Kredensial dimasukkan langsung oleh pengguna — tidak pernah melalui chat.
+
+> ⚠️ `supabase test db` **tetap memerlukan Docker** meski targetnya database Cloud. Karena Docker tidak dipakai di proyek ini, test dijalankan lewat `npm run test:db`.
+> ⚠️ Redirect `>` pada PowerShell 5.1 menghasilkan berkas **UTF-16LE**; setelah `gen types`, konversi `types.ts` ke UTF-8.
+
+### Perintah database berbasis Node (tanpa Docker)
+
+| Perintah            | Fungsi                                                |
+| ------------------- | ----------------------------------------------------- |
+| `npm run test:db`   | Menjalankan `supabase/tests/*.sql` (pgTAP)            |
+| `npm run db:seed`   | Menjalankan `supabase/seed/*.sql`                     |
+| `npm run check:sql` | Pemeriksaan konsistensi statis antar berkas migration |
+
+Ketiganya membaca kredensial dari `.env.local`: `SUPABASE_DB_PASSWORD` (host diambil otomatis dari hasil `supabase link`) atau `DATABASE_URL` penuh.
 
 ## 4. Variabel Environment
 

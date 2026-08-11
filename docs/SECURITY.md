@@ -25,7 +25,10 @@ Referensi keputusan: SEC-001 s.d. SEC-005 di [DECISIONS.md](DECISIONS.md). Selur
 | `npm audit` pada instalasi                                                                           | ✅ 0 vulnerabilities (terakhir: PHASE 1) | Berkelanjutan        |
 | Supabase server/browser/admin client terpisah; admin `server-only`                                   | ⬜                                       | PHASE 5              |
 | Proxy session refresh (bukan authorization utama)                                                    | ⬜                                       | PHASE 5              |
-| RLS pada seluruh tabel pengguna + RLS test                                                           | ⬜                                       | PHASE 4–5            |
+| RLS pada seluruh tabel pengguna + RLS test                                                           | ✅ 60 tabel, 18/18 test lulus            | PHASE 4              |
+| Artefak berpikir append-only (trigger mengikat `service_role`)                                       | ✅ 15 tabel                              | PHASE 4              |
+| Admin tidak dapat membaca/mengubah nilai dan jawaban (SEC-005)                                       | ✅ diuji                                 | PHASE 4              |
+| Dosen tidak dapat membaca `consent_records`                                                          | ✅ diuji                                 | PHASE 4              |
 | Rate limit AI + minimalisasi data pribadi ke AI                                                      | ⬜                                       | PHASE 10             |
 | Sanitasi upload (ukuran, MIME, metadata) + signed URL                                                | ⬜                                       | PHASE 9              |
 | Idempotency / proteksi duplicate submission                                                          | ⬜                                       | PHASE 8              |
