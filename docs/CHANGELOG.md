@@ -4,6 +4,38 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 3] — 2026-08-11 — Visual Prototype
+
+### Ditambahkan
+
+- Tipe domain prototipe `src/types/learning.ts` (peran, 6 dimensi, 6 tahap, siklus attempt→mastery, kelas, unit, kasus, sumber, klaim, feedback AI, analitik).
+- Mock data berlabel di `src/mocks/` (`users`, `classes`, `units`, `cases`, `sources`, `ai-feedback`, `analytics`) — konstanta ber-prefix `MOCK_`, header `MOCK`, nama fiktif.
+- `MockBanner` dan 10 card variant: HeroLearningCard, CourseCard, CaseCard (`learning-cards`), EvidenceCard, AIFeedbackCard (`evidence-cards`), InsightCard, AnalyticsCard, DimensionBars (`insight-cards`), LockedCard, RemedialCard, EnrichmentCard (`pathway-cards`).
+- Fitur learning workspace: `PhaseRail`/`PhaseStepper` (6 tahap berurutan), `CaseReader` (kanvas baca hangat), `AttemptGate` (attempt-first + baseline read-only + revisi), `MasteryStatus` (siklus + kriteria kinerja).
+- Fitur AI coach: `AIBoundaryNotice`, `AIFeedbackPanel` (aksi Terima/Abaikan/Laporkan, dinonaktifkan pada prototipe).
+- Fitur verifikasi: `SourceViewer` (metadata + kutipan), `VerificationChecklist` (6 kriteria interaktif), `ClaimEvidenceLinker`.
+- Route publik `/login`, `/forgot-password`; route prototipe `/app`, `/app/student/*` (dashboard, classes, learn/stage, sources, progress), `/app/lecturer/*` (dashboard, classes, review) beserta `loading.tsx` dan `error.tsx` per area.
+- Navigasi per peran (`STUDENT_NAV`, `LECTURER_NAV`) di `src/lib/navigation.ts`.
+- Test baru: `attempt-gate`, `phase-navigation`, `verification-checklist` + `MockBanner` (RTL) dan `e2e/prototype.spec.ts` (5 skenario desktop + 1 mobile).
+
+### Diubah
+
+- `CardTitle` menerima prop `as` (`div` default, atau `h2`/`h3`/`h4`) agar judul kartu dapat menjadi heading semantik; `AnalyticsCard` memakai `as="h3"`.
+- `src/app/page.tsx`: tautan ke halaman masuk, prototipe aplikasi, dan galeri design system.
+- Komponen shadcn tambahan: `input`, `label`, `textarea`, `checkbox`, `progress`, `avatar`, `tabs` (disalin CLI, **tanpa** dependency npm baru).
+
+### Catatan penting
+
+- Route group `(protected)` **belum terproteksi**; halaman `/app` (pemilih peran) adalah alat prototipe dan dihapus pada PHASE 5.
+- Tidak ada panggilan AI: isi `AIFeedbackPanel` berasal dari mock statis.
+
+### Hasil verifikasi (dijalankan nyata)
+
+- `npm run lint` → exit 0; `npm run typecheck` → exit 0.
+- `npm run test` → 9 file, 35 test lulus.
+- `npm run build` → sukses (17 route: 12 static, 5 dynamic).
+- `npm run test:e2e` → 11 test lulus (3 kegagalan awal ditemukan dan diperbaiki: heading kartu non-semantik + selector teks terlalu longgar).
+
 ## [PHASE 2] — 2026-08-05 — Design System and Application Shell
 
 ### Ditambahkan

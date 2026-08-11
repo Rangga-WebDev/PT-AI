@@ -32,24 +32,27 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 2)
+## 4. Status Saat Ini (PHASE 3)
 
-| Suite                                        | Jumlah | Hasil terakhir |
-| -------------------------------------------- | ------ | -------------- |
-| Unit (`cn`)                                  | 3 test | ✅ lulus       |
-| Component (`HomePage`)                       | 2 test | ✅ lulus       |
-| Component (`Button`)                         | 5 test | ✅ lulus       |
-| Component (`StatusBadge`)                    | 4 test | ✅ lulus       |
-| Component (states)                           | 5 test | ✅ lulus       |
-| Component (`AppShell`)                       | 4 test | ✅ lulus       |
-| E2E smoke (beranda, 404)                     | 2 test | ✅ lulus       |
-| E2E design system (desktop + mobile 390×844) | 3 test | ✅ lulus       |
+| Suite                                                                 | Jumlah | Hasil terakhir |
+| --------------------------------------------------------------------- | ------ | -------------- |
+| Unit (`cn`)                                                           | 3 test | ✅ lulus       |
+| Component (`HomePage`)                                                | 2 test | ✅ lulus       |
+| Component (`Button`)                                                  | 5 test | ✅ lulus       |
+| Component (`StatusBadge`)                                             | 4 test | ✅ lulus       |
+| Component (states)                                                    | 5 test | ✅ lulus       |
+| Component (`AppShell`)                                                | 4 test | ✅ lulus       |
+| Component (`AttemptGate` — attempt-first)                             | 5 test | ✅ lulus       |
+| Component (`PhaseRail` — urutan tahap)                                | 3 test | ✅ lulus       |
+| Component (`VerificationChecklist` + `MockBanner`)                    | 4 test | ✅ lulus       |
+| E2E smoke (beranda, 404)                                              | 2 test | ✅ lulus       |
+| E2E design system (desktop + mobile 390×844)                          | 3 test | ✅ lulus       |
+| E2E prototipe (login, dashboard, attempt gate, sumber, dosen, mobile) | 6 test | ✅ lulus       |
 
-Total: 23 unit/component test + 5 E2E test.
+Total: 35 unit/component test + 11 E2E test.
 
 ## 5. Rencana Berikutnya
 
-- PHASE 2: component test untuk Button/Card/badge kustom dan AppShell (responsive + keyboard).
 - PHASE 4: pgTAP/SQL test untuk schema dan RLS.
 - PHASE 5: test authorization (Server Actions, route protection) + RLS integration.
-- PHASE 8+: E2E alur attempt → feedback → verify → revise → mastery.
+- PHASE 8+: E2E alur attempt → feedback → verify → revise → mastery dengan data nyata.

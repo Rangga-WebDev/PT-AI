@@ -10,8 +10,8 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | ---- | ----------------------------------- | ----------------------------------------- | ---------- | ---------- |
 | 0    | Repository Audit and Planning       | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
 | 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
-| 2    | Design System and Application Shell | ✅ SELESAI — menunggu persetujuan PHASE 3 | 2026-08-05 | 2026-08-05 |
-| 3    | Visual Prototype                    | ⬜ Belum dimulai                          | —          | —          |
+| 2    | Design System and Application Shell | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
+| 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
 | 4    | Database Architecture               | ⬜ Belum dimulai                          | —          | —          |
 | 5    | Supabase SSR Authentication         | ⬜ Belum dimulai                          | —          | —          |
 | 6    | Academic Structure                  | ⬜ Belum dimulai                          | —          | —          |
@@ -24,6 +24,37 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 13   | Analytics                           | ⬜ Belum dimulai                          | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
+
+## Log PHASE 3 — Visual Prototype (2026-08-11)
+
+### Yang dikerjakan
+
+- Tipe domain + mock data berlabel (`src/types/learning.ts`, `src/mocks/*`).
+- 10 card variant, `MockBanner`, komponen learning workspace (PhaseRail/PhaseStepper, CaseReader, AttemptGate, MasteryStatus), AI coach (AIBoundaryNotice, AIFeedbackPanel), verifikasi (SourceViewer, VerificationChecklist, ClaimEvidenceLinker).
+- Route: `/login`, `/forgot-password`, `/app`, 6 halaman mahasiswa, 4 halaman dosen, plus `loading.tsx`/`error.tsx` per area.
+- Attempt-first terlihat secara visual: panel AI terkunci sampai respons awal disimpan; baseline ditampilkan read-only; revisi sebagai bagian terpisah.
+
+### Hasil verifikasi (dijalankan nyata, bukan klaim)
+
+| Perintah            | Hasil                                                          |
+| ------------------- | -------------------------------------------------------------- |
+| `npm run lint`      | ✅ exit 0                                                      |
+| `npm run typecheck` | ✅ exit 0                                                      |
+| `npm run test`      | ✅ 9 file, 35 test lulus                                       |
+| `npm run build`     | ✅ 17 route (12 static, 5 dynamic)                             |
+| `npm run test:e2e`  | ✅ 11 test lulus (3 gagal pada percobaan pertama → diperbaiki) |
+
+### Utang teknis yang harus dibereskan pada fase berikutnya
+
+1. **Hapus `src/mocks/` dan seluruh `MockBanner`** ketika data nyata tersedia (PHASE 6+).
+2. **Hapus route `/app`** (pemilih peran prototipe) pada PHASE 5 — peran wajib berasal dari sesi server.
+3. Pasang proteksi nyata pada route group `(protected)` (PHASE 5).
+4. Ganti aksi yang dinonaktifkan (`Simpan verifikasi`, `Simpan revisi`, `Tinjau`, aksi AI) dengan Server Action pada fase terkait.
+5. Gate atau hapus `/design-system` sebelum produksi (PHASE 15).
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 4 — Database Architecture (ERD wajib disetujui sebelum migration).
 
 ## Log PHASE 2 — Design System and Application Shell (2026-08-05)
 

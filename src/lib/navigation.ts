@@ -53,3 +53,29 @@ export interface NavSection {
   title?: string | undefined;
   items: NavItem[];
 }
+
+export const STUDENT_NAV: NavSection[] = [
+  {
+    title: "Belajar",
+    items: [
+      { label: "Dashboard", href: "/app/student/dashboard", icon: "dashboard" },
+      { label: "Kelas saya", href: "/app/student/classes", icon: "classes" },
+      { label: "Progres", href: "/app/student/progress", icon: "analytics" },
+    ],
+  },
+];
+
+export const LECTURER_NAV: NavSection[] = [
+  {
+    title: "Pengajaran",
+    items: [
+      {
+        label: "Dashboard",
+        href: "/app/lecturer/dashboard",
+        icon: "dashboard",
+      },
+      { label: "Kelas", href: "/app/lecturer/classes", icon: "classes" },
+      { label: "Review", href: "/app/lecturer/review", icon: "review" },
+    ],
+  },
+];
