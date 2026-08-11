@@ -185,14 +185,17 @@ try {
 
   const student = created.find((account) => account.role === "student");
   const lecturer = created.find((account) => account.role === "lecturer");
+  const admin = created.find((account) => account.role === "admin");
 
   const written =
-    student && lecturer
+    student && lecturer && admin
       ? upsertEnvValues({
           E2E_STUDENT_EMAIL: student.email,
           E2E_STUDENT_PASSWORD: student.password,
           E2E_LECTURER_EMAIL: lecturer.email,
           E2E_LECTURER_PASSWORD: lecturer.password,
+          E2E_ADMIN_EMAIL: admin.email,
+          E2E_ADMIN_PASSWORD: admin.password,
         })
       : false;
 
@@ -201,9 +204,33 @@ try {
     console.log(`  ${account.role.padEnd(9)} ${account.email}`);
   }
 
+  // Memastikan kata sandi yang ditulis benar-benar dapat dipakai masuk,
+  // agar tidak terjadi kondisi "tertulis tetapi ditolak".
+  const verifier = createClient(
+    url,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      auth: { autoRefreshToken: false, persistSession: false },
+    },
+  );
+
+  const failed = [];
+  for (const account of created) {
+    const { error } = await verifier.auth.signInWithPassword({
+      email: account.email,
+      password: account.password,
+    });
+    if (error) failed.push(`${account.email}: ${error.message}`);
+    await verifier.auth.signOut({ scope: "local" });
+  }
+
+  if (failed.length > 0) {
+    throw new Error(`Verifikasi masuk gagal untuk:\n  ${failed.join("\n  ")}`);
+  }
+
   console.log(
     written
-      ? "\nKredensial E2E ditulis ke .env.local (E2E_STUDENT_* dan E2E_LECTURER_*).\n" +
+      ? "\nKredensial E2E ditulis ke .env.local dan terverifikasi dapat dipakai masuk.\n" +
           "Kata sandi sengaja tidak dicetak di terminal.\n"
       : "\n.env.local tidak ditemukan; kredensial E2E tidak ditulis.\n",
   );

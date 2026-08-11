@@ -4,6 +4,37 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 6] — 2026-08-12 — Academic Structure
+
+### Ditambahkan
+
+- `src/server/repositories/*` — lapisan akses data `server-only` dengan penanganan galat terpusat.
+- `src/server/services/account-service.ts` — pembuatan akun dan pengelolaan peran melalui `withAuditedAdmin()`.
+- `src/actions/administration/accounts.ts` dan `src/actions/academics/structure.ts` — Server Actions bervalidasi Zod dengan guard peran.
+- Area `/app/admin/*`: dashboard, pengguna, organisasi, periode akademik, mata kuliah, kelas, detail kelas.
+- `ClassCard` berbasis data nyata; skrip `npm run db:seed:academics`.
+- Test: `academics-validation` (unit), `academic-access.test.sql` (8 skenario), `admin.spec.ts` (5 skenario E2E).
+
+### Diubah
+
+- Halaman kelas mahasiswa dan dosen membaca database, bukan mock.
+- Detail kelas dilindungi `requireClassAccess()` / `requireLecturerOfClass()`.
+- `signIn` membedakan rate limit (429) dari kredensial salah.
+- `test:e2e` memuat `.env.local` di proses induk.
+- Skrip seed akun memverifikasi kredensial dapat dipakai masuk.
+
+### Dihapus
+
+- `src/mocks/classes.ts` — digantikan data nyata.
+
+### Dependency baru
+
+Tidak ada.
+
+### Status verifikasi
+
+`lint` ✓ · `typecheck` ✓ · `test` 58/58 ✓ · `test:db` 26/26 ✓ · `test:e2e` 30/30 ✓ · `build` 25 route ✓ · `check:secrets` ✓.
+
 ## [PHASE 5] — 2026-08-12 — Supabase SSR Authentication
 
 ### Ditambahkan

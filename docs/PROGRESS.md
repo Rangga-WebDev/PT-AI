@@ -14,7 +14,7 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
 | 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5 | 2026-08-11 | 2026-08-12 |
 | 5    | Supabase SSR Authentication         | ✅ SELESAI — menunggu persetujuan PHASE 6 | 2026-08-12 | 2026-08-12 |
-| 6    | Academic Structure                  | ⬜ Belum dimulai                          | —          | —          |
+| 6    | Academic Structure                  | ✅ SELESAI — menunggu persetujuan PHASE 7 | 2026-08-12 | 2026-08-12 |
 | 7    | Course Builder                      | ⬜ Belum dimulai                          | —          | —          |
 | 8    | Student Learning Workspace          | ⬜ Belum dimulai                          | —          | —          |
 | 9    | Source Verification                 | ⬜ Belum dimulai                          | —          | —          |
@@ -24,6 +24,45 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 13   | Analytics                           | ⬜ Belum dimulai                          | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
+
+## Log PHASE 6 — Academic Structure (2026-08-12)
+
+### Yang dikerjakan
+
+- **Lapisan data**: `src/server/repositories/` (organizations, academic-periods, courses, classes, profiles) bertanda `server-only`, dengan helper `unwrap()` agar galat mentah database tidak pernah bocor ke pengguna.
+- **Service akun**: `createAccount()`, `grantRole()`, `revokeRole()` — seluruhnya lewat `withAuditedAdmin()` sehingga tercatat di `audit_logs`. Pembuatan profil yang gagal membatalkan akun auth agar tidak meninggalkan akun yatim.
+- **Server Actions**: fakultas, program studi, periode akademik, mata kuliah, kelas, status publikasi, penugasan dosen, enrollment — semua divalidasi Zod dan diperiksa `requireAdminAccess()`.
+- **Area admin**: dashboard, pengguna, organisasi, periode akademik, mata kuliah, kelas, dan detail kelas; ber-guard `requireAdminAccess()` dengan `loading.tsx`/`error.tsx`.
+- **Penggantian mock**: `/app/student/classes` dan `/app/lecturer/classes` beserta detailnya kini membaca database. `src/mocks/classes.ts` **dihapus**; `ClassCard` menggantikan `CourseCard` berbasis mock.
+- **Guard akses kelas**: detail kelas mahasiswa memanggil `requireClassAccess()`, detail kelas dosen memanggil `requireLecturerOfClass()`.
+- Skrip `npm run db:seed:academics` menyiapkan mata kuliah, kelas terbit, penugasan dosen, dan enrollment untuk akun dev.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                |
+| ---------------------------- | ---------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                            |
+| `npm run test`               | ✅ 12 file, **58 test** lulus                        |
+| `npm run test:db`            | ✅ **26/26** lulus (18 RLS + 8 akses akademik)       |
+| `npm run test:e2e`           | ✅ **30/30** lulus (guest, student, lecturer, admin) |
+| `npm run build`              | ✅ 25 route                                          |
+| `npm run check:secrets`      | ✅ nol kebocoran                                     |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Relasi ambigu PostgREST.** `class_lecturers` dan `enrollments` masing-masing punya dua foreign key ke `profiles`, dan `role_assignments` punya tiga. Query harus menunjuk kolom eksplisit (`profiles!lecturer_id`, `role_assignments!profile_id`).
+2. **`process.loadEnvFile()` di `playwright.config.ts` tidak terbaca worker**, sehingga seluruh project ber-sesi hilang diam-diam. Env kini dimuat proses induk lewat skrip `test:e2e`.
+3. **Rate limit auth disamarkan sebagai "kata sandi salah".** Kini status 429 dijawab pesan sendiri — rate limit bukan informasi sensitif, dan menyamarkannya menyesatkan pengguna.
+4. **Kredensial dev pernah tidak sinkron** antara `.env.local` dan database. Skrip seed kini **memverifikasi** setiap kredensial dapat dipakai masuk sebelum menyatakan berhasil.
+5. `Remove-Item` pada path dengan kurung siku memerlukan `-LiteralPath` di PowerShell.
+
+### Mock yang masih tersisa
+
+`src/mocks/{units,cases,sources,ai-feedback,analytics}.ts` masih dipakai untuk konten pembelajaran dan analitik — dihapus pada PHASE 7 s.d. 13. Halaman yang masih memakainya tetap menampilkan `MockBanner`.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 7 — Course Builder.
 
 ## Log PHASE 5 — Supabase SSR Authentication (2026-08-12)
 

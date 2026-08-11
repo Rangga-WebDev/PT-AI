@@ -2,17 +2,21 @@
 
 import type { Metadata } from "next";
 
-import { CourseCard } from "@/components/cards/learning-cards";
+import { ClassCard } from "@/components/cards/class-card";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
-import { MockBanner } from "@/components/shared/mock-banner";
-import { MOCK_LECTURER_CLASSES } from "@/mocks/classes";
+import { EmptyState } from "@/components/shared/states/empty-state";
+import { requireLecturerAccess } from "@/lib/supabase/auth";
+import { listClassesForLecturer } from "@/server/repositories/classes";
 
 export const metadata: Metadata = {
   title: "Kelas yang diampu",
 };
 
-export default function LecturerClassesPage() {
+export default async function LecturerClassesPage() {
+  const user = await requireLecturerAccess();
+  const classes = await listClassesForLecturer(user.id);
+
   return (
     <PageContainer>
       <PageHeader
@@ -20,18 +24,20 @@ export default function LecturerClassesPage() {
         title="Kelas yang diampu"
         description="Kelas yang ditugaskan kepada Anda pada periode akademik berjalan."
       />
-      <div className="flex flex-col gap-5">
-        <MockBanner />
+      {classes.length === 0 ? (
+        <EmptyState description="Belum ada kelas yang ditugaskan kepada Anda. Hubungi administrator." />
+      ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {MOCK_LECTURER_CLASSES.map((item) => (
-            <CourseCard
+          {classes.map((item) => (
+            <ClassCard
               key={item.id}
               item={item}
               href={`/app/lecturer/classes/${item.id}`}
+              showStatus
             />
           ))}
         </div>
-      </div>
+      )}
     </PageContainer>
   );
 }

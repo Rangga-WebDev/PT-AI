@@ -2,20 +2,23 @@
 
 import { notFound } from "next/navigation";
 
-import { CaseCard } from "@/components/cards/learning-cards";
-import { HeroLearningCard } from "@/components/cards/learning-cards";
+import { CaseCard, HeroLearningCard } from "@/components/cards/learning-cards";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { MockBanner } from "@/components/shared/mock-banner";
+import { requireClassAccess } from "@/lib/supabase/auth";
+import { getClassDetail } from "@/server/repositories/classes";
 import { MOCK_CASE } from "@/mocks/cases";
-import { findMockClass } from "@/mocks/classes";
 import { MOCK_ACTIVE_UNIT } from "@/mocks/units";
 
 export default async function StudentClassDetailPage({
   params,
 }: PageProps<"/app/student/classes/[classId]">) {
   const { classId } = await params;
-  const classItem = findMockClass(classId);
+
+  // Memastikan mahasiswa memang terdaftar sebelum data kelas dibaca.
+  await requireClassAccess(classId);
+  const classItem = await getClassDetail(classId);
 
   if (!classItem) {
     notFound();
@@ -30,7 +33,9 @@ export default async function StudentClassDetailPage({
       <PageHeader
         eyebrow={`${classItem.code} · ${classItem.academicPeriod}`}
         title={classItem.name}
-        description={`Pengampu: ${classItem.lecturerName} · ${classItem.studentCount} mahasiswa`}
+        description={`${classItem.courseName} · ${
+          classItem.lecturerNames.join(", ") || "Belum ada dosen pengampu"
+        }`}
       />
       <div className="flex flex-col gap-5">
         <MockBanner />
@@ -41,7 +46,7 @@ export default async function StudentClassDetailPage({
             stageTitle={currentStage?.title ?? "Interpretasi"}
             stageFocus={currentStage?.focus ?? "Memahami konteks"}
             dueLabel={MOCK_ACTIVE_UNIT.dueLabel}
-            progressPercent={classItem.progressPercent}
+            progressPercent={42}
             href={`/app/student/learn/${MOCK_ACTIVE_UNIT.id}`}
           />
           <CaseCard item={MOCK_CASE} />

@@ -38,7 +38,17 @@ export async function signIn(
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    // Pesan sengaja generik agar tidak membocorkan surel mana yang terdaftar.
+    // Rate limit bukan informasi sensitif; menyamarkannya sebagai "kata sandi
+    // salah" membuat pengguna mengira kredensialnya keliru.
+    if (error.status === 429) {
+      return {
+        error:
+          "Terlalu banyak percobaan masuk. Tunggu beberapa saat lalu coba lagi.",
+      };
+    }
+
+    // Selain itu pesan sengaja generik agar tidak membocorkan surel mana yang
+    // terdaftar.
     return { error: "Surel atau kata sandi salah." };
   }
 

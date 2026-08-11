@@ -2,24 +2,24 @@
 
 import { defineConfig, devices } from "@playwright/test";
 
-// Memuat .env.local agar kredensial akun uji tersedia bagi test.
-try {
-  process.loadEnvFile(".env.local");
-} catch {
-  // Berkas tidak ada: test yang memerlukan sesi akan dilewati.
-}
+// Kredensial dimuat oleh proses induk (lihat skrip test:e2e), karena
+// process.loadEnvFile() di dalam config tidak terbaca oleh worker Playwright.
 
 const PORT = 3000; // LOCK-TECH-004: pengembangan lokal di localhost:3000
 const BASE_URL = `http://localhost:${PORT}`;
 
 const STUDENT_STATE = "playwright/.auth/student.json";
 const LECTURER_STATE = "playwright/.auth/lecturer.json";
+const ADMIN_STATE = "playwright/.auth/admin.json";
 
 const hasStudent = Boolean(
   process.env.E2E_STUDENT_EMAIL && process.env.E2E_STUDENT_PASSWORD,
 );
 const hasLecturer = Boolean(
   process.env.E2E_LECTURER_EMAIL && process.env.E2E_LECTURER_PASSWORD,
+);
+const hasAdmin = Boolean(
+  process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD,
 );
 
 // Sesi dibuat sekali di project "setup" lalu dipakai ulang, agar login
@@ -41,6 +41,16 @@ const authenticatedProjects = [
           name: "lecturer",
           testMatch: ["**/lecturer.spec.ts"],
           use: { ...devices["Desktop Chrome"], storageState: LECTURER_STATE },
+          dependencies: ["setup"],
+        },
+      ]
+    : []),
+  ...(hasAdmin
+    ? [
+        {
+          name: "admin",
+          testMatch: ["**/admin.spec.ts"],
+          use: { ...devices["Desktop Chrome"], storageState: ADMIN_STATE },
           dependencies: ["setup"],
         },
       ]

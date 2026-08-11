@@ -3,6 +3,9 @@
 import { test as setup, expect } from "@playwright/test";
 
 import {
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+  ADMIN_STATE,
   LECTURER_EMAIL,
   LECTURER_PASSWORD,
   STUDENT_EMAIL,
@@ -13,6 +16,8 @@ import {
 
 // Login dilakukan sekali di sini lalu sesinya dipakai ulang seluruh test,
 // agar tidak menembus rate limit Supabase Auth saat test berjalan paralel.
+// Berurutan (serial) karena beberapa login serentak pun dapat kena rate limit.
+setup.describe.configure({ mode: "serial" });
 
 setup("authenticate student", async ({ page }) => {
   setup.skip(
@@ -45,4 +50,17 @@ setup("authenticate lecturer", async ({ page }) => {
   await page.waitForURL(/\/app\/lecturer\/dashboard$/);
 
   await page.context().storageState({ path: LECTURER_STATE });
+});
+
+setup("authenticate admin", async ({ page }) => {
+  setup.skip(!ADMIN_EMAIL || !ADMIN_PASSWORD, "Kredensial admin belum ada");
+
+  await page.goto("/login");
+  await page.getByLabel("Surel institusi").fill(ADMIN_EMAIL!);
+  await page.getByLabel("Kata sandi").fill(ADMIN_PASSWORD!);
+  await page.getByRole("button", { name: "Masuk" }).click();
+
+  await page.waitForURL(/\/app\/admin\/dashboard$/);
+
+  await page.context().storageState({ path: ADMIN_STATE });
 });

@@ -79,3 +79,30 @@ export const LECTURER_NAV: NavSection[] = [
     ],
   },
 ];
+
+export const ADMIN_NAV: NavSection[] = [
+  {
+    title: "Administrasi",
+    items: [
+      { label: "Dashboard", href: "/app/admin/dashboard", icon: "dashboard" },
+      { label: "Pengguna", href: "/app/admin/users", icon: "users" },
+    ],
+  },
+  {
+    title: "Struktur akademik",
+    items: [
+      {
+        label: "Organisasi",
+        href: "/app/admin/organizations",
+        icon: "organization",
+      },
+      {
+        label: "Periode akademik",
+        href: "/app/admin/academic-periods",
+        icon: "settings",
+      },
+      { label: "Mata kuliah", href: "/app/admin/courses", icon: "learning" },
+      { label: "Kelas", href: "/app/admin/classes", icon: "classes" },
+    ],
+  },
+];

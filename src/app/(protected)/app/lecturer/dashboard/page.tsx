@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AnalyticsCard, InsightCard } from "@/components/cards/insight-cards";
-import { CourseCard } from "@/components/cards/learning-cards";
+import { ClassCard } from "@/components/cards/class-card";
 import { BentoGrid } from "@/components/layout/bento-grid";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
@@ -16,7 +16,8 @@ import {
   MOCK_MASTERY_DISTRIBUTION,
   MOCK_REVIEW_QUEUE,
 } from "@/mocks/analytics";
-import { MOCK_LECTURER_CLASSES } from "@/mocks/classes";
+import { requireLecturerAccess } from "@/lib/supabase/auth";
+import { listClassesForLecturer } from "@/server/repositories/classes";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -30,7 +31,10 @@ const TONE_CLASS = {
   danger: "bg-destructive",
 } as const;
 
-export default function LecturerDashboardPage() {
+export default async function LecturerDashboardPage() {
+  const user = await requireLecturerAccess();
+  const classes = await listClassesForLecturer(user.id);
+
   const totalStudents = MOCK_MASTERY_DISTRIBUTION.reduce(
     (sum, item) => sum + item.count,
     0,
@@ -148,12 +152,13 @@ export default function LecturerDashboardPage() {
             </ul>
           </AnalyticsCard>
 
-          {MOCK_LECTURER_CLASSES.slice(0, 2).map((item) => (
-            <CourseCard
+          {classes.slice(0, 2).map((item) => (
+            <ClassCard
               key={item.id}
               className="md:col-span-4 lg:col-span-6"
               item={item}
               href={`/app/lecturer/classes/${item.id}`}
+              showStatus
             />
           ))}
         </BentoGrid>
