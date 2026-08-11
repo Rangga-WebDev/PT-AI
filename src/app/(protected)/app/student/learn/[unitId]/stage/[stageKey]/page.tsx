@@ -6,6 +6,7 @@ import { EvidenceCard } from "@/components/cards/evidence-cards";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { MockBanner } from "@/components/shared/mock-banner";
+import { EmptyState } from "@/components/shared/states/empty-state";
 import { LockedState } from "@/components/shared/states/locked-state";
 import { AttemptGate } from "@/features/learning-workspace/components/attempt-gate";
 import { CaseReader } from "@/features/learning-workspace/components/case-reader";
@@ -14,61 +15,156 @@ import {
   PhaseRail,
   PhaseStepper,
 } from "@/features/learning-workspace/components/phase-navigation";
+import {
+  AI_FUNCTION_LABEL,
+  resolveStageAccess,
+  STAGE_LABEL,
+} from "@/lib/constants/stages";
+import { requireStudentAccess } from "@/lib/supabase/auth";
 import { MOCK_AI_FEEDBACK } from "@/mocks/ai-feedback";
-import { MOCK_CASE } from "@/mocks/cases";
 import { MOCK_SOURCES } from "@/mocks/sources";
-import { findMockStage, findMockUnit } from "@/mocks/units";
+import { getStudentUnitWorkspace } from "@/server/repositories/content";
+import type { LearningStage } from "@/types/learning";
+
+/** Teks kasus disimpan sebagai satu blok; paragraf dipisah baris kosong. */
+function toParagraphs(body: string): string[] {
+  return body
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph.length > 0);
+}
 
 export default async function LearnStagePage({
   params,
 }: PageProps<"/app/student/learn/[unitId]/stage/[stageKey]">) {
   const { unitId, stageKey } = await params;
-  const unit = findMockUnit(unitId);
 
-  if (!unit) {
-    notFound();
-  }
+  await requireStudentAccess();
 
-  const stage = findMockStage(unit, stageKey);
+  const workspace = await getStudentUnitWorkspace(unitId);
+  if (!workspace) notFound();
 
-  if (!stage) {
-    notFound();
-  }
+  const stage = workspace.stages.find((item) => item.stageKey === stageKey);
+  if (!stage) notFound();
 
+  const access = resolveStageAccess(stage.sequence, stage.isEnabled);
+
+  // Status ketuntasan nyata baru tersedia setelah attempt dan penilaian ada
+  // (PHASE 8 dan PHASE 11); sampai saat itu tahap ditampilkan apa adanya.
+  const navStages: LearningStage[] = workspace.stages.map((item) => {
+    const itemAccess = resolveStageAccess(item.sequence, item.isEnabled);
+    return {
+      key: item.stageKey,
+      order: item.sequence,
+      title: item.title,
+      focus: item.focus,
+      status: itemAccess === "available" ? "in-progress" : "locked",
+      cyclePhase: "attempt",
+    };
+  });
+
+  const currentNavStage = navStages.find((item) => item.key === stage.stageKey);
   const buildHref = (key: string) =>
-    `/app/student/learn/${unit.id}/stage/${key}`;
+    `/app/student/learn/${unitId}/stage/${key}`;
 
   return (
     <PageContainer>
       <PageHeader
-        eyebrow={unit.moduleTitle}
-        title={`${stage.order}. ${stage.title}`}
+        eyebrow={`${workspace.unit.moduleTitle} · ${workspace.unit.title}`}
+        title={`${stage.sequence}. ${stage.title}`}
         description={stage.focus}
       />
 
       <div className="flex flex-col gap-5">
-        <MockBanner />
         <PhaseStepper
-          stages={unit.stages}
-          currentStageKey={stage.key}
+          stages={navStages}
+          currentStageKey={stage.stageKey}
           buildHref={buildHref}
         />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <div className="lg:sticky lg:top-24 lg:self-start">
             <PhaseRail
-              stages={unit.stages}
-              currentStageKey={stage.key}
+              stages={navStages}
+              currentStageKey={stage.stageKey}
               buildHref={buildHref}
             />
           </div>
 
           <div className="flex min-w-0 flex-col gap-6">
-            {stage.status === "locked" ? (
-              <LockedState description="Tahap ini terbuka setelah tahap sebelumnya memenuhi kriteria kinerja. Urutan tahap tidak dapat dilewati." />
+            {access === "disabled" ? (
+              <LockedState description="Tahap ini dinonaktifkan dosen untuk unit tersebut." />
+            ) : access === "locked" ? (
+              <LockedState
+                description={`Tahap ${STAGE_LABEL[stage.stageKey]} terbuka setelah tahap sebelumnya memenuhi kriteria kinerja. Penilaian ketuntasan otomatis belum aktif pada tahap pengembangan ini.`}
+              />
             ) : (
               <>
-                <CaseReader caseDetail={MOCK_CASE} />
+                {workspace.caseDetail ? (
+                  <CaseReader
+                    caseDetail={{
+                      id: workspace.caseDetail.id,
+                      title: workspace.caseDetail.title,
+                      context: workspace.caseDetail.context,
+                      paragraphs: toParagraphs(workspace.caseDetail.body),
+                      keyQuestion: workspace.caseDetail.keyQuestion,
+                      sourceIds: [],
+                    }}
+                  />
+                ) : (
+                  <EmptyState description="Unit ini belum memiliki kasus." />
+                )}
+
+                <section
+                  aria-labelledby="aktivitas-heading"
+                  className="flex flex-col gap-3"
+                >
+                  <h3
+                    id="aktivitas-heading"
+                    className="font-heading text-h4 font-semibold"
+                  >
+                    Aktivitas tahap ini
+                  </h3>
+                  {stage.activities.length === 0 ? (
+                    <EmptyState description="Belum ada aktivitas yang diterbitkan pada tahap ini." />
+                  ) : (
+                    <ul className="flex flex-col gap-3">
+                      {stage.activities.map((activity) => (
+                        <li
+                          key={activity.id}
+                          className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4"
+                        >
+                          <h4 className="font-medium">{activity.title}</h4>
+                          <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                            {activity.prompt}
+                          </p>
+                          {activity.instructions.length > 0 ? (
+                            <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-muted-foreground">
+                              {activity.instructions.map(
+                                (instruction, index) => (
+                                  <li key={index}>{instruction}</li>
+                                ),
+                              )}
+                            </ul>
+                          ) : null}
+                          <p className="font-mono text-xs text-subtle">
+                            {activity.allowsAi
+                              ? `Bantuan AI tersedia: ${activity.allowedAiFunctions
+                                  .map((fn) => AI_FUNCTION_LABEL[fn] ?? fn)
+                                  .join(", ")}${
+                                  activity.requiresAttemptBeforeAi
+                                    ? " — setelah respons awal Anda tersimpan"
+                                    : ""
+                                }`
+                              : "Bantuan AI tidak diaktifkan pada aktivitas ini."}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+
+                <MockBanner />
 
                 <section
                   aria-labelledby="sumber-heading"
@@ -92,11 +188,17 @@ export default async function LearnStagePage({
                 </section>
 
                 <AttemptGate
-                  prompt={MOCK_CASE.keyQuestion}
+                  prompt={
+                    stage.activities[0]?.prompt ??
+                    workspace.caseDetail?.keyQuestion ??
+                    "Tuliskan respons awal Anda."
+                  }
                   aiFeedback={MOCK_AI_FEEDBACK}
                 />
 
-                <MasteryStatus stage={stage} />
+                {currentNavStage ? (
+                  <MasteryStatus stage={currentNavStage} />
+                ) : null}
               </>
             )}
           </div>

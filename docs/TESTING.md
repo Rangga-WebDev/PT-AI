@@ -32,27 +32,29 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 3)
+## 4. Status Saat Ini (PHASE 7)
 
-| Suite                                                                 | Jumlah | Hasil terakhir |
-| --------------------------------------------------------------------- | ------ | -------------- |
-| Unit (`cn`)                                                           | 3 test | ✅ lulus       |
-| Component (`HomePage`)                                                | 2 test | ✅ lulus       |
-| Component (`Button`)                                                  | 5 test | ✅ lulus       |
-| Component (`StatusBadge`)                                             | 4 test | ✅ lulus       |
-| Component (states)                                                    | 5 test | ✅ lulus       |
-| Component (`AppShell`)                                                | 4 test | ✅ lulus       |
-| Component (`AttemptGate` — attempt-first)                             | 5 test | ✅ lulus       |
-| Component (`PhaseRail` — urutan tahap)                                | 3 test | ✅ lulus       |
-| Component (`VerificationChecklist` + `MockBanner`)                    | 4 test | ✅ lulus       |
-| E2E smoke (beranda, 404)                                              | 2 test | ✅ lulus       |
-| E2E design system (desktop + mobile 390×844)                          | 3 test | ✅ lulus       |
-| E2E prototipe (login, dashboard, attempt gate, sumber, dosen, mobile) | 6 test | ✅ lulus       |
+| Suite                                 | Jumlah  | Hasil terakhir |
+| ------------------------------------- | ------- | -------------- |
+| Unit dan component (Vitest, 13 file)  | 67 test | ✅ lulus       |
+| SQL/pgTAP `rls.test.sql`              | 18 test | ✅ lulus       |
+| SQL/pgTAP `academic-access.test.sql`  | 8 test  | ✅ lulus       |
+| SQL/pgTAP `content-access.test.sql`   | 10 test | ✅ lulus       |
+| E2E (guest, student, lecturer, admin) | 38 test | ✅ lulus       |
 
-Total: 35 unit/component test + 11 E2E test.
+Total: 67 unit/component + 36 SQL + 38 E2E. Build menghasilkan 28 route.
+
+Berkas pengujian PHASE 7: `src/test/content-validation.test.ts`, `supabase/tests/content-access.test.sql`, `e2e/builder.spec.ts`.
+
+### Catatan pengujian yang mudah menyesatkan
+
+- Zod v4 `.uuid()` menolak UUID di luar versi 1–8; gunakan UUID v4 yang sah pada fixture.
+- Playwright memperlakukan `<option>` sebagai tidak terlihat, sehingga `getByText(...).first()` dapat memilih opsi select dan gagal. Persempit asersi ke elemen daftar.
+- `page.url()` tepat setelah `click()` dapat masih berisi URL lama; tunggu dengan `expect(page).toHaveURL()`.
+- `testMatch` setiap project Playwright bersifat eksplisit — berkas spec baru harus didaftarkan atau tidak akan pernah dijalankan.
 
 ## 5. Rencana Berikutnya
 
-- PHASE 4: pgTAP/SQL test untuk schema dan RLS.
-- PHASE 5: test authorization (Server Actions, route protection) + RLS integration.
-- PHASE 8+: E2E alur attempt → feedback → verify → revise → mastery dengan data nyata.
+- PHASE 8: E2E alur attempt → feedback → verify → revise → mastery dengan data nyata.
+- PHASE 10: pengujian batas peran AI (attempt-first, larangan jawaban final).
+- PHASE 11: pengujian pembukaan tahap berbasis kriteria kinerja.

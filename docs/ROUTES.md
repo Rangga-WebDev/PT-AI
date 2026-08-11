@@ -20,20 +20,23 @@
 
 ### Prototipe aplikasi (belum terproteksi)
 
-| URL                                            | File                              | Jenis   | Keterangan                                                                     |
-| ---------------------------------------------- | --------------------------------- | ------- | ------------------------------------------------------------------------------ |
-| `/app`                                         | `(protected)/app/page.tsx`        | Static  | Pemilih tampilan prototipe; **dihapus pada PHASE 5** (peran berasal dari sesi) |
-| `/app/student/dashboard`                       | `.../student/dashboard/page.tsx`  | Static  | Bento dashboard mahasiswa                                                      |
-| `/app/student/classes`                         | `.../student/classes/page.tsx`    | Static  | Daftar kelas                                                                   |
-| `/app/student/classes/[classId]`               | `.../[classId]/page.tsx`          | Dynamic | Detail kelas                                                                   |
-| `/app/student/learn/[unitId]`                  | `.../learn/[unitId]/page.tsx`     | Dynamic | Redirect ke tahap berjalan                                                     |
-| `/app/student/learn/[unitId]/stage/[stageKey]` | `.../stage/[stageKey]/page.tsx`   | Dynamic | Ruang belajar 6 tahap + attempt gate                                           |
-| `/app/student/sources/[sourceId]`              | `.../sources/[sourceId]/page.tsx` | Dynamic | Verifikasi sumber                                                              |
-| `/app/student/progress`                        | `.../student/progress/page.tsx`   | Static  | Progres 6 dimensi + remedial/pengayaan                                         |
-| `/app/lecturer/dashboard`                      | `.../lecturer/dashboard/page.tsx` | Static  | Dashboard dosen                                                                |
-| `/app/lecturer/classes`                        | `.../lecturer/classes/page.tsx`   | Static  | Kelas yang diampu                                                              |
-| `/app/lecturer/classes/[classId]`              | `.../[classId]/page.tsx`          | Dynamic | Detail kelas dosen                                                             |
-| `/app/lecturer/review`                         | `.../lecturer/review/page.tsx`    | Static  | Antrean review                                                                 |
+| URL                                                      | File                              | Jenis   | Keterangan                                                                     |
+| -------------------------------------------------------- | --------------------------------- | ------- | ------------------------------------------------------------------------------ |
+| `/app`                                                   | `(protected)/app/page.tsx`        | Static  | Pemilih tampilan prototipe; **dihapus pada PHASE 5** (peran berasal dari sesi) |
+| `/app/student/dashboard`                                 | `.../student/dashboard/page.tsx`  | Static  | Bento dashboard mahasiswa                                                      |
+| `/app/student/classes`                                   | `.../student/classes/page.tsx`    | Static  | Daftar kelas                                                                   |
+| `/app/student/classes/[classId]`                         | `.../[classId]/page.tsx`          | Dynamic | Detail kelas                                                                   |
+| `/app/student/learn/[unitId]`                            | `.../learn/[unitId]/page.tsx`     | Dynamic | Redirect ke tahap berjalan                                                     |
+| `/app/student/learn/[unitId]/stage/[stageKey]`           | `.../stage/[stageKey]/page.tsx`   | Dynamic | Ruang belajar 6 tahap + attempt gate                                           |
+| `/app/student/sources/[sourceId]`                        | `.../sources/[sourceId]/page.tsx` | Dynamic | Verifikasi sumber                                                              |
+| `/app/student/progress`                                  | `.../student/progress/page.tsx`   | Static  | Progres 6 dimensi + remedial/pengayaan                                         |
+| `/app/lecturer/dashboard`                                | `.../lecturer/dashboard/page.tsx` | Static  | Dashboard dosen                                                                |
+| `/app/lecturer/classes`                                  | `.../lecturer/classes/page.tsx`   | Static  | Kelas yang diampu                                                              |
+| `/app/lecturer/classes/[classId]`                        | `.../[classId]/page.tsx`          | Dynamic | Detail kelas dosen                                                             |
+| `/app/lecturer/classes/[classId]/builder`                | `.../builder/page.tsx`            | Dynamic | Perancang materi: modul dan unit                                               |
+| `/app/lecturer/classes/[classId]/builder/units/[unitId]` | `.../units/[unitId]/page.tsx`     | Dynamic | Kasus, enam tahap, aktivitas, instruksi                                        |
+| `/app/lecturer/rubrics`                                  | `.../lecturer/rubrics/page.tsx`   | Dynamic | Rubrik, kriteria per dimensi, dan level                                        |
+| `/app/lecturer/review`                                   | `.../lecturer/review/page.tsx`    | Static  | Antrean review                                                                 |
 
 Boundary area: `(protected)/app/student/{loading,error}.tsx` dan `(protected)/app/lecturer/{loading,error}.tsx`.
 

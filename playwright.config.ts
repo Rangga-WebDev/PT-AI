@@ -39,7 +39,7 @@ const authenticatedProjects = [
     ? [
         {
           name: "lecturer",
-          testMatch: ["**/lecturer.spec.ts"],
+          testMatch: ["**/lecturer.spec.ts", "**/builder.spec.ts"],
           use: { ...devices["Desktop Chrome"], storageState: LECTURER_STATE },
           dependencies: ["setup"],
         },

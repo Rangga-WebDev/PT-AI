@@ -5,23 +5,86 @@ import { expect, test } from "@playwright/test";
 // Berjalan dengan sesi mahasiswa (project "student").
 
 test.describe("Ruang belajar mahasiswa", () => {
-  test("dashboard menampilkan penanda MOCK dan enam dimensi", async ({
+  test("dashboard menampilkan unit nyata dan enam dimensi", async ({
     page,
   }) => {
     await page.goto("/app/student/dashboard");
 
-    await expect(page.getByText("Data contoh (MOCK)").first()).toBeVisible();
+    await expect(
+      page.getByText("Partisipasi Warga dalam Konsultasi Publik").first(),
+    ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: /Enam dimensi berpikir kritis/i }),
+    ).toBeVisible();
+  });
+
+  test("unit dari database membuka tahap interpretasi beserta kasus dan aktivitas", async ({
+    page,
+  }) => {
+    await page.goto("/app/student/dashboard");
+    await page
+      .getByRole("link", { name: /Lanjutkan tahap/i })
+      .first()
+      .click();
+
+    await expect(page).toHaveURL(/\/stage\/interpretation$/);
+    await expect(
+      page.getByRole("heading", { name: "1. Interpretasi" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: /Konsultasi Publik Rancangan Peraturan Daerah/i,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Rumuskan masalah kebijakan" }),
+    ).toBeVisible();
+  });
+
+  test("catatan pedagogis dosen tidak terlihat mahasiswa", async ({ page }) => {
+    await page.goto("/app/student/dashboard");
+    await page
+      .getByRole("link", { name: /Lanjutkan tahap/i })
+      .first()
+      .click();
+
+    await expect(page.getByText(/Catatan dosen/i)).toHaveCount(0);
+    await expect(
+      page.getByText(/Bedakan fakta yang dinyatakan dalam kasus/i),
+    ).toBeVisible();
+  });
+
+  test("tahap lanjutan masih terkunci sampai ketuntasan aktif", async ({
+    page,
+  }) => {
+    await page.goto("/app/student/dashboard");
+    await page
+      .getByRole("link", { name: /Lanjutkan tahap/i })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/stage\/interpretation$/);
+
+    const url = new URL(page.url());
+    const stagePath = url.pathname.replace(
+      "/stage/interpretation",
+      "/stage/analysis",
+    );
+    await page.goto(stagePath);
+
+    await expect(
+      page.getByText(/terbuka setelah tahap sebelumnya/i),
     ).toBeVisible();
   });
 
   test("ruang belajar mengunci AI sebelum respons awal disimpan", async ({
     page,
   }) => {
-    await page.goto("/app/student/learn/unit-konsultasi-publik");
+    await page.goto("/app/student/dashboard");
+    await page
+      .getByRole("link", { name: /Lanjutkan tahap/i })
+      .first()
+      .click();
 
-    await expect(page).toHaveURL(/\/stage\/evaluasi$/);
     await expect(page.getByText("Bantuan AI terkunci")).toBeVisible();
     await expect(page.locator('[data-slot="ai-feedback-panel"]')).toHaveCount(
       0,
@@ -54,7 +117,11 @@ test.describe("Ruang belajar — mobile", () => {
   test("stepper tahap dan navigasi bawah tampil di layar kecil", async ({
     page,
   }) => {
-    await page.goto("/app/student/learn/unit-konsultasi-publik/stage/evaluasi");
+    await page.goto("/app/student/dashboard");
+    await page
+      .getByRole("link", { name: /Lanjutkan tahap/i })
+      .first()
+      .click();
 
     await expect(page.locator('[data-slot="phase-stepper"]')).toBeVisible();
     await expect(page.locator('[data-slot="phase-rail"]')).toBeHidden();

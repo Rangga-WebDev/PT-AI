@@ -14,8 +14,8 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
 | 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5 | 2026-08-11 | 2026-08-12 |
 | 5    | Supabase SSR Authentication         | ✅ SELESAI — menunggu persetujuan PHASE 6 | 2026-08-12 | 2026-08-12 |
-| 6    | Academic Structure                  | ✅ SELESAI — menunggu persetujuan PHASE 7 | 2026-08-12 | 2026-08-12 |
-| 7    | Course Builder                      | ⬜ Belum dimulai                          | —          | —          |
+| 6    | Academic Structure                  | ✅ SELESAI — disetujui                    | 2026-08-12 | 2026-08-12 |
+| 7    | Course Builder                      | ✅ SELESAI — menunggu persetujuan PHASE 8 | 2026-08-12 | 2026-08-12 |
 | 8    | Student Learning Workspace          | ⬜ Belum dimulai                          | —          | —          |
 | 9    | Source Verification                 | ⬜ Belum dimulai                          | —          | —          |
 | 10   | AI Coach and RAG                    | ⬜ Belum dimulai                          | —          | —          |
@@ -24,6 +24,49 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 13   | Analytics                           | ⬜ Belum dimulai                          | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
+
+## Log PHASE 7 — Course Builder (2026-08-12)
+
+### Yang dikerjakan
+
+- **Konstanta tahap**: `src/lib/constants/stages.ts` memetakan enum `stage_key` berbahasa Inggris (DB-02) ke label Indonesia, sekaligus menyediakan `resolveStageAccess()`. `LearningStageKey` pada `src/types/learning.ts` disamakan dengan enum database sehingga URL tahap dapat dipetakan langsung tanpa penerjemahan.
+- **Validasi konten**: `src/lib/validation/content.ts` — skema Zod untuk modul, unit, kasus, aktivitas, instruksi, tahap, rubrik, kriteria, dan level. Skema tahap **sengaja tidak memuat** `stageKey` maupun `sequence` agar urutan LOCK-PED-002 tidak dapat diubah lewat formulir.
+- **Repository**: `src/server/repositories/content.ts` dan `rubrics.ts` (`server-only`), termasuk pandangan khusus mahasiswa yang hanya memuat aktivitas terbit dan instruksi beraudiens mahasiswa.
+- **Server Actions**: `src/actions/courses/{content,rubrics}.ts`, seluruhnya berpagar `requireLecturerOfClass()` atau `requireRoleOrThrow("lecturer")`.
+- **Publikasi berjenjang**: unit ditolak terbit bila belum memiliki kasus atau belum memiliki satu pun aktivitas, dengan pesan Indonesia yang menjelaskan langkah perbaikan.
+- **UI dosen**: `/app/lecturer/classes/[classId]/builder` (modul dan unit) serta `/builder/units/[unitId]` (kasus, enam tahap, aktivitas, instruksi), dan `/app/lecturer/rubrics` (rubrik, kriteria per dimensi, level).
+- **Ruang belajar mahasiswa memakai data nyata**: dashboard, detail kelas, `/app/student/learn/[unitId]`, dan `/stage/[stageKey]` membaca modul, unit, kasus, tahap, serta aktivitas dari database.
+- **Mock dihapus**: `src/mocks/units.ts` dan `src/mocks/cases.ts` dihapus; `MOCK_CLAIMS` dipindah ke `src/mocks/claims.ts` untuk dipakai PHASE 9.
+- Seed pengembangan diperluas dengan modul, unit, kasus, aktivitas, dan instruksi agar pengujian E2E deterministik.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                      |
+| ---------------------------- | ---------------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                  |
+| `npm run test`               | ✅ 13 file, **67 test** lulus                              |
+| `npm run test:db`            | ✅ **36/36** lulus (18 RLS + 8 akademik + 10 akses konten) |
+| `npm run test:e2e`           | ✅ **38/38** lulus                                         |
+| `npm run build`              | ✅ 28 route                                                |
+| `npm run check:secrets`      | ✅ nol kebocoran                                           |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                  |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Zod v4 menolak UUID yang bukan versi 1–8.** UUID contoh pada pengujian sempat membuat kasus uji gagal padahal skemanya benar; diganti dengan UUID v4 yang sah.
+2. **SQLSTATE `protect_stage_order()` adalah `23001`, bukan `P0001`.** Ekspektasi pgTAP dikoreksi setelah membaca keluaran uji, bukan sebaliknya.
+3. **`Set-Content -Encoding UTF8` pada PowerShell 5.1 menyisipkan BOM** sehingga PostgreSQL menolak berkas SQL. Penulisan ulang memakai `UTF8Encoding($false)`.
+4. **Playwright menganggap `<option>` tidak terlihat**, sehingga `getByText(...).first()` memilih opsi select dan gagal. Asersi dipersempit ke daftar rubrik.
+5. **`page.url()` tepat setelah `click()` masih mengembalikan URL lama**; navigasi ditunggu lebih dulu dengan `expect(page).toHaveURL()`.
+6. **Spesifikasi E2E baru tidak berjalan** karena `testMatch` project Playwright bersifat eksplisit; `builder.spec.ts` didaftarkan ke project `lecturer`.
+
+### Mock yang masih tersisa
+
+`src/mocks/{sources,claims,ai-feedback,analytics,users}.ts` — dihapus pada PHASE 9, 10, dan 13. Halaman yang masih memakainya tetap menampilkan `MockBanner`.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 8 — Student Learning Workspace.
 
 ## Log PHASE 6 — Academic Structure (2026-08-12)
 
@@ -58,11 +101,11 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 
 ### Mock yang masih tersisa
 
-`src/mocks/{units,cases,sources,ai-feedback,analytics}.ts` masih dipakai untuk konten pembelajaran dan analitik — dihapus pada PHASE 7 s.d. 13. Halaman yang masih memakainya tetap menampilkan `MockBanner`.
+`src/mocks/{sources,ai-feedback,analytics}.ts` masih dipakai untuk konten pembelajaran dan analitik — dihapus pada PHASE 9 s.d. 13. Halaman yang masih memakainya tetap menampilkan `MockBanner`.
 
 ### Checkpoint
 
-⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 7 — Course Builder.
+✅ **DISETUJUI.** PHASE 7 — Course Builder dilanjutkan.
 
 ## Log PHASE 5 — Supabase SSR Authentication (2026-08-12)
 

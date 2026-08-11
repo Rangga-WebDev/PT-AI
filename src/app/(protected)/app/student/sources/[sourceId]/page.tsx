@@ -8,7 +8,7 @@ import { MockBanner } from "@/components/shared/mock-banner";
 import { ClaimEvidenceLinker } from "@/features/verification/components/claim-evidence-linker";
 import { SourceViewer } from "@/features/verification/components/source-viewer";
 import { VerificationChecklist } from "@/features/verification/components/verification-checklist";
-import { MOCK_CLAIMS } from "@/mocks/cases";
+import { MOCK_CLAIMS } from "@/mocks/claims";
 import {
   findMockSource,
   MOCK_SOURCES,

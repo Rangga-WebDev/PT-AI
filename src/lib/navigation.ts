@@ -75,6 +75,7 @@ export const LECTURER_NAV: NavSection[] = [
         icon: "dashboard",
       },
       { label: "Kelas", href: "/app/lecturer/classes", icon: "classes" },
+      { label: "Rubrik", href: "/app/lecturer/rubrics", icon: "sources" },
       { label: "Review", href: "/app/lecturer/review", icon: "review" },
     ],
   },

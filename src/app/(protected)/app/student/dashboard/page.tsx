@@ -18,8 +18,8 @@ import { MockBanner } from "@/components/shared/mock-banner";
 import { Button } from "@/components/ui/button";
 import { MOCK_DIMENSION_PROGRESS } from "@/mocks/analytics";
 import { MOCK_SOURCES } from "@/mocks/sources";
-import { MOCK_ACTIVE_UNIT } from "@/mocks/units";
 import { requireStudentAccess } from "@/lib/supabase/auth";
+import { listStudentUnits } from "@/server/repositories/content";
 
 export const metadata: Metadata = {
   title: "Dashboard mahasiswa",
@@ -29,12 +29,8 @@ export default async function StudentDashboardPage() {
   const user = await requireStudentAccess();
   const firstName = user.fullName.split(" ")[0] ?? user.fullName;
 
-  const currentStage = MOCK_ACTIVE_UNIT.stages.find(
-    (stage) => stage.key === MOCK_ACTIVE_UNIT.currentStageKey,
-  );
-  const nextLockedStage = MOCK_ACTIVE_UNIT.stages.find(
-    (stage) => stage.status === "locked",
-  );
+  const units = await listStudentUnits();
+  const activeUnit = units[0] ?? null;
   const unverifiedSources = MOCK_SOURCES.filter((source) => !source.verified);
 
   return (
@@ -54,19 +50,29 @@ export default async function StudentDashboardPage() {
       />
 
       <div className="flex flex-col gap-5">
-        <MockBanner />
-
         <BentoGrid>
-          <HeroLearningCard
-            className="md:col-span-8 lg:col-span-7"
-            moduleTitle={MOCK_ACTIVE_UNIT.moduleTitle}
-            unitTitle={MOCK_ACTIVE_UNIT.title}
-            stageTitle={currentStage?.title ?? "Interpretasi"}
-            stageFocus={currentStage?.focus ?? "Memahami konteks"}
-            dueLabel={MOCK_ACTIVE_UNIT.dueLabel}
-            progressPercent={42}
-            href={`/app/student/learn/${MOCK_ACTIVE_UNIT.id}`}
-          />
+          {activeUnit ? (
+            <HeroLearningCard
+              className="md:col-span-8 lg:col-span-7"
+              moduleTitle={activeUnit.moduleTitle}
+              unitTitle={activeUnit.title}
+              stageTitle="Interpretasi"
+              stageFocus={activeUnit.objective}
+              dueLabel={
+                activeUnit.caseTitle
+                  ? `Kasus: ${activeUnit.caseTitle}`
+                  : "Kasus belum tersedia"
+              }
+              progressPercent={0}
+              href={`/app/student/learn/${activeUnit.id}`}
+            />
+          ) : (
+            <LockedCard
+              className="md:col-span-8 lg:col-span-7"
+              title="Belum ada unit pembelajaran"
+              reason="Unit akan muncul setelah dosen menerbitkannya pada kelas yang Anda ikuti."
+            />
+          )}
 
           <AnalyticsCard
             className="md:col-span-4 lg:col-span-5"
@@ -78,10 +84,10 @@ export default async function StudentDashboardPage() {
 
           <InsightCard
             className="md:col-span-4 lg:col-span-3"
-            label="Tahap tuntas"
-            value="2 / 6"
+            label="Unit terbit"
+            value={String(units.length)}
             tone="success"
-            description="Interpretasi dan analisis telah dinilai tuntas."
+            description="Unit yang sudah dapat Anda kerjakan."
           />
           <InsightCard
             className="md:col-span-4 lg:col-span-3"
@@ -92,9 +98,11 @@ export default async function StudentDashboardPage() {
           />
           <LockedCard
             className="md:col-span-8 lg:col-span-6"
-            title={`Tahap berikutnya: ${nextLockedStage?.title ?? "Inferensi"}`}
-            reason="Terbuka setelah tahap evaluasi memenuhi kriteria kinerja dan ditinjau dosen."
+            title="Ketuntasan otomatis"
+            reason="Pembukaan tahap berbasis kriteria kinerja diaktifkan pada tahap pengembangan berikutnya."
           />
+
+          <MockBanner className="md:col-span-12" />
 
           {unverifiedSources.slice(0, 2).map((source) => (
             <EvidenceCard

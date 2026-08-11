@@ -4,6 +4,34 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 7] — 2026-08-12 — Course Builder
+
+### Ditambahkan
+
+- `src/lib/constants/stages.ts` — pemetaan enum tahap dan dimensi ke label Indonesia serta `resolveStageAccess()`.
+- `src/lib/validation/content.ts` — skema Zod untuk modul, unit, kasus, aktivitas, instruksi, tahap, dan rubrik.
+- `src/server/repositories/{content,rubrics}.ts` — pembacaan materi untuk dosen dan mahasiswa secara terpisah.
+- `src/actions/courses/{content,rubrics}.ts` — Server Actions materi dan rubrik dengan publikasi berjenjang.
+- Rute `/app/lecturer/classes/[classId]/builder`, `.../builder/units/[unitId]`, dan `/app/lecturer/rubrics`.
+- `src/features/course-builder/components/{builder-forms,rubric-forms}.tsx`.
+- Test: `content-validation.test.ts` (9), `content-access.test.sql` (10), `builder.spec.ts` (5 skenario E2E).
+
+### Diubah
+
+- `LearningStageKey` mengikuti enum `stage_key` database (Inggris) agar URL tahap konsisten dengan basis data.
+- Dashboard, detail kelas, dan ruang belajar mahasiswa membaca modul, unit, kasus, tahap, serta aktivitas dari database.
+- Halaman kelas dosen menampilkan struktur materi nyata dan tautan ke perancang materi.
+- `scripts/seed-dev-academics.mjs` menyeed modul, unit, kasus, aktivitas, dan instruksi.
+- `playwright.config.ts` mendaftarkan `builder.spec.ts` pada project `lecturer`.
+
+### Dihapus
+
+- `src/mocks/units.ts` dan `src/mocks/cases.ts` — digantikan data nyata; `MOCK_CLAIMS` dipindah ke `src/mocks/claims.ts`.
+
+### Dependency baru
+
+Tidak ada.
+
 ## [PHASE 6] — 2026-08-12 — Academic Structure
 
 ### Ditambahkan

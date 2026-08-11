@@ -2,14 +2,13 @@
 
 import { notFound } from "next/navigation";
 
-import { CaseCard, HeroLearningCard } from "@/components/cards/learning-cards";
+import { HeroLearningCard } from "@/components/cards/learning-cards";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
-import { MockBanner } from "@/components/shared/mock-banner";
+import { EmptyState } from "@/components/shared/states/empty-state";
 import { requireClassAccess } from "@/lib/supabase/auth";
 import { getClassDetail } from "@/server/repositories/classes";
-import { MOCK_CASE } from "@/mocks/cases";
-import { MOCK_ACTIVE_UNIT } from "@/mocks/units";
+import { listStudentUnits } from "@/server/repositories/content";
 
 export default async function StudentClassDetailPage({
   params,
@@ -18,15 +17,15 @@ export default async function StudentClassDetailPage({
 
   // Memastikan mahasiswa memang terdaftar sebelum data kelas dibaca.
   await requireClassAccess(classId);
-  const classItem = await getClassDetail(classId);
+
+  const [classItem, units] = await Promise.all([
+    getClassDetail(classId),
+    listStudentUnits(classId),
+  ]);
 
   if (!classItem) {
     notFound();
   }
-
-  const currentStage = MOCK_ACTIVE_UNIT.stages.find(
-    (stage) => stage.key === MOCK_ACTIVE_UNIT.currentStageKey,
-  );
 
   return (
     <PageContainer>
@@ -38,19 +37,28 @@ export default async function StudentClassDetailPage({
         }`}
       />
       <div className="flex flex-col gap-5">
-        <MockBanner />
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <HeroLearningCard
-            moduleTitle={MOCK_ACTIVE_UNIT.moduleTitle}
-            unitTitle={MOCK_ACTIVE_UNIT.title}
-            stageTitle={currentStage?.title ?? "Interpretasi"}
-            stageFocus={currentStage?.focus ?? "Memahami konteks"}
-            dueLabel={MOCK_ACTIVE_UNIT.dueLabel}
-            progressPercent={42}
-            href={`/app/student/learn/${MOCK_ACTIVE_UNIT.id}`}
-          />
-          <CaseCard item={MOCK_CASE} />
-        </div>
+        {units.length === 0 ? (
+          <EmptyState description="Belum ada unit pembelajaran yang diterbitkan pada kelas ini." />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {units.map((unit) => (
+              <HeroLearningCard
+                key={unit.id}
+                moduleTitle={unit.moduleTitle}
+                unitTitle={unit.title}
+                stageTitle="Interpretasi"
+                stageFocus={unit.objective}
+                dueLabel={
+                  unit.caseTitle
+                    ? `Kasus: ${unit.caseTitle}`
+                    : "Kasus belum tersedia"
+                }
+                progressPercent={0}
+                href={`/app/student/learn/${unit.id}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </PageContainer>
   );

@@ -2,17 +2,21 @@
 
 import { notFound, redirect } from "next/navigation";
 
-import { findMockUnit } from "@/mocks/units";
+import { requireStudentAccess } from "@/lib/supabase/auth";
+import { getStudentUnitWorkspace } from "@/server/repositories/content";
 
 export default async function LearnUnitPage({
   params,
 }: PageProps<"/app/student/learn/[unitId]">) {
   const { unitId } = await params;
-  const unit = findMockUnit(unitId);
 
-  if (!unit) {
-    notFound();
-  }
+  await requireStudentAccess();
 
-  redirect(`/app/student/learn/${unit.id}/stage/${unit.currentStageKey}`);
+  const workspace = await getStudentUnitWorkspace(unitId);
+  if (!workspace) notFound();
+
+  const firstStage = workspace.stages.find((stage) => stage.isEnabled);
+  if (!firstStage) notFound();
+
+  redirect(`/app/student/learn/${unitId}/stage/${firstStage.stageKey}`);
 }

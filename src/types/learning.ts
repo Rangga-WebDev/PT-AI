@@ -14,14 +14,18 @@ export type CriticalThinkingDimension =
   | "explanation"
   | "self-regulation";
 
-/** Enam tahap pembelajaran berurutan (LOCK-PED-002). Urutan tidak boleh diubah. */
+/**
+ * Enam tahap pembelajaran berurutan (LOCK-PED-002). Urutan tidak boleh diubah.
+ * Nilai mengikuti enum `stage_key` di database (DB-02) sehingga tautan tahap
+ * pada URL dapat dipetakan langsung ke basis data tanpa penerjemahan.
+ */
 export type LearningStageKey =
-  | "interpretasi"
-  | "analisis"
-  | "evaluasi"
-  | "inferensi"
-  | "eksplanasi"
-  | "refleksi";
+  | "interpretation"
+  | "analysis"
+  | "evaluation"
+  | "inference"
+  | "explanation"
+  | "reflection";
 
 export type StageStatus =
   | "locked"

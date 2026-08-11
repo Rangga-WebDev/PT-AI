@@ -1,19 +1,20 @@
 /** @format */
 
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { AnalyticsCard, InsightCard } from "@/components/cards/insight-cards";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
-import { MockBanner } from "@/components/shared/mock-banner";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import {
   getClassDetail,
   listClassMembers,
 } from "@/server/repositories/classes";
-import { MOCK_ACTIVE_UNIT } from "@/mocks/units";
+import { listModulesWithUnits } from "@/server/repositories/content";
 
 const STATUS_LABEL = {
   draft: "Draf",
@@ -29,14 +30,21 @@ export default async function LecturerClassDetailPage({
   // Dosen hanya boleh membuka kelas yang ditugaskan kepadanya.
   await requireLecturerOfClass(classId);
 
-  const [classItem, members] = await Promise.all([
+  const [classItem, members, modules] = await Promise.all([
     getClassDetail(classId),
     listClassMembers(classId),
+    listModulesWithUnits(classId),
   ]);
 
   if (!classItem) {
     notFound();
   }
+
+  const publishedUnits = modules.reduce(
+    (total, module) =>
+      total + module.units.filter((unit) => unit.status === "published").length,
+    0,
+  );
 
   return (
     <PageContainer>
@@ -45,11 +53,21 @@ export default async function LecturerClassDetailPage({
         title={classItem.name}
         description={classItem.courseName}
         actions={
-          <StatusBadge
-            status={classItem.status === "published" ? "published" : "draft"}
-          >
-            {STATUS_LABEL[classItem.status]}
-          </StatusBadge>
+          <div className="flex items-center gap-2">
+            <StatusBadge
+              status={classItem.status === "published" ? "published" : "draft"}
+            >
+              {STATUS_LABEL[classItem.status]}
+            </StatusBadge>
+            <Button
+              variant="outline"
+              render={
+                <Link href={`/app/lecturer/classes/${classId}/builder`} />
+              }
+            >
+              Perancang materi
+            </Button>
+          </div>
         }
       />
 
@@ -66,9 +84,9 @@ export default async function LecturerClassDetailPage({
             tone="primary"
           />
           <InsightCard
-            label="Status"
-            value={STATUS_LABEL[classItem.status]}
-            tone={classItem.status === "published" ? "success" : "evidence"}
+            label="Unit terbit"
+            value={String(publishedUnits)}
+            tone={publishedUnits > 0 ? "success" : "evidence"}
           />
         </div>
 
@@ -95,39 +113,55 @@ export default async function LecturerClassDetailPage({
           )}
         </AnalyticsCard>
 
-        <MockBanner />
         <AnalyticsCard
-          title="Tahap pembelajaran unit berjalan"
-          description={MOCK_ACTIVE_UNIT.title}
+          title="Struktur materi"
+          description="Modul dan unit pada kelas ini beserta status penerbitannya."
         >
-          <ol className="flex flex-col gap-2">
-            {MOCK_ACTIVE_UNIT.stages.map((stage) => (
-              <li
-                key={stage.key}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3"
-              >
-                <div className="flex min-w-0 flex-col">
-                  <span className="text-sm text-foreground">
-                    {stage.order}. {stage.title}
-                  </span>
-                  <span className="font-mono text-xs text-subtle">
-                    {stage.focus}
-                  </span>
-                </div>
-                <StatusBadge
-                  status={
-                    stage.status === "mastered"
-                      ? "verified"
-                      : stage.status === "locked"
-                        ? "locked"
-                        : "in-progress"
-                  }
+          {modules.length === 0 ? (
+            <EmptyState description="Belum ada modul. Buka perancang materi untuk menyusunnya." />
+          ) : (
+            <ol className="flex flex-col gap-3">
+              {modules.map((module) => (
+                <li
+                  key={module.id}
+                  className="flex flex-col gap-2 rounded-lg border border-border p-3"
                 >
-                  {stage.status}
-                </StatusBadge>
-              </li>
-            ))}
-          </ol>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm text-foreground">
+                      {module.sequence}. {module.title}
+                    </span>
+                    <StatusBadge
+                      status={
+                        module.status === "published" ? "published" : "draft"
+                      }
+                    >
+                      {STATUS_LABEL[module.status]}
+                    </StatusBadge>
+                  </div>
+                  {module.units.length === 0 ? (
+                    <p className="text-xs text-subtle">Belum ada unit.</p>
+                  ) : (
+                    <ul className="flex flex-col gap-1">
+                      {module.units.map((unit) => (
+                        <li
+                          key={unit.id}
+                          className="flex flex-wrap items-center justify-between gap-2 text-sm"
+                        >
+                          <span>
+                            {unit.sequence}. {unit.title}
+                          </span>
+                          <span className="font-mono text-xs text-subtle">
+                            {STATUS_LABEL[unit.status]} · {unit.activityCount}{" "}
+                            aktivitas
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ol>
+          )}
         </AnalyticsCard>
       </div>
     </PageContainer>
