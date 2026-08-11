@@ -114,21 +114,21 @@ Aturan perubahan:
 
 ## 6. Keputusan Terbuka (OPEN)
 
-| ID       | Pertanyaan                                                                                 | Status                                                 | Target Fase                                       |
-| -------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------- |
-| OPEN-001 | Nama final aplikasi (saat ini sementara: PT-AI LMS)                                        | OPEN                                                   | Sebelum production                                |
-| OPEN-002 | Detail ERD final dan data dictionary                                                       | **USULAN DIAJUKAN** — lihat [DATABASE.md](DATABASE.md) | PHASE 4A (menunggu persetujuan sebelum migration) |
-| DB-01    | Cakupan soft delete (usul: konten akademik saja; artefak mahasiswa tidak pernah dihapus)   | OPEN                                                   | PHASE 4B                                          |
-| DB-02    | Nilai enum Bahasa Inggris di database, label Indonesia di aplikasi                         | OPEN                                                   | PHASE 4B                                          |
-| DB-03    | Dimensi vektor `source_chunks.embedding` (bergantung OPEN-004)                             | OPEN                                                   | PHASE 4B/10                                       |
-| DB-04    | Cakupan `audit_logs` (usul: hanya operasi sensitif)                                        | OPEN                                                   | PHASE 4B                                          |
-| DB-05    | Retensi `learning_events` (usul: detail 12 bulan lalu agregasi)                            | OPEN                                                   | PHASE 4B/13                                       |
-| DB-06    | Pembedaan `verifications` (klaim/saran AI) vs `source_verifications` (kredibilitas sumber) | OPEN                                                   | PHASE 4B                                          |
-| DB-07    | Satu `case` per `learning_unit` (relasi 1:1)                                               | OPEN                                                   | PHASE 4B                                          |
-| OPEN-003 | Konsolidasi endpoint AI: terpisah per fungsi vs satu endpoint terstruktur                  | OPEN                                                   | PHASE 10                                          |
-| OPEN-004 | Model OpenAI spesifik untuk tiap fungsi AI                                                 | OPEN                                                   | PHASE 10                                          |
-| OPEN-005 | Strategi rate limiting (per user, per class, per activity)                                 | OPEN                                                   | PHASE 10                                          |
-| OPEN-006 | Kebijakan retensi data penelitian                                                          | OPEN                                                   | PHASE 14                                          |
+| ID       | Pertanyaan                                                                                         | Status                                                              | Target Fase                    |
+| -------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------ |
+| OPEN-001 | Nama final aplikasi (saat ini sementara: PT-AI LMS)                                                | OPEN                                                                | Sebelum production             |
+| OPEN-002 | Detail ERD final dan data dictionary                                                               | **LOCKED** — disetujui 2026-08-11, lihat [DATABASE.md](DATABASE.md) | PHASE 4A selesai               |
+| DB-01    | Cakupan soft delete: konten akademik saja; artefak mahasiswa tidak pernah dihapus                  | **LOCKED**                                                          | 2026-08-11                     |
+| DB-02    | Nilai enum Bahasa Inggris di database, label Indonesia di aplikasi                                 | **LOCKED**                                                          | 2026-08-11                     |
+| DB-03    | Dimensi vektor `source_chunks.embedding` = `vector(1536)`, ditinjau ulang saat model final dipilih | **LOCKED (sementara)**                                              | 2026-08-11, revisi di PHASE 10 |
+| DB-04    | Cakupan `audit_logs`: hanya operasi sensitif                                                       | **LOCKED**                                                          | 2026-08-11                     |
+| DB-05    | Retensi `learning_events`: detail 12 bulan lalu agregasi                                           | **LOCKED**                                                          | 2026-08-11                     |
+| DB-06    | Pembedaan `verifications` (klaim/saran AI) vs `source_verifications` (kredibilitas sumber)         | **LOCKED**                                                          | 2026-08-11                     |
+| DB-07    | Satu `case` per `learning_unit` (relasi 1:1)                                                       | **LOCKED**                                                          | 2026-08-11                     |
+| OPEN-003 | Konsolidasi endpoint AI: terpisah per fungsi vs satu endpoint terstruktur                          | OPEN                                                                | PHASE 10                       |
+| OPEN-004 | Model OpenAI spesifik untuk tiap fungsi AI                                                         | OPEN                                                                | PHASE 10                       |
+| OPEN-005 | Strategi rate limiting (per user, per class, per activity)                                         | OPEN                                                                | PHASE 10                       |
+| OPEN-006 | Kebijakan retensi data penelitian                                                                  | OPEN                                                                | PHASE 14                       |
 
 ## 7. Keputusan Ditunda (DEFERRED)
 

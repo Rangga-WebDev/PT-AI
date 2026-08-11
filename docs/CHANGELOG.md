@@ -4,6 +4,29 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 4] — 2026-08-11 — Database Architecture
+
+### 4A — Desain (selesai, disetujui)
+
+- [DATABASE.md](DATABASE.md), [DATABASE_DICTIONARY.md](DATABASE_DICTIONARY.md), [RLS_MATRIX.md](RLS_MATRIX.md): ERD 10 domain, kamus data 60 tabel, matriks RLS, rencana migration dan rollback.
+- OPEN-002 dan DB-01 s.d. DB-07 ditetapkan LOCKED.
+
+### 4B — Implementasi (SQL ditulis, **belum dieksekusi**)
+
+- 15 file migration di `supabase/migrations/` (2.039 baris): ekstensi + 23 enum, 60 tabel, schema `research` dengan 3 view berpseudonim, 11 helper RLS `security definer`, 15 trigger append-only, policy RLS seluruh tabel, 45 index.
+- `supabase/seed/0001_development_seed.sql` dan `supabase/tests/rls.test.sql` (18 skenario pgTAP).
+- Penegakan pedagogis di level database: `attempt_drafts` vs `attempts`, trigger `prevent_mutation()` yang juga mengikat `service_role`, `ai_interactions.attempt_id NOT NULL`, `reason`/`explanation` NOT NULL pada branching, `require_lecturer_scorer()`, `protect_stage_order()`.
+- **Belum ada dependency npm baru**; Supabase CLI dipanggil via `npx`.
+
+### Perbaikan keamanan selama penulisan
+
+- `learning_units_lecturer_write`: `with check (... or true)` → `class_of_module()` yang benar.
+- `lecturer_overrides_select`: akses mahasiswa dipersempit ke artefak miliknya sendiri.
+
+### Status verifikasi
+
+`lint`, `typecheck`, dan `test` aplikasi hijau. **SQL belum pernah dijalankan** — fase belum dinyatakan selesai.
+
 ## [PHASE 3] — 2026-08-11 — Visual Prototype
 
 ### Ditambahkan

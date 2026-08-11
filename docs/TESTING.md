@@ -9,7 +9,7 @@
 | Unit test                                      | Vitest 4                                      | `vitest.config.mts`    |
 | Component test                                 | React Testing Library + jest-dom + user-event | `src/test/setup.ts`    |
 | End-to-end                                     | Playwright (Chromium)                         | `playwright.config.ts` |
-| Database/RLS test                              | (mulai PHASE 4)                               | `supabase/tests/`      |
+| Database/RLS test                              | pgTAP — `supabase/tests/rls.test.sql` (18 skenario, **belum dijalankan**) | `supabase/tests/`      |
 | Business logic Server Actions / Route Handlers | (mulai PHASE 5+)                              | Vitest                 |
 
 ## 2. Perintah
