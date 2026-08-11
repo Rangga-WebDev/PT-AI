@@ -1,16 +1,21 @@
 /** @format */
 
 import { AppShell } from "@/components/layout/app-shell";
+import { SignOutButton } from "@/features/auth/components/sign-out-button";
 import { STUDENT_NAV } from "@/lib/navigation";
-import { MOCK_STUDENT } from "@/mocks/users";
+import { requireStudentAccess } from "@/lib/supabase/auth";
 
-// Belum ada proteksi nyata: route group (protected) baru bermakna setelah
-// PHASE 5 (Supabase SSR auth + proxy + RLS).
-export default function StudentLayout({
+export default async function StudentLayout({
   children,
 }: LayoutProps<"/app/student">) {
+  const user = await requireStudentAccess();
+
   return (
-    <AppShell navSections={STUDENT_NAV} topbarTitle={MOCK_STUDENT.fullName}>
+    <AppShell
+      navSections={STUDENT_NAV}
+      topbarTitle={user.fullName}
+      topbarActions={<SignOutButton />}
+    >
       {children}
     </AppShell>
   );

@@ -3,15 +3,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { SignInForm } from "@/features/auth/components/sign-in-form";
 
 export const metadata: Metadata = {
   title: "Masuk",
 };
 
-export default function LoginPage() {
+const ERROR_MESSAGES: Record<string, string> = {
+  "tautan-tidak-valid": "Tautan tidak valid. Silakan minta tautan baru.",
+  "tautan-kedaluwarsa": "Tautan sudah kedaluwarsa. Silakan minta tautan baru.",
+};
+
+export default async function LoginPage({ searchParams }: PageProps<"/login">) {
+  const params = await searchParams;
+  const redirectTo =
+    typeof params.redirectTo === "string" ? params.redirectTo : undefined;
+  const errorKey = typeof params.error === "string" ? params.error : undefined;
+  const errorMessage = errorKey ? ERROR_MESSAGES[errorKey] : undefined;
+
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -29,57 +38,23 @@ export default function LoginPage() {
         </div>
 
         <div className="flex flex-col gap-5 rounded-xl border border-border bg-card p-6">
-          <div
-            role="note"
-            className="rounded-lg border border-evidence/40 bg-evidence/10 px-3 py-2 text-xs text-muted-foreground"
+          {errorMessage ? (
+            <p
+              role="alert"
+              className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
+
+          <SignInForm redirectTo={redirectTo} />
+
+          <Link
+            href="/forgot-password"
+            className="text-center text-sm text-primary underline-offset-4 hover:underline"
           >
-            <span className="font-mono font-semibold tracking-widest text-evidence uppercase">
-              Prototipe visual
-            </span>{" "}
-            — formulir belum terhubung ke autentikasi. Login sungguhan dibangun
-            pada PHASE 5.
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Surel institusi</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="nama@kampus.ac.id"
-              disabled
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Kata sandi</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="••••••••"
-              disabled
-            />
-          </div>
-
-          <Button disabled className="w-full">
-            Masuk
-          </Button>
-
-          <div className="flex flex-col gap-2 text-center text-sm">
-            <Link
-              href="/forgot-password"
-              className="text-primary underline-offset-4 hover:underline"
-            >
-              Lupa kata sandi?
-            </Link>
-            <Link
-              href="/app"
-              className="text-muted-foreground underline-offset-4 hover:underline"
-            >
-              Lihat prototipe tanpa masuk →
-            </Link>
-          </div>
+            Lupa kata sandi?
+          </Link>
         </div>
       </div>
     </main>

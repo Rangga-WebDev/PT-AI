@@ -1,16 +1,21 @@
 /** @format */
 
 import { AppShell } from "@/components/layout/app-shell";
+import { SignOutButton } from "@/features/auth/components/sign-out-button";
 import { LECTURER_NAV } from "@/lib/navigation";
-import { MOCK_LECTURER } from "@/mocks/users";
+import { requireLecturerAccess } from "@/lib/supabase/auth";
 
-// Belum ada proteksi nyata: route group (protected) baru bermakna setelah
-// PHASE 5 (Supabase SSR auth + proxy + RLS).
-export default function LecturerLayout({
+export default async function LecturerLayout({
   children,
 }: LayoutProps<"/app/lecturer">) {
+  const user = await requireLecturerAccess();
+
   return (
-    <AppShell navSections={LECTURER_NAV} topbarTitle={MOCK_LECTURER.fullName}>
+    <AppShell
+      navSections={LECTURER_NAV}
+      topbarTitle={user.fullName}
+      topbarActions={<SignOutButton />}
+    >
       {children}
     </AppShell>
   );

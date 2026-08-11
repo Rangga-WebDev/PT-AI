@@ -4,6 +4,34 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 5] — 2026-08-12 — Supabase SSR Authentication
+
+### Ditambahkan
+
+- `src/lib/supabase/{client,server,admin}.ts` — tiga klien terpisah; `admin.ts` bertanda `server-only` dan seluruh operasinya dibungkus `withAuditedAdmin()` yang menulis `audit_logs`.
+- `src/proxy.ts` — penyegaran cookie sesi + redirect optimistik, dengan matcher yang mengecualikan aset statis.
+- `src/lib/supabase/auth.ts` — Data Access Layer otorisasi berbasis `getUser()`; `src/lib/permissions/roles.ts` untuk logika peran murni.
+- `src/lib/errors/index.ts` — domain error dengan pemisahan `publicMessage` dan detail internal.
+- `src/lib/validation/auth.ts` — skema Zod untuk masuk, permintaan reset, dan penetapan kata sandi baru.
+- Server Actions `src/actions/auth/*` dan Route Handler `/auth/callback`.
+- Halaman `/login`, `/forgot-password`, `/reset-password`, `/app/forbidden` yang fungsional.
+- Skrip `npm run db:seed:users` dan `npm run check:secrets`.
+- E2E terstruktur per peran memakai `storageState` (project `setup`, `guest`, `student`, `lecturer`).
+
+### Diubah
+
+- `/app` tidak lagi meminta pengguna memilih peran; peran diambil dari sesi server (SEC-004).
+- Layout mahasiswa dan dosen memanggil `requireStudentAccess()` / `requireLecturerAccess()` serta menampilkan profil nyata.
+- `signOut()` memakai `scope: "local"` agar keluar di satu perangkat tidak memutus sesi perangkat lain.
+
+### Dependency baru
+
+`@supabase/supabase-js`, `@supabase/ssr`, `zod`, `server-only`.
+
+### Status verifikasi
+
+`lint` ✓ · `typecheck` ✓ · `test` 50/50 ✓ · `test:e2e` 24/24 ✓ · `test:db` 18/18 ✓ · `build` (20 route) ✓ · `check:secrets` nol kebocoran ✓.
+
 ## [PHASE 4] — 2026-08-11 — Database Architecture
 
 ### 4A — Desain (selesai, disetujui)

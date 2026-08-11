@@ -13,7 +13,7 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 2    | Design System and Application Shell | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
 | 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
 | 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5 | 2026-08-11 | 2026-08-12 |
-| 5    | Supabase SSR Authentication         | ⬜ Belum dimulai                          | —          | —          |
+| 5    | Supabase SSR Authentication         | ✅ SELESAI — menunggu persetujuan PHASE 6 | 2026-08-12 | 2026-08-12 |
 | 6    | Academic Structure                  | ⬜ Belum dimulai                          | —          | —          |
 | 7    | Course Builder                      | ⬜ Belum dimulai                          | —          | —          |
 | 8    | Student Learning Workspace          | ⬜ Belum dimulai                          | —          | —          |
@@ -24,6 +24,53 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 13   | Analytics                           | ⬜ Belum dimulai                          | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
+
+## Log PHASE 5 — Supabase SSR Authentication (2026-08-12)
+
+### Yang dikerjakan
+
+- Tiga klien Supabase: `client.ts` (browser), `server.ts` (cookie SSR), `admin.ts` (service role, `server-only`, seluruh pemakaian dibungkus `withAuditedAdmin()` yang menulis `audit_logs`).
+- `src/proxy.ts`: menyegarkan cookie sesi + redirect optimistik. Sesuai panduan Next.js 16, proxy **tidak** dipakai sebagai lapisan otorisasi.
+- Data Access Layer `lib/supabase/auth.ts`: `getCurrentUser` (memakai `getUser()`, bukan `getSession()`), `requireUser`, `requireRole`/`requireRoleOrThrow`, `requireClassAccess`, `requireLecturerOfClass`, `requireAdminAccess`. Dibungkus `cache()` agar satu render satu pemeriksaan.
+- Logika peran murni dipisah ke `lib/permissions/roles.ts` agar dapat diuji tanpa melanggar `server-only`.
+- Server Actions: `sign-in`, `sign-out`, `request-password-reset`, `update-password` — seluruhnya divalidasi Zod di server.
+- Route Handler `/auth/callback` untuk menukar kode tautan surel menjadi sesi.
+- Halaman fungsional: `/login`, `/forgot-password`, `/reset-password`, `/app/forbidden`.
+- Domain error (`lib/errors`) dengan `publicMessage` terpisah dari detail internal.
+- Skrip `npm run db:seed:users` (akun pengembangan) dan `npm run check:secrets` (pemindaian bundel klien).
+
+### Utang teknis PHASE 3 yang dilunasi
+
+- Route `/app` **tidak lagi** meminta pengguna memilih peran; peran diambil dari sesi server lalu dialihkan (SEC-004).
+- Identitas pada Topbar dan dashboard mahasiswa beralih dari `MOCK_STUDENT`/`MOCK_LECTURER` ke profil nyata.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                | Hasil                                           |
+| ----------------------- | ----------------------------------------------- |
+| `npm run lint`          | ✅ exit 0                                       |
+| `npm run typecheck`     | ✅ exit 0                                       |
+| `npm run test`          | ✅ 11 file, **50 test** lulus                   |
+| `npm run test:e2e`      | ✅ **24 test** lulus (guest, student, lecturer) |
+| `npm run test:db`       | ✅ 18/18 lulus                                  |
+| `npm run build`         | ✅ 20 route; Proxy terdaftar                    |
+| `npm run check:secrets` | ✅ 30 berkas bundel dipindai, **nol kebocoran** |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **`server-only` memblokir unit test** — justru bukti proteksi bekerja. Logika peran murni dipindah ke `lib/permissions/roles.ts`.
+2. **Rate limit Supabase Auth** saat 8 worker login bersamaan. Diganti pola `storageState`: login sekali di project `setup`, sesinya dipakai ulang.
+3. **Test logout mencabut sesi test lain.** `signOut()` Supabase default ber-scope global sehingga mencabut refresh token di semua perangkat. Diubah menjadi `scope: "local"` — sekaligus keputusan produk: keluar di satu perangkat tidak mengeluarkan perangkat lain. Test logout juga diisolasi dengan sesinya sendiri.
+4. **Selector `getByRole("alert")` ambigu** karena Next.js menambahkan route announcer ber-role `alert`.
+
+### Catatan
+
+- Alur surel reset password belum diuji ujung ke ujung karena bergantung pada konfigurasi SMTP Supabase; yang diuji adalah bahwa halaman tidak membocorkan surel terdaftar.
+- Akun pengembangan memakai kata sandi acak yang ditulis langsung ke `.env.local` oleh skrip, tidak dicetak di terminal.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 6 — Academic Structure.
 
 ## Log PHASE 4B — Implementasi Database (2026-08-11 s.d. 2026-08-12)
 

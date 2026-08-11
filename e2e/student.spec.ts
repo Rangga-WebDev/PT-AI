@@ -2,18 +2,10 @@
 
 import { expect, test } from "@playwright/test";
 
-test.describe("Prototipe visual", () => {
-  test("halaman masuk menandai dirinya sebagai prototipe", async ({ page }) => {
-    await page.goto("/login");
+// Berjalan dengan sesi mahasiswa (project "student").
 
-    await expect(
-      page.getByRole("heading", { name: "Masuk ke akun Anda" }),
-    ).toBeVisible();
-    await expect(page.getByText("Prototipe visual").first()).toBeVisible();
-    await expect(page.getByRole("button", { name: "Masuk" })).toBeDisabled();
-  });
-
-  test("dashboard mahasiswa menampilkan penanda MOCK dan enam dimensi", async ({
+test.describe("Ruang belajar mahasiswa", () => {
+  test("dashboard menampilkan penanda MOCK dan enam dimensi", async ({
     page,
   }) => {
     await page.goto("/app/student/dashboard");
@@ -54,17 +46,9 @@ test.describe("Prototipe visual", () => {
     ).toBeVisible();
     await expect(page.getByRole("checkbox")).toHaveCount(6);
   });
-
-  test("dashboard dosen menampilkan antrean review", async ({ page }) => {
-    await page.goto("/app/lecturer/dashboard");
-
-    await expect(
-      page.getByRole("heading", { name: "Antrean review terbaru" }),
-    ).toBeVisible();
-  });
 });
 
-test.describe("Prototipe visual — mobile", () => {
+test.describe("Ruang belajar — mobile", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("stepper tahap dan navigasi bawah tampil di layar kecil", async ({

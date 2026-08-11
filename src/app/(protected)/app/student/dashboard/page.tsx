@@ -19,13 +19,16 @@ import { Button } from "@/components/ui/button";
 import { MOCK_DIMENSION_PROGRESS } from "@/mocks/analytics";
 import { MOCK_SOURCES } from "@/mocks/sources";
 import { MOCK_ACTIVE_UNIT } from "@/mocks/units";
-import { MOCK_STUDENT } from "@/mocks/users";
+import { requireStudentAccess } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
   title: "Dashboard mahasiswa",
 };
 
-export default function StudentDashboardPage() {
+export default async function StudentDashboardPage() {
+  const user = await requireStudentAccess();
+  const firstName = user.fullName.split(" ")[0] ?? user.fullName;
+
   const currentStage = MOCK_ACTIVE_UNIT.stages.find(
     (stage) => stage.key === MOCK_ACTIVE_UNIT.currentStageKey,
   );
@@ -38,7 +41,7 @@ export default function StudentDashboardPage() {
     <PageContainer>
       <PageHeader
         eyebrow="Beranda mahasiswa"
-        title={`Selamat datang, ${MOCK_STUDENT.fullName.split(" ")[0]}`}
+        title={`Selamat datang, ${firstName}`}
         description="Lanjutkan proses berpikir Anda: baca kasus, susun argumen, periksa bukti, lalu revisi berdasarkan alasan."
         actions={
           <Button

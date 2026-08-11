@@ -15,25 +15,29 @@ Referensi keputusan: SEC-001 s.d. SEC-005 di [DECISIONS.md](DECISIONS.md). Selur
 
 ## 2. Status Implementasi per Fase
 
-| Kontrol                                                                                              | Status                                   | Fase                 |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------------------- | -------------------- |
-| `.env.example` tanpa nilai secret; `.gitignore` memblokir `.env*`                                    | ✅ Terpasang                             | PHASE 1              |
-| Error boundary tanpa stack trace ke pengguna (`src/app/error.tsx`)                                   | ✅ Terpasang                             | PHASE 1              |
-| Halaman placeholder tanpa data sensitif; tidak ada endpoint aktif                                    | ✅                                       | PHASE 1              |
-| Prototipe visual tanpa data pribadi nyata (nama fiktif, tanpa persistensi, form login tanpa handler) | ✅                                       | PHASE 3              |
-| ⚠️ Route group `(protected)` **belum terproteksi**; halaman `/app` memilih peran dari klik pengguna  | ❌ Sengaja ditunda                       | Ditutup pada PHASE 5 |
-| `npm audit` pada instalasi                                                                           | ✅ 0 vulnerabilities (terakhir: PHASE 1) | Berkelanjutan        |
-| Supabase server/browser/admin client terpisah; admin `server-only`                                   | ⬜                                       | PHASE 5              |
-| Proxy session refresh (bukan authorization utama)                                                    | ⬜                                       | PHASE 5              |
-| RLS pada seluruh tabel pengguna + RLS test                                                           | ✅ 60 tabel, 18/18 test lulus            | PHASE 4              |
-| Artefak berpikir append-only (trigger mengikat `service_role`)                                       | ✅ 15 tabel                              | PHASE 4              |
-| Admin tidak dapat membaca/mengubah nilai dan jawaban (SEC-005)                                       | ✅ diuji                                 | PHASE 4              |
-| Dosen tidak dapat membaca `consent_records`                                                          | ✅ diuji                                 | PHASE 4              |
-| Rate limit AI + minimalisasi data pribadi ke AI                                                      | ⬜                                       | PHASE 10             |
-| Sanitasi upload (ukuran, MIME, metadata) + signed URL                                                | ⬜                                       | PHASE 9              |
-| Idempotency / proteksi duplicate submission                                                          | ⬜                                       | PHASE 8              |
-| Audit log operasi sensitif                                                                           | ⬜                                       | PHASE 4+             |
-| Security review menyeluruh + penetration checklist                                                   | ⬜                                       | PHASE 15             |
+| Kontrol                                                                                              | Status                                   | Fase          |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------------- |
+| `.env.example` tanpa nilai secret; `.gitignore` memblokir `.env*`                                    | ✅ Terpasang                             | PHASE 1       |
+| Error boundary tanpa stack trace ke pengguna (`src/app/error.tsx`)                                   | ✅ Terpasang                             | PHASE 1       |
+| Halaman placeholder tanpa data sensitif; tidak ada endpoint aktif                                    | ✅                                       | PHASE 1       |
+| Prototipe visual tanpa data pribadi nyata (nama fiktif, tanpa persistensi, form login tanpa handler) | ✅                                       | PHASE 3       |
+| ✅ Route group `(protected)` kini terproteksi; `/app` mengarahkan berdasarkan peran dari sesi server | ✅ diuji E2E                             | PHASE 5       |
+| `npm audit` pada instalasi                                                                           | ✅ 0 vulnerabilities (terakhir: PHASE 5) | Berkelanjutan |
+| Supabase server/browser/admin client terpisah; admin `server-only` + `withAuditedAdmin()`            | ✅                                       | PHASE 5       |
+| Proxy hanya menyegarkan sesi dan redirect optimistik (bukan otorisasi utama)                         | ✅                                       | PHASE 5       |
+| Identitas dari `getUser()`, bukan `getSession()` (SEC-004)                                           | ✅ diuji E2E                             | PHASE 5       |
+| Pesan galat autentikasi generik (tidak membocorkan surel terdaftar)                                  | ✅ diuji E2E                             | PHASE 5       |
+| Tidak ada rahasia di bundel klien                                                                    | ✅ `npm run check:secrets`               | PHASE 5       |
+| Proteksi open redirect pada parameter `redirectTo`                                                   | ✅ hanya path `/app` internal            | PHASE 5       |
+| RLS pada seluruh tabel pengguna + RLS test                                                           | ✅ 60 tabel, 18/18 test lulus            | PHASE 4       |
+| Artefak berpikir append-only (trigger mengikat `service_role`)                                       | ✅ 15 tabel                              | PHASE 4       |
+| Admin tidak dapat membaca/mengubah nilai dan jawaban (SEC-005)                                       | ✅ diuji                                 | PHASE 4       |
+| Dosen tidak dapat membaca `consent_records`                                                          | ✅ diuji                                 | PHASE 4       |
+| Rate limit AI + minimalisasi data pribadi ke AI                                                      | ⬜                                       | PHASE 10      |
+| Sanitasi upload (ukuran, MIME, metadata) + signed URL                                                | ⬜                                       | PHASE 9       |
+| Idempotency / proteksi duplicate submission                                                          | ⬜                                       | PHASE 8       |
+| Audit log operasi sensitif                                                                           | ⬜                                       | PHASE 4+      |
+| Security review menyeluruh + penetration checklist                                                   | ⬜                                       | PHASE 15      |
 
 ## 3. Aturan Baku untuk Kontributor
 
