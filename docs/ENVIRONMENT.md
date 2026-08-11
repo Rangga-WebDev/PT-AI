@@ -47,14 +47,14 @@ Belum diinstal (menunggu fase yang membutuhkan): `zod`, `zustand`, `@tanstack/re
 
 ### Perintah database (Supabase CLI v2.113.0 via `npx`, tanpa instalasi global)
 
-| Perintah | Fungsi | Prasyarat |
-| --- | --- | --- |
-| `npx supabase init` | Membuat struktur `supabase/` | — (sudah dijalankan) |
-| `npx supabase link --project-ref <ref>` | Menautkan ke project Cloud | Project + kredensial |
-| `npx supabase db push` | Menerapkan migration ke database | Sudah link |
-| `npx supabase db diff` | Meninjau perbedaan schema sebelum push | Sudah link |
-| `npx supabase test db --db-url "<connection>"` | Menjalankan `supabase/tests/*.sql` (pgTAP) | Connection string |
-| `npx supabase gen types typescript --linked > src/lib/supabase/types.ts` | Generated database types | Sudah link |
+| Perintah                                                                 | Fungsi                                     | Prasyarat            |
+| ------------------------------------------------------------------------ | ------------------------------------------ | -------------------- |
+| `npx supabase init`                                                      | Membuat struktur `supabase/`               | — (sudah dijalankan) |
+| `npx supabase link --project-ref <ref>`                                  | Menautkan ke project Cloud                 | Project + kredensial |
+| `npx supabase db push`                                                   | Menerapkan migration ke database           | Sudah link           |
+| `npx supabase db diff`                                                   | Meninjau perbedaan schema sebelum push     | Sudah link           |
+| `npx supabase test db --db-url "<connection>"`                           | Menjalankan `supabase/tests/*.sql` (pgTAP) | Connection string    |
+| `npx supabase gen types typescript --linked > src/lib/supabase/types.ts` | Generated database types                   | Sudah link           |
 
 **Docker tidak diperlukan** karena kita memakai Supabase Cloud, bukan stack lokal.
 Kredensial dimasukkan langsung oleh pengguna di terminal — tidak pernah melalui chat.

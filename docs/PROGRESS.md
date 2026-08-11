@@ -12,7 +12,7 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
 | 2    | Design System and Application Shell | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
 | 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
-| 4    | Database Architecture               | 🟡 4B: SQL ditulis, **BELUM dieksekusi** | 2026-08-11 | —          |
+| 4    | Database Architecture               | 🟡 4B: SQL ditulis, **BELUM dieksekusi**  | 2026-08-11 | —          |
 | 5    | Supabase SSR Authentication         | ⬜ Belum dimulai                          | —          | —          |
 | 6    | Academic Structure                  | ⬜ Belum dimulai                          | —          | —          |
 | 7    | Course Builder                      | ⬜ Belum dimulai                          | —          | —          |
@@ -35,15 +35,15 @@ ERD disetujui 2026-08-11; DB-01 s.d. DB-07 diterima sesuai usulan dan kini berst
 
 ### Yang sudah ditulis
 
-| Berkas | Isi |
-| --- | --- |
-| `supabase/migrations/…0001_extensions_and_types.sql` | 3 ekstensi + 23 enum |
-| `…0002_identity.sql` s.d. `…0012_research_schema.sql` | 60 tabel dalam 10 domain + schema `research` (3 view export) |
-| `…0013_functions_and_triggers.sql` | 11 helper RLS, 15 trigger append-only, trigger seed 6 tahap, penegak baseline/AI/penilai dosen |
-| `…0014_rls_policies.sql` | RLS aktif seluruh tabel + policy per peran |
-| `…0015_indexes.sql` | 45 index dari query nyata, termasuk HNSW pgvector |
-| `supabase/seed/0001_development_seed.sql` | Struktur akademik minimal (tanpa akun) |
-| `supabase/tests/rls.test.sql` | 18 skenario pgTAP |
+| Berkas                                                | Isi                                                                                            |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `supabase/migrations/…0001_extensions_and_types.sql`  | 3 ekstensi + 23 enum                                                                           |
+| `…0002_identity.sql` s.d. `…0012_research_schema.sql` | 60 tabel dalam 10 domain + schema `research` (3 view export)                                   |
+| `…0013_functions_and_triggers.sql`                    | 11 helper RLS, 15 trigger append-only, trigger seed 6 tahap, penegak baseline/AI/penilai dosen |
+| `…0014_rls_policies.sql`                              | RLS aktif seluruh tabel + policy per peran                                                     |
+| `…0015_indexes.sql`                                   | 45 index dari query nyata, termasuk HNSW pgvector                                              |
+| `supabase/seed/0001_development_seed.sql`             | Struktur akademik minimal (tanpa akun)                                                         |
+| `supabase/tests/rls.test.sql`                         | 18 skenario pgTAP                                                                              |
 
 Total 2.039 baris SQL migration.
 
@@ -54,20 +54,20 @@ Total 2.039 baris SQL migration.
 
 ### Verifikasi yang sudah dijalankan
 
-| Perintah | Hasil |
-| -------- | ----- |
-| `npm run lint` | ✅ exit 0 |
-| `npm run typecheck` | ✅ exit 0 |
-| `npm run test` | ✅ 9 file, 35 test lulus |
-| `npx supabase init` | ✅ struktur dibuat |
+| Perintah            | Hasil                    |
+| ------------------- | ------------------------ |
+| `npm run lint`      | ✅ exit 0                |
+| `npm run typecheck` | ✅ exit 0                |
+| `npm run test`      | ✅ 9 file, 35 test lulus |
+| `npx supabase init` | ✅ struktur dibuat       |
 
 ### Verifikasi yang BELUM dapat dijalankan (blokir)
 
-| Perintah | Prasyarat |
-| -------- | --------- |
-| `npx supabase link` | Project Supabase + kredensial |
-| `npx supabase db push` | idem — **SQL belum pernah diuji sintaksnya** |
-| `npx supabase test db` | idem |
+| Perintah                            | Prasyarat                                       |
+| ----------------------------------- | ----------------------------------------------- |
+| `npx supabase link`                 | Project Supabase + kredensial                   |
+| `npx supabase db push`              | idem — **SQL belum pernah diuji sintaksnya**    |
+| `npx supabase test db`              | idem                                            |
 | `npx supabase gen types typescript` | idem — `src/lib/supabase/types.ts` belum dibuat |
 
 ### Checkpoint

@@ -4,13 +4,13 @@
 
 ## 1. Toolchain (LOCK-TECH-024)
 
-| Lapisan                                        | Alat                                          | Konfigurasi            |
-| ---------------------------------------------- | --------------------------------------------- | ---------------------- |
-| Unit test                                      | Vitest 4                                      | `vitest.config.mts`    |
-| Component test                                 | React Testing Library + jest-dom + user-event | `src/test/setup.ts`    |
-| End-to-end                                     | Playwright (Chromium)                         | `playwright.config.ts` |
+| Lapisan                                        | Alat                                                                      | Konfigurasi            |
+| ---------------------------------------------- | ------------------------------------------------------------------------- | ---------------------- |
+| Unit test                                      | Vitest 4                                                                  | `vitest.config.mts`    |
+| Component test                                 | React Testing Library + jest-dom + user-event                             | `src/test/setup.ts`    |
+| End-to-end                                     | Playwright (Chromium)                                                     | `playwright.config.ts` |
 | Database/RLS test                              | pgTAP — `supabase/tests/rls.test.sql` (18 skenario, **belum dijalankan**) | `supabase/tests/`      |
-| Business logic Server Actions / Route Handlers | (mulai PHASE 5+)                              | Vitest                 |
+| Business logic Server Actions / Route Handlers | (mulai PHASE 5+)                                                          | Vitest                 |
 
 ## 2. Perintah
 
