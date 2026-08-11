@@ -12,7 +12,7 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
 | 2    | Design System and Application Shell | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
 | 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
-| 4    | Database Architecture               | ⬜ Belum dimulai                          | —          | —          |
+| 4    | Database Architecture               | 🟡 4A SELESAI — menunggu persetujuan ERD  | 2026-08-11 | —          |
 | 5    | Supabase SSR Authentication         | ⬜ Belum dimulai                          | —          | —          |
 | 6    | Academic Structure                  | ⬜ Belum dimulai                          | —          | —          |
 | 7    | Course Builder                      | ⬜ Belum dimulai                          | —          | —          |
@@ -24,6 +24,37 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 13   | Analytics                           | ⬜ Belum dimulai                          | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
+
+## Log PHASE 4A — Database Design (2026-08-11)
+
+### Keputusan lingkungan (dipilih pengguna)
+
+- **Supabase Cloud** (Docker tidak terpasang, dan tidak diperlukan).
+- **Seluruh domain sekaligus** — 60 tabel, bukan bertahap.
+- **ERD ditinjau lebih dahulu** sebelum satu baris SQL ditulis.
+
+### Yang dikerjakan (dokumen saja — tanpa SQL, tanpa dependency)
+
+- [DATABASE.md](DATABASE.md) — prinsip, konvensi, 23 enum, ERD Mermaid per 10 domain, aturan integritas, fungsi/trigger RLS, rencana index, rencana migration 15 file + rollback, pemetaan requirement→mekanisme, 7 keputusan terbuka.
+- [DATABASE_DICTIONARY.md](DATABASE_DICTIONARY.md) — kamus data 60 tabel + schema `research`: kolom, tipe, constraint, index, alasan keberadaan.
+- [RLS_MATRIX.md](RLS_MATRIX.md) — hak SELECT/INSERT/UPDATE/DELETE per peran untuk seluruh tabel + 18 skenario uji yang akan dijalankan pada 4B.
+
+### Keputusan desain utama
+
+1. **`attempt_drafts` dipisah dari `attempts`** — autosave butuh tulis berulang, sementara baseline tidak boleh ditimpa. Pemisahan ini menyelesaikan konflik tanpa melanggar LOCK-PED-004.
+2. **Trigger `prevent_mutation()`, bukan hanya RLS** — `service_role` Supabase mem-bypass RLS, sehingga baseline hanya benar-benar aman bila dilindungi trigger.
+3. **`ai_interactions.attempt_id NOT NULL`** — attempt-first menjadi kendala database, bukan sekadar aturan aplikasi.
+4. **`explanation`/`reason` NOT NULL pada branching** — keputusan adaptif tanpa alasan tidak dapat disimpan.
+5. **Admin ⛔ pada nilai dan jawaban** di matriks RLS (SEC-005).
+6. **Schema `research` + pseudonim**, view memfilter consent aktif.
+
+### Verifikasi
+
+Tidak ada perintah yang dapat dijalankan pada 4A (tanpa kode). Validasi dilakukan dengan menelusuri seluruh butir requirement §13 dan LOCK-PED ke mekanisme database — hasilnya ada di tabel pemetaan [DATABASE.md](DATABASE.md) bagian 10.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan ERD dan jawaban atas DB-01…DB-07 sebelum PHASE 4B (menulis migration).
 
 ## Log PHASE 3 — Visual Prototype (2026-08-11)
 
