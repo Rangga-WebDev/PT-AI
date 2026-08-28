@@ -12,6 +12,7 @@ import {
   masteryAssessmentSchema,
   masteryOverrideSchema,
 } from "@/lib/validation/assessment";
+import { recordLearningEvent } from "@/server/analytics/events";
 
 export interface AssessmentActionResult {
   ok?: boolean;
@@ -122,6 +123,13 @@ export async function submitMasteryAssessmentAction(
       source: "lecturer",
       author_id: lecturer.id,
       content: parsed.data.comment,
+    });
+
+    await recordLearningEvent({
+      studentId: attempt.student_id,
+      activityId: attempt.activity_id,
+      eventType: "mastery_decided",
+      payload: { outcome: parsed.data.outcome, evaluator: "lecturer" },
     });
 
     revalidatePath("/app/lecturer/review", "layout");

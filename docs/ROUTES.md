@@ -40,6 +40,8 @@
 | `/app/lecturer/sources`                                  | `.../lecturer/sources/page.tsx`   | Dynamic | Kurasi sumber dan versinya                                                     |
 | `/app/lecturer/review`                                   | `.../lecturer/review/page.tsx`    | Dynamic | Antrean respons awal mahasiswa                                                 |
 | `/app/lecturer/review/[attemptId]`                       | `.../[attemptId]/page.tsx`        | Dynamic | Penilaian rubrik, keputusan jalur belajar, dan override dosen                  |
+| `/app/lecturer/incidents`                                | `.../lecturer/incidents/page.tsx` | Dynamic | Tinjauan laporan respons AI dari mahasiswa                                     |
+| `/app/lecturer/classes/[classId]/analytics`              | `.../analytics/page.tsx`          | Dynamic | Distribusi ketuntasan, peristiwa, pengamatan proses, keterlaksanaan            |
 
 Boundary area: `(protected)/app/student/{loading,error}.tsx` dan `(protected)/app/lecturer/{loading,error}.tsx`.
 

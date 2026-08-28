@@ -3,14 +3,13 @@
 import type { Metadata } from "next";
 
 import { AnalyticsCard, DimensionBars } from "@/components/cards/insight-cards";
-import { EnrichmentCard, RemedialCard } from "@/components/cards/pathway-cards";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
-import { MockBanner } from "@/components/shared/mock-banner";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/shared/states/empty-state";
-import { MOCK_DIMENSION_PROGRESS } from "@/mocks/analytics";
+import { summarizeDimensions } from "@/lib/analytics/aggregate";
 import { requireStudentAccess } from "@/lib/supabase/auth";
+import { listDimensionMeasurements } from "@/server/repositories/analytics";
 import { listStudentProgress } from "@/server/repositories/attempts";
 import {
   listStudentBranchingDecisions,
@@ -36,11 +35,13 @@ export const metadata: Metadata = {
 
 export default async function StudentProgressPage() {
   const student = await requireStudentAccess();
-  const [submissions, mastery, decisions] = await Promise.all([
+  const [submissions, mastery, decisions, measurements] = await Promise.all([
     listStudentProgress(student.id),
     listStudentMastery(student.id),
     listStudentBranchingDecisions(student.id),
+    listDimensionMeasurements(student.id),
   ]);
+  const dimensions = summarizeDimensions(measurements);
 
   return (
     <PageContainer>
@@ -174,26 +175,16 @@ export default async function StudentProgressPage() {
           )}
         </AnalyticsCard>
 
-        <MockBanner />
         <AnalyticsCard
           title="Enam dimensi"
-          description="Skor bersifat formatif dan bukan label permanen tentang diri Anda."
+          description="Skor terikat waktu pengukuran, bukan label permanen tentang diri Anda."
         >
-          <DimensionBars items={MOCK_DIMENSION_PROGRESS} />
+          {dimensions.length === 0 ? (
+            <EmptyState description="Belum ada pengukuran. Skor muncul setelah dosen menilai respons Anda dengan rubrik." />
+          ) : (
+            <DimensionBars items={dimensions} />
+          )}
         </AnalyticsCard>
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <RemedialCard
-            title="Latihan menautkan klaim dengan bukti"
-            description="Tiga latihan singkat pada kasus yang lebih sederhana."
-            reason="Pada tahap evaluasi, dua dari tiga klaim Anda belum ditautkan ke sumber yang diperiksa."
-          />
-          <EnrichmentCard
-            title="Studi kasus lanjutan: konflik kepentingan sumber"
-            description="Kasus dengan bukti yang saling bertentangan."
-            reason="Dimensi interpretasi Anda melampaui target, sehingga tersedia tantangan tambahan."
-          />
-        </div>
       </div>
     </PageContainer>
   );

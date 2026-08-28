@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { DimensionProgress } from "@/types/learning";
+import type { DimensionProgressRow } from "@/lib/analytics/aggregate";
 import { cn } from "@/lib/utils";
 
 interface InsightCardProps {
@@ -80,17 +80,25 @@ export function AnalyticsCard({
 }
 
 /** Bar horizontal enam dimensi berpikir kritis (LOCK-PED-001). */
-export function DimensionBars({ items }: { items: DimensionProgress[] }) {
+export function DimensionBars({ items }: { items: DimensionProgressRow[] }) {
   return (
-    <ul className="flex flex-col gap-3">
+    <ul data-slot="dimension-bars" className="flex flex-col gap-3">
       {items.map((item) => {
         const reachedTarget = item.score >= item.target;
+        const delta =
+          item.previousScore === null ? null : item.score - item.previousScore;
+
         return (
           <li key={item.dimension} className="flex flex-col gap-1.5">
             <div className="flex items-baseline justify-between gap-3 text-sm">
               <span className="text-foreground">{item.label}</span>
               <span className="font-mono text-xs text-muted-foreground">
                 {item.score} / target {item.target}
+                {delta === null
+                  ? ""
+                  : delta === 0
+                    ? " · tetap"
+                    : ` · ${delta > 0 ? "+" : "−"}${Math.abs(delta)}`}
               </span>
             </div>
             <div

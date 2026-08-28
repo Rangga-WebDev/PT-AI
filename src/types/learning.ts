@@ -5,15 +5,6 @@
 
 export type UserRole = "student" | "lecturer" | "admin";
 
-/** Enam dimensi outcome berpikir kritis (LOCK-PED-001). */
-export type CriticalThinkingDimension =
-  | "interpretation"
-  | "analysis"
-  | "evaluation"
-  | "inference"
-  | "explanation"
-  | "self-regulation";
-
 /**
  * Enam tahap pembelajaran berurutan (LOCK-PED-002). Urutan tidak boleh diubah.
  * Nilai mengikuti enum `stage_key` di database (DB-02) sehingga tautan tahap
@@ -51,13 +42,6 @@ export interface LearningStage {
   cyclePhase: StageCyclePhase;
 }
 
-export interface DimensionProgress {
-  dimension: CriticalThinkingDimension;
-  label: string;
-  score: number;
-  target: number;
-}
-
 export interface ClassSummary {
   id: string;
   code: string;
@@ -90,27 +74,6 @@ export interface CaseDetail {
   sourceIds: string[];
 }
 
-// Tipe sumber, kriteria verifikasi, klaim, dan umpan balik AI kini berasal dari
-// database: lihat src/lib/constants/*, src/server/repositories/{sources,ai}.ts.
-
-export interface ReviewQueueItem {
-  id: string;
-  studentName: string;
-  className: string;
-  stageTitle: string;
-  submittedLabel: string;
-  status: "menunggu" | "diproses" | "selesai";
-}
-
-export interface MasteryDistributionItem {
-  label: string;
-  count: number;
-  tone: "success" | "info" | "evidence" | "danger";
-}
-
-export interface IncidentItem {
-  id: string;
-  className: string;
-  reason: string;
-  reportedLabel: string;
-}
+// Tipe sumber, kriteria verifikasi, klaim, umpan balik AI, dimensi, distribusi
+// ketuntasan, antrean review, dan insiden kini berasal dari database: lihat
+// src/lib/analytics/aggregate.ts dan src/server/repositories/*.

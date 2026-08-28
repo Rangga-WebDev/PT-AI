@@ -78,6 +78,11 @@ export const LECTURER_NAV: NavSection[] = [
       { label: "Sumber", href: "/app/lecturer/sources", icon: "sources" },
       { label: "Rubrik", href: "/app/lecturer/rubrics", icon: "settings" },
       { label: "Review", href: "/app/lecturer/review", icon: "review" },
+      {
+        label: "Laporan AI",
+        href: "/app/lecturer/incidents",
+        icon: "incidents",
+      },
     ],
   },
 ];

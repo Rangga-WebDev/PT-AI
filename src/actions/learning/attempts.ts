@@ -10,6 +10,7 @@ import { toActionError } from "@/lib/errors";
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { draftSchema, submitAttemptSchema } from "@/lib/validation/attempts";
+import { recordLearningEvent } from "@/server/analytics/events";
 import { isUniqueViolation } from "@/server/repositories/shared";
 
 export interface AttemptActionResult {
@@ -172,6 +173,13 @@ export async function submitAttemptAction(
       .delete()
       .eq("activity_id", parsed.data.activityId)
       .eq("student_id", student.id);
+
+    await recordLearningEvent({
+      studentId: student.id,
+      activityId: parsed.data.activityId,
+      eventType: "attempt_submitted",
+      payload: { contentLength: parsed.data.content.length },
+    });
 
     revalidatePath("/app/student/progress");
     return { ok: true, baselineId: inserted.id };

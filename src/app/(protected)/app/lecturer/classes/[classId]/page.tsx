@@ -62,6 +62,22 @@ export default async function LecturerClassDetailPage({
             <Button
               variant="outline"
               render={
+                <Link href={`/app/lecturer/classes/${classId}/analytics`} />
+              }
+            >
+              Analitik
+            </Button>
+            <Button
+              variant="outline"
+              render={
+                <Link href={`/app/lecturer/classes/${classId}/branching`} />
+              }
+            >
+              Percabangan
+            </Button>
+            <Button
+              variant="outline"
+              render={
                 <Link href={`/app/lecturer/classes/${classId}/builder`} />
               }
             >

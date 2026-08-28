@@ -9,6 +9,7 @@ import { toActionError } from "@/lib/errors";
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { claimLinkSchema, verificationSchema } from "@/lib/validation/sources";
+import { recordLearningEvent } from "@/server/analytics/events";
 import { isUniqueViolation } from "@/server/repositories/shared";
 
 export interface VerificationActionResult {
@@ -54,6 +55,13 @@ export async function submitVerificationAction(
     });
 
     if (error) return fail(error);
+
+    await recordLearningEvent({
+      studentId: student.id,
+      activityId: parsed.data.activityId,
+      eventType: "source_verified",
+      payload: { verdict: parsed.data.verdict },
+    });
 
     revalidatePath(`/app/student/sources/${parsed.data.sourceId}`);
     return { ok: true };

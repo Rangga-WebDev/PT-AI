@@ -32,11 +32,11 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 12)
+## 4. Status Saat Ini (PHASE 13)
 
 | Suite                                    | Jumlah   | Hasil terakhir |
 | ---------------------------------------- | -------- | -------------- |
-| Unit dan component (Vitest, 18 file)     | 122 test | ✅ lulus       |
+| Unit dan component (Vitest, 19 file)     | 137 test | ✅ lulus       |
 | SQL/pgTAP `rls.test.sql`                 | 18 test  | ✅ lulus       |
 | SQL/pgTAP `academic-access.test.sql`     | 8 test   | ✅ lulus       |
 | SQL/pgTAP `content-access.test.sql`      | 10 test  | ✅ lulus       |
@@ -45,9 +45,16 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 | SQL/pgTAP `ai-policy.test.sql`           | 12 test  | ✅ lulus       |
 | SQL/pgTAP `mastery-branching.test.sql`   | 12 test  | ✅ lulus       |
 | SQL/pgTAP `revision-reflection.test.sql` | 14 test  | ✅ lulus       |
-| E2E (guest, student, lecturer, admin)    | 74 test  | ✅ lulus       |
+| SQL/pgTAP `analytics-access.test.sql`    | 12 test  | ✅ lulus       |
+| E2E (guest, student, lecturer, admin)    | 80 test  | ✅ lulus       |
 
-Total: 122 unit/component + 95 SQL + 74 E2E. Build menghasilkan 33 route.
+Total: 137 unit/component + 107 SQL + 80 E2E. Build menghasilkan 35 route.
+
+Berkas pengujian PHASE 13: `src/test/analytics-aggregate.test.ts`, `supabase/tests/analytics-access.test.sql`, `e2e/analytics.spec.ts`.
+
+### Analitik diuji tanpa bergantung pada urutan spec
+
+`critical_thinking_scores` hanya terisi ketika dosen menilai rubrik berkriteria, sehingga tampilan analitik tidak boleh diuji dengan berharap spec lain sudah berjalan lebih dulu. `e2e/fixtures/analytics.ts` menyiapkan satu pengukuran bernilai tetap dan satu peristiwa langsung lewat service role, sehingga hasilnya sama pada setiap eksekusi.
 
 Berkas pengujian PHASE 12: `src/test/revision-reflection.test.ts`, `supabase/tests/revision-reflection.test.sql`, `e2e/revision.spec.ts`.
 

@@ -4,7 +4,6 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { MockBanner } from "@/components/shared/mock-banner";
 import { VerificationChecklist } from "@/features/verification/components/verification-checklist";
 
 // Server Action mengimpor modul server-only; pengujian komponen memakai ganda.
@@ -86,13 +85,5 @@ describe("VerificationChecklist (LOCK-PED-007)", () => {
     expect(
       screen.getByRole("button", { name: /Simpan verifikasi/i }),
     ).toBeEnabled();
-  });
-});
-
-describe("MockBanner", () => {
-  it("menandai halaman sebagai data contoh", () => {
-    render(<MockBanner />);
-
-    expect(screen.getByRole("note")).toHaveTextContent("Data contoh (MOCK)");
   });
 });

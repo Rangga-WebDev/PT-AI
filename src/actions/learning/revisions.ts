@@ -11,6 +11,7 @@ import {
   reflectionSchema,
   submitRevisionSchema,
 } from "@/lib/validation/revision";
+import { recordLearningEvent } from "@/server/analytics/events";
 import { isUniqueViolation } from "@/server/repositories/shared";
 
 export interface RevisionActionResult {
@@ -105,6 +106,16 @@ export async function submitRevisionAction(
       };
     }
 
+    await recordLearningEvent({
+      studentId: student.id,
+      activityId: attempt.activity_id,
+      eventType: "revision_submitted",
+      payload: {
+        revisionNumber: (last?.revision_number ?? 0) + 1,
+        reasonType: parsed.data.reason.reasonType,
+      },
+    });
+
     revalidatePath("/app/student/progress");
     return { ok: true, revisionId: inserted.id };
   } catch (error) {
@@ -112,7 +123,6 @@ export async function submitRevisionAction(
     return result.ok ? {} : { error: result.error };
   }
 }
-
 export interface ReflectionActionResult {
   ok?: boolean;
   error?: string;
@@ -159,6 +169,12 @@ export async function submitReflectionAction(
       const result = toActionError(error);
       return result.ok ? {} : { error: result.error };
     }
+
+    await recordLearningEvent({
+      studentId: student.id,
+      activityId: parsed.data.activityId,
+      eventType: "reflection_submitted",
+    });
 
     revalidatePath("/app/student/progress");
     return { ok: true };

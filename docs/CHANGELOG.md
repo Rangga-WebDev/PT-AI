@@ -4,6 +4,30 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 13] — 2026-08-28 — Analytics
+
+### Ditambahkan
+
+- `src/lib/analytics/aggregate.ts` — `summarizeDimensions()`, `summarizeMasteryDistribution()`, `deriveObservations()`, `fidelityRate()`. Fungsi murni tanpa I/O.
+- `src/server/analytics/events.ts` — penulis `learning_events` lewat service role. Tabel itu sengaja tidak punya policy INSERT agar peristiwa tidak dapat dipalsukan klien.
+- `src/server/repositories/analytics.ts`, `src/actions/assessment/incidents.ts`.
+- `src/features/analytics/components/{analytics-cards,incident-resolution-form,fidelity-form}.tsx`.
+- Route `/app/lecturer/incidents` (tinjauan laporan respons AI) dan `/app/lecturer/classes/[classId]/analytics` (distribusi, peristiwa, pengamatan proses, checklist keterlaksanaan).
+- Test: `analytics-aggregate.test.ts` (16), `analytics-access.test.sql` (12), `analytics.spec.ts` (6).
+
+### Diubah
+
+- Dashboard mahasiswa, halaman progres, dan dashboard dosen memakai data nyata. Dimensi yang belum pernah diukur **tidak** ditampilkan sebagai nol, melainkan sebagai keadaan kosong.
+- `DimensionBars` menerima hasil pengukuran nyata dan menampilkan perubahan antar-pengukuran.
+- Peristiwa dicatat pada pengiriman respons awal, revisi, refleksi, verifikasi sumber, permintaan bantuan AI, dan keputusan ketuntasan. Kegagalan pencatatan tidak membatalkan pekerjaan mahasiswa.
+- Navigasi dosen menambahkan "Laporan AI"; detail kelas menambahkan tautan "Analitik" dan "Percabangan".
+
+### Dihapus
+
+- `src/mocks/` (seluruh folder), `MockBanner` beserta pengujiannya.
+- `RemedialCard` dan `EnrichmentCard` — keduanya hanya dipakai dengan alasan rekomendasi yang dikarang; rekomendasi nyata sudah ditampilkan dari `branching_decisions`.
+- Tipe mati `DimensionProgress`, `MasteryDistributionItem`, `IncidentItem`, `ReviewQueueItem`, `CriticalThinkingDimension`.
+
 ## [PHASE 12] — 2026-08-28 — Revision and Reflection
 
 ### Ditambahkan

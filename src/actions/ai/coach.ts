@@ -10,6 +10,7 @@ import { toActionError } from "@/lib/errors";
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { requestCoachFeedback } from "@/server/ai/coach";
+import { recordLearningEvent } from "@/server/analytics/events";
 
 export interface AiActionResult {
   ok?: boolean;
@@ -78,6 +79,13 @@ export async function requestAiFeedbackAction(
     });
 
     if (!result.ok) return { error: result.error };
+
+    await recordLearningEvent({
+      studentId: student.id,
+      activityId: parsed.data.activityId,
+      eventType: "ai_feedback_requested",
+      payload: { function: parsed.data.aiFunction },
+    });
 
     revalidatePath("/app/student/learn", "layout");
     return { ok: true };

@@ -20,12 +20,56 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 9    | Source Verification                 | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
 | 10   | AI Coach and RAG                    | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
 | 11   | Mastery and Branching               | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 12   | Revision and Reflection             | ✅ SELESAI — menunggu persetujuan PHASE 13 | 2026-08-28 | 2026-08-28 |
-| 13   | Analytics                           | ⬜ Belum dimulai                           | —          | —          |
+| 12   | Revision and Reflection             | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
+| 13   | Analytics                           | ✅ SELESAI — menunggu persetujuan PHASE 14 | 2026-08-28 | 2026-08-28 |
 | 14   | Research and Governance             | ⬜ Belum dimulai                           | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                           | —          | —          |
 
-⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 13 — Analytics.
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 14 — Research and Governance.
+
+## Log PHASE 13 — Analytics (2026-08-28)
+
+### Keputusan pedagogis fase ini
+
+**Belum diukur bukan nol.** Dimensi yang belum pernah dinilai tidak ditampilkan sebagai skor 0, melainkan sebagai keadaan kosong. Ini dashboard yang dipakai mahasiswa untuk melihat dirinya sendiri; angka 0 akan terbaca "kemampuan Anda nol" padahal artinya "belum ada pengukuran".
+
+**Sistem melaporkan fakta, bukan melabeli orang.** Pengamatan proses berbunyi "belum mengirim respons awal" atau "skor turun dari 80 ke 65 antar-pengukuran", bukan "stagnan" atau "lemah". Label melekat pada orang, sedangkan yang diukur adalah kinerja pada satu waktu — dan tabelnya memang dirancang demikian (`measured_at`, `measurement_source`).
+
+### Yang dikerjakan
+
+- **Telemetri nyata.** `learning_events` sebelumnya tidak pernah ditulis siapa pun, sehingga "analisis pola" hanya akan menjadi grafik kosong yang tampak berisi. Peristiwa kini dicatat pada enam titik: respons awal, revisi, refleksi, verifikasi sumber, permintaan bantuan AI, dan keputusan ketuntasan.
+- **Penulisan lewat service role** karena `learning_events` sengaja tidak memiliki policy INSERT — peristiwa tidak boleh dipalsukan dari sesi pengguna. Kegagalan pencatatan dicatat ke log server dan **tidak** membatalkan pekerjaan mahasiswa.
+- **Tinjauan laporan respons AI** di `/app/lecturer/incidents` — utang yang tercatat sejak PHASE 10. Penanganannya wewenang dosen kelas, bukan admin, karena menilai kualitas bantuan AI adalah penilaian akademik.
+- **Analitik kelas** di `/app/lecturer/classes/[classId]/analytics`: distribusi ketuntasan, peristiwa tercatat, pengamatan proses, dan checklist keterlaksanaan model untuk kebutuhan penelitian.
+- **Seluruh mock dihapus.** `src/mocks/` tidak lagi ada.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                              |
+| `npm run test`               | ✅ 19 file, **137 test** lulus                                         |
+| `npm run test:db`            | ✅ **107/107** lulus (+12 analitik)                                    |
+| `npm run test:e2e`           | ✅ **80/80** lulus; dijalankan dua kali berturut-turut dan tetap hijau |
+| `npm run build`              | ✅ 35 route, exit 0                                                    |
+| `npm run check:secrets`      | ✅ nol kebocoran (43 bundel klien dipindai)                            |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                              |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Tabel telemetri kosong sejak PHASE 4.** `learning_events` punya tabel, index, dan policy `select`, tetapi tidak ada satu pun kode yang menulisinya. Membangun grafik pola di atasnya tanpa memeriksa ini akan menghasilkan dashboard yang terlihat berfungsi padahal selalu kosong.
+2. **Dua kartu rekomendasi memakai alasan yang dikarang.** `RemedialCard` dan `EnrichmentCard` pada halaman progres menampilkan kalimat seperti "dua dari tiga klaim Anda belum ditautkan" sebagai teks tetap — terbaca sebagai hasil analisis padahal bukan. Keduanya dihapus; rekomendasi nyata sudah ditampilkan dari `branching_decisions` beserta alasan yang benar-benar dicatat dosen.
+3. **Saya sempat menyunting berkas lewat skrip shell** untuk membuang komponen mati, dan Node gagal mem-parsing string berisi tanda kutip. Ini melanggar aturan yang sudah saya catat sendiri sejak PHASE 10; pekerjaannya diulang memakai perkakas edit.
+4. **Menghapus `MockBanner` memutus satu pengujian** di `verification-checklist.test.tsx`. Pengujiannya dihapus bersama komponennya, bukan dibiarkan menguji sesuatu yang tidak ada.
+
+### Utang teknis yang dicatat
+
+- Base UI memperingatkan setiap `Button` yang dirender sebagai `Link`; perbaikan yang benar adalah `Link` + `buttonVariants` (PHASE 15).
+- `nanoid` high-severity lewat `postcss` (transitif, build-time) — PHASE 15.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 14 — Research and Governance.
 
 ## Log PHASE 12 — Revision and Reflection (2026-08-28)
 
