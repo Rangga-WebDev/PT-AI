@@ -9,8 +9,6 @@ Dokumen pendamping:
 - [DATABASE_DICTIONARY.md](DATABASE_DICTIONARY.md) — kamus data setiap tabel (kolom, tipe, constraint, index).
 - [RLS_MATRIX.md](RLS_MATRIX.md) — matriks hak akses per peran per tabel.
 
----
-
 ## 1. Prinsip Desain
 
 1. **Database adalah penegak aturan pedagogis, bukan sekadar penyimpan data.** Attempt-first, revisi sebagai versi baru, branching beralasan, dan override tercatat ditegakkan oleh constraint dan trigger — bukan hanya oleh kode aplikasi.

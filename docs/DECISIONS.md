@@ -1,15 +1,15 @@
 <!-- @format -->
 
-# DECISIONS â€” PT-AI Learning Management System
+# DECISIONS — PT-AI Learning Management System
 
 Dokumen ini adalah Decision Log resmi proyek.
 
 Status keputusan:
 
-- **LOCKED** â€” Sudah disepakati dan tidak boleh diubah diam-diam. Perubahan wajib melalui Change Request dan persetujuan pengguna.
-- **OPEN** â€” Belum diputuskan.
-- **DEFERRED** â€” Ditunda ke fase berikutnya.
-- **REJECTED** â€” Tidak digunakan.
+- **LOCKED** — Sudah disepakati dan tidak boleh diubah diam-diam. Perubahan wajib melalui Change Request dan persetujuan pengguna.
+- **OPEN** — Belum diputuskan.
+- **DEFERRED** — Ditunda ke fase berikutnya.
+- **REJECTED** — Tidak digunakan.
 
 Aturan perubahan:
 
@@ -26,19 +26,19 @@ Aturan perubahan:
 | ARCH-001 | Next.js App Router sebagai framework utama                                    | LOCKED   | 2026-08-05 | Menggantikan rencana React SPA               |
 | ARCH-002 | React Server Components sebagai default rendering                             | LOCKED   | 2026-08-05 | Client Components hanya untuk interaktivitas |
 | ARCH-003 | Server Actions untuk mutasi yang berasal dari UI                              | LOCKED   | 2026-08-05 | Validasi Zod di server                       |
-| ARCH-004 | Route Handlers untuk endpoint khusus (AI streaming, export, webhook, health)  | LOCKED   | 2026-08-05 | â€”                                            |
-| ARCH-005 | Supabase SSR dengan cookie (@supabase/ssr)                                    | LOCKED   | 2026-08-05 | â€”                                            |
+| ARCH-004 | Route Handlers untuk endpoint khusus (AI streaming, export, webhook, health)  | LOCKED   | 2026-08-05 | —                                            |
+| ARCH-005 | Supabase SSR dengan cookie (@supabase/ssr)                                    | LOCKED   | 2026-08-05 | —                                            |
 | ARCH-006 | proxy.ts untuk pembaruan sesi dan route-level redirect ringan                 | LOCKED   | 2026-08-05 | Bukan satu-satunya authorization layer       |
-| ARCH-007 | Server-side authorization pada Server Component, Server Action, Route Handler | LOCKED   | 2026-08-05 | â€”                                            |
-| ARCH-008 | PostgreSQL Row Level Security sebagai perlindungan data terakhir              | LOCKED   | 2026-08-05 | â€”                                            |
-| ARCH-009 | Alamat pengembangan lokal http://localhost:3000                               | LOCKED   | 2026-08-05 | â€”                                            |
+| ARCH-007 | Server-side authorization pada Server Component, Server Action, Route Handler | LOCKED   | 2026-08-05 | —                                            |
+| ARCH-008 | PostgreSQL Row Level Security sebagai perlindungan data terakhir              | LOCKED   | 2026-08-05 | —                                            |
+| ARCH-009 | Alamat pengembangan lokal http://localhost:3000                               | LOCKED   | 2026-08-05 | —                                            |
 | ARCH-010 | React SPA dengan Vite                                                         | REJECTED | 2026-08-05 | Digantikan Next.js App Router                |
 | ARCH-011 | React Router                                                                  | REJECTED | 2026-08-05 | Digantikan file-system routing               |
-| ARCH-012 | vite.config.ts                                                                | REJECTED | 2026-08-05 | â€”                                            |
-| ARCH-013 | Arsitektur frontend-only                                                      | REJECTED | 2026-08-05 | â€”                                            |
-| ARCH-014 | Supabase Edge Functions sebagai backend utama                                 | REJECTED | 2026-08-05 | â€”                                            |
-| ARCH-015 | Data fetching client-side sebagai pola utama                                  | REJECTED | 2026-08-05 | â€”                                            |
-| ARCH-016 | Seluruh halaman menggunakan Client Components                                 | REJECTED | 2026-08-05 | â€”                                            |
+| ARCH-012 | vite.config.ts                                                                | REJECTED | 2026-08-05 | —                                            |
+| ARCH-013 | Arsitektur frontend-only                                                      | REJECTED | 2026-08-05 | —                                            |
+| ARCH-014 | Supabase Edge Functions sebagai backend utama                                 | REJECTED | 2026-08-05 | —                                            |
+| ARCH-015 | Data fetching client-side sebagai pola utama                                  | REJECTED | 2026-08-05 | —                                            |
+| ARCH-016 | Seluruh halaman menggunakan Client Components                                 | REJECTED | 2026-08-05 | —                                            |
 | ARCH-017 | Pages Router                                                                  | REJECTED | 2026-08-05 | Hanya App Router yang digunakan              |
 
 ## 2. Keputusan Stack Teknologi
@@ -49,28 +49,28 @@ Aturan perubahan:
 | LOCK-TECH-002 | TypeScript strict (strict, noImplicitAny, noUncheckedIndexedAccess, exactOptionalPropertyTypes bila tidak merusak dependency) | LOCKED | 2026-08-05 | Dilarang `any` untuk menyembunyikan error            |
 | LOCK-TECH-003 | Node.js LTS-kompatibel + npm                                                                                                  | LOCKED | 2026-08-05 | Versi aktual dicatat di docs/ENVIRONMENT.md          |
 | LOCK-TECH-004 | Dev server di http://localhost:3000 via `npm run dev`                                                                         | LOCKED | 2026-08-05 | Port tidak diganti tanpa konflik nyata + persetujuan |
-| LOCK-TECH-005 | File-system routing App Router (page/layout/loading/error/not-found/route/proxy, route groups, dynamic segments)              | LOCKED | 2026-08-05 | â€”                                                    |
-| LOCK-TECH-006 | Server Components default; Client Components hanya untuk kebutuhan browser API/interaktivitas                                 | LOCKED | 2026-08-05 | â€”                                                    |
+| LOCK-TECH-005 | File-system routing App Router (page/layout/loading/error/not-found/route/proxy, route groups, dynamic segments)              | LOCKED | 2026-08-05 | —                                                    |
+| LOCK-TECH-006 | Server Components default; Client Components hanya untuk kebutuhan browser API/interaktivitas                                 | LOCKED | 2026-08-05 | —                                                    |
 | LOCK-TECH-007 | Server Actions + Zod untuk seluruh mutasi UI                                                                                  | LOCKED | 2026-08-05 | Validasi browser bukan validasi final                |
-| LOCK-TECH-008 | Route Handlers untuk AI streaming, integrasi eksternal, webhook, export, upload khusus, health check                          | LOCKED | 2026-08-05 | â€”                                                    |
+| LOCK-TECH-008 | Route Handlers untuk AI streaming, integrasi eksternal, webhook, export, upload khusus, health check                          | LOCKED | 2026-08-05 | —                                                    |
 | LOCK-TECH-009 | Proxy hanya untuk refresh cookie sesi, redirect awal, proteksi route ringan, locale/header                                    | LOCKED | 2026-08-05 | Authorization tetap di server + RLS                  |
-| LOCK-TECH-010 | Tailwind CSS                                                                                                                  | LOCKED | 2026-08-05 | â€”                                                    |
+| LOCK-TECH-010 | Tailwind CSS                                                                                                                  | LOCKED | 2026-08-05 | —                                                    |
 | LOCK-TECH-011 | shadcn/ui dikustomisasi penuh                                                                                                 | LOCKED | 2026-08-05 | Tanpa tampilan default                               |
-| LOCK-TECH-012 | Lucide React untuk icon                                                                                                       | LOCKED | 2026-08-05 | â€”                                                    |
+| LOCK-TECH-012 | Lucide React untuk icon                                                                                                       | LOCKED | 2026-08-05 | —                                                    |
 | LOCK-TECH-013 | next/font/google: Space Grotesk (heading), Source Sans 3 (body/UI), IBM Plex Mono (metadata)                                  | LOCKED | 2026-08-05 | Tanpa file font manual                               |
-| LOCK-TECH-014 | Form: Server Actions + useActionState; React Hook Form hanya form client kompleks; Zod untuk schema                           | LOCKED | 2026-08-05 | â€”                                                    |
+| LOCK-TECH-014 | Form: Server Actions + useActionState; React Hook Form hanya form client kompleks; Zod untuk schema                           | LOCKED | 2026-08-05 | —                                                    |
 | LOCK-TECH-015 | Server state: Server Components + revalidatePath/Tag; TanStack Query hanya fitur client-heavy                                 | LOCKED | 2026-08-05 | Bukan pola default                                   |
 | LOCK-TECH-016 | Client state: React state lokal dahulu; Zustand hanya UI state lintas komponen                                                | LOCKED | 2026-08-05 | Tanpa server data permanen di Zustand                |
-| LOCK-TECH-017 | Supabase PostgreSQL sebagai database                                                                                          | LOCKED | 2026-08-05 | â€”                                                    |
-| LOCK-TECH-018 | Supabase Auth SSR cookie via @supabase/ssr; login email+password; akun dibuat admin; reset password via email                 | LOCKED | 2026-08-05 | â€”                                                    |
-| LOCK-TECH-019 | Supabase Storage                                                                                                              | LOCKED | 2026-08-05 | â€”                                                    |
+| LOCK-TECH-017 | Supabase PostgreSQL sebagai database                                                                                          | LOCKED | 2026-08-05 | —                                                    |
+| LOCK-TECH-018 | Supabase Auth SSR cookie via @supabase/ssr; login email+password; akun dibuat admin; reset password via email                 | LOCKED | 2026-08-05 | —                                                    |
+| LOCK-TECH-019 | Supabase Storage                                                                                                              | LOCKED | 2026-08-05 | —                                                    |
 | LOCK-TECH-020 | Akses database: Supabase JS client, @supabase/ssr, SQL migrations, generated types, RLS, PostgreSQL functions bila perlu      | LOCKED | 2026-08-05 | Prisma/Drizzle butuh persetujuan                     |
-| LOCK-TECH-021 | Supabase admin client server-only (import server-only, tanpa NEXT*PUBLIC*, penggunaan dibatasi dan tercatat)                  | LOCKED | 2026-08-05 | â€”                                                    |
+| LOCK-TECH-021 | Supabase admin client server-only (import server-only, tanpa NEXT*PUBLIC*, penggunaan dibatasi dan tercatat)                  | LOCKED | 2026-08-05 | —                                                    |
 | LOCK-TECH-022 | Google Gemini API melalui internal server-only provider adapter (rev. CR-001, 2026-08-28; semula OpenAI)                      | LOCKED | 2026-08-05 | Dilarang dipanggil dari browser                      |
-| LOCK-TECH-023 | RAG: Supabase PostgreSQL + pgvector                                                                                           | LOCKED | 2026-08-05 | â€”                                                    |
-| LOCK-TECH-024 | Testing: Vitest, React Testing Library, Playwright, database/RLS test, test business logic Server Actions/Route Handlers      | LOCKED | 2026-08-05 | â€”                                                    |
-| LOCK-TECH-025 | Deployment: Vercel (Next.js) + Supabase (DB, Auth, Storage, pgvector)                                                         | LOCKED | 2026-08-05 | â€”                                                    |
-| LOCK-TECH-026 | Tahapan produk: prototype â†’ MVP DB â†’ auth â†’ learning workflow â†’ AI â†’ research â†’ hardening                                     | LOCKED | 2026-08-05 | â€”                                                    |
+| LOCK-TECH-023 | RAG: Supabase PostgreSQL + pgvector                                                                                           | LOCKED | 2026-08-05 | —                                                    |
+| LOCK-TECH-024 | Testing: Vitest, React Testing Library, Playwright, database/RLS test, test business logic Server Actions/Route Handlers      | LOCKED | 2026-08-05 | —                                                    |
+| LOCK-TECH-025 | Deployment: Vercel (Next.js) + Supabase (DB, Auth, Storage, pgvector)                                                         | LOCKED | 2026-08-05 | —                                                    |
+| LOCK-TECH-026 | Tahapan produk: prototype → MVP DB → auth → learning workflow → AI → research → hardening                                     | LOCKED | 2026-08-05 | —                                                    |
 
 ## 3. Keputusan Pedagogis
 
@@ -78,7 +78,7 @@ Aturan perubahan:
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------- |
 | LOCK-PED-001 | Enam dimensi outcome: Interpretasi, Analisis, Evaluasi, Inferensi, Eksplanasi, Regulasi diri                                              | LOCKED | 2026-08-05 |
 | LOCK-PED-002 | Urutan pembelajaran 6 tahap tetap; tidak diganti alur LMS generik                                                                         | LOCKED | 2026-08-05 |
-| LOCK-PED-003 | Siklus per tahap: Attempt â†’ Feedback â†’ Verify â†’ Revise â†’ Mastery                                                                          | LOCKED | 2026-08-05 |
+| LOCK-PED-003 | Siklus per tahap: Attempt → Feedback → Verify → Revise → Mastery                                                                          | LOCKED | 2026-08-05 |
 | LOCK-PED-004 | Attempt-first rule: baseline tidak ditimpa; AI substantif terkunci sebelum attempt; revisi = versi baru                                   | LOCKED | 2026-08-05 |
 | LOCK-PED-005 | AI non-answering: dilarang membuat jawaban final, esai siap kumpul, nilai akhir, sumber fiktif                                            | LOCKED | 2026-08-05 |
 | LOCK-PED-006 | AI sebagai mitra kognitif dan objek epistemik yang harus diverifikasi                                                                     | LOCKED | 2026-08-05 |
@@ -99,8 +99,8 @@ Aturan perubahan:
 | DSN-004 | Tipografi: Space Grotesk / Source Sans 3 / IBM Plex Mono dengan skala ukuran tetap                                   | LOCKED | 2026-08-05 |
 | DSN-005 | Dashboard menggunakan asymmetrical bento grid                                                                        | LOCKED | 2026-08-05 |
 | DSN-006 | AI tidak boleh lebih dominan secara visual daripada aktivitas mahasiswa                                              | LOCKED | 2026-08-05 |
-| DSN-007 | Layout desktop: sidebar 272/80px, topbar 72px, context panel 340â€“380px, grid 12 kolom, max width Â±1600px             | LOCKED | 2026-08-05 |
-| DSN-008 | Mobile: bottom navigation, horizontal phase stepper, AI coach bottom sheet, touch target â‰¥44px                       | LOCKED | 2026-08-05 |
+| DSN-007 | Layout desktop: sidebar 272/80px, topbar 72px, context panel 340–380px, grid 12 kolom, max width ±1600px             | LOCKED | 2026-08-05 |
+| DSN-008 | Mobile: bottom navigation, horizontal phase stepper, AI coach bottom sheet, touch target ≥44px                       | LOCKED | 2026-08-05 |
 
 ## 5. Keputusan Keamanan
 
@@ -117,7 +117,7 @@ Aturan perubahan:
 | ID       | Pertanyaan                                                                                         | Status                                                              | Target Fase                    |
 | -------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------ |
 | OPEN-001 | Nama final aplikasi (saat ini sementara: PT-AI LMS)                                                | OPEN                                                                | Sebelum production             |
-| OPEN-002 | Detail ERD final dan data dictionary                                                               | **LOCKED** â€” disetujui 2026-08-11, lihat [DATABASE.md](DATABASE.md) | PHASE 4A selesai               |
+| OPEN-002 | Detail ERD final dan data dictionary                                                               | **LOCKED** — disetujui 2026-08-11, lihat [DATABASE.md](DATABASE.md) | PHASE 4A selesai               |
 | DB-01    | Cakupan soft delete: konten akademik saja; artefak mahasiswa tidak pernah dihapus                  | **LOCKED**                                                          | 2026-08-11                     |
 | DB-02    | Nilai enum Bahasa Inggris di database, label Indonesia di aplikasi                                 | **LOCKED**                                                          | 2026-08-11                     |
 | DB-03    | Dimensi vektor `source_chunks.embedding` = `vector(1536)`, ditinjau ulang saat model final dipilih | **LOCKED (sementara)**                                              | 2026-08-11, revisi di PHASE 10 |
@@ -134,31 +134,37 @@ Aturan perubahan:
 
 | ID     | Usulan                                                                              | Status                                | Diajukan   |
 | ------ | ----------------------------------------------------------------------------------- | ------------------------------------- | ---------- |
-| CR-001 | Mengganti penyedia AI pada LOCK-TECH-022 dari OpenAI ke Google Gemini (tier gratis) | **DISETUJUI** â€” diterapkan 2026-08-28 | 2026-08-28 |
+| CR-001 | Mengganti penyedia AI pada LOCK-TECH-022 dari OpenAI ke Google Gemini (tier gratis) | **DISETUJUI** — diterapkan 2026-08-28 | 2026-08-28 |
 
-**CR-001 â€” detail**
+**CR-001 — detail**
 
 - **Alasan.** Pembimbing mengarahkan pemakaian layanan AI tanpa biaya.
-- **Konteks etik.** Pengguna menyatakan penelitian ini tidak memerlukan izin etik dan mahasiswa telah menyetujui keikutsertaan. Konsekuensi tier gratis Gemini â€” konten dipakai penyedia untuk memperbaiki produknya â€” karena itu diterima secara sadar.
+- **Konteks etik.** Pengguna menyatakan penelitian ini tidak memerlukan izin etik dan mahasiswa telah menyetujui keikutsertaan. Konsekuensi tier gratis Gemini — konten dipakai penyedia untuk memperbaiki produknya — karena itu diterima secara sadar.
 - **Dampak.** `LOCK-TECH-022` berubah pada nama penyedia saja. Bentuk akses tetap server-only provider adapter, dan larangan pemanggilan dari browser tetap berlaku.
-- **Dampak skema.** `DB-03` (`vector(1536)`) direncanakan dipertahankan dengan menyetel `output_dimensionality` model embedding Gemini ke 1536. **Belum terbukti** â€” lihat blokir akses di bawah.
+- **Dampak skema.** `DB-03` (`vector(1536)`) dipertahankan; `outputDimensionality: 1536` pada `gemini-embedding-001` **terbukti berfungsi**. Tidak ada migration baru.
 - **Risiko.** (1) Kuota tier gratis terbatas sehingga uji beban kelas penuh dapat tertahan; (2) konten mahasiswa dipakai penyedia; (3) dimensi embedding perlu dipotong, bukan native.
-- **Mitigasi wajib.** Prompt dipseudonimkan â€” tanpa nama dan tanpa NIM; hanya teks kasus, rubrik, potongan sumber, dan jawaban anonim.
-- **Alternatif yang dipertimbangkan.** Tetap OpenAI berbayar (â‰ˆ$1,3â€“5,7 per kelas per semester); model open-source swahosting (gratis dan data tidak keluar, tetapi tidak dapat berjalan di Vercel).
-- **Keputusan SDK.** Memakai `@google/genai` (SDK resmi JavaScript), bukan `fetch` langsung. Belum dipasang sampai akses inferensi terbukti.
+- **Mitigasi wajib.** Prompt dipseudonimkan — tanpa nama dan tanpa NIM; hanya teks kasus, rubrik, potongan sumber, dan jawaban anonim.
+- **Alternatif yang dipertimbangkan.** Tetap OpenAI berbayar (≈$1,3–5,7 per kelas per semester); model open-source swahosting (gratis dan data tidak keluar, tetapi tidak dapat berjalan di Vercel).
+- **Keputusan SDK.** Memakai `@google/genai` (SDK resmi JavaScript), bukan `fetch` langsung.
 
-**CR-001 â€” blokir akses yang ditemukan saat verifikasi (2026-08-28)**
+**CR-001 — hasil verifikasi akses (2026-08-28)**
 
-Kunci API terbukti sah: `GET /v1beta/models` berhasil dan mengembalikan 50 model. Namun **seluruh panggilan inferensi ditolak**:
+Kunci pertama ditolak di tingkat project: seluruh endpoint inferensi mengembalikan 403 `PERMISSION_DENIED` ("Your project has been denied access") sementara `models.list` tetap 200 OK. Setelah kunci diganti, seluruh panggilan berhasil:
 
-| Endpoint                                   | Hasil                                                           |
-| ------------------------------------------ | --------------------------------------------------------------- |
-| `models.list`                              | 200 OK                                                          |
-| `gemini-embedding-001:embedContent`        | 403 `PERMISSION_DENIED` â€” "Your project has been denied access" |
-| `gemini-3.5-flash-lite:generateContent`    | 403 `PERMISSION_DENIED` â€” pesan sama                            |
-| `gemini-flash-lite-latest:generateContent` | 403 `PERMISSION_DENIED` â€” pesan sama                            |
+| Panggilan                                  | Hasil                                          |
+| ------------------------------------------ | ---------------------------------------------- |
+| `models.list`                              | 200 OK                                         |
+| `gemini-3.5-flash-lite:generateContent`    | 200 OK                                         |
+| `gemini-embedding-001:embedContent` (1536) | 200 OK — dimensi **1536**, norma L2 **0,6965** |
+| `generateContent` dengan `responseSchema`  | 200 OK — JSON sesuai skema                     |
 
-Indonesia termasuk wilayah yang didukung menurut halaman _available regions_, sehingga penyebab yang tersisa adalah persyaratan usia 18+ atau verifikasi usia akun Google yang belum dilakukan. PHASE 10 **ditahan** sampai ini teratasi.
+Tiga konsekuensi untuk PHASE 10:
+
+1. **`DB-03` aman.** Kolom `vector(1536)` beserta index HNSW tidak perlu diubah.
+2. **Vektor wajib dinormalisasi ulang di adapter.** Keluaran dimensi terpotong tidak ternormalisasi (norma ≈ 0,70). `vector_cosine_ops` memang tahan terhadap magnitudo, tetapi normalisasi membuat kosinus setara hasil kali titik dan mencegah kekeliruan bila kelak dipakai operator lain.
+3. **Structured output tersedia**, sehingga status `schema_rejected` pada `ai_interaction_status` dapat ditegakkan lewat validasi Zod atas keluaran JSON.
+
+Pelajaran operasional: `models.list` **berhasil meskipun project diblokir**, sehingga endpoint itu tidak boleh dipakai sebagai uji kesehatan kunci. Uji kesehatan wajib memanggil `generateContent`.
 
 ## 7. Keputusan Ditunda (DEFERRED)
 
@@ -173,7 +179,7 @@ Indonesia termasuk wilayah yang didukung menurut halaman _available regions_, se
 
 | ID       | Catatan                                                                                                                                                                                                                           | Fase    | Tanggal    |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------- |
-| NOTE-001 | `exactOptionalPropertyTypes` dan `noUncheckedIndexedAccess` berhasil diaktifkan penuh tanpa merusak dependency â€” LOCK-TECH-002 terpenuhi seluruhnya                                                                               | PHASE 1 | 2026-08-05 |
+| NOTE-001 | `exactOptionalPropertyTypes` dan `noUncheckedIndexedAccess` berhasil diaktifkan penuh tanpa merusak dependency — LOCK-TECH-002 terpenuhi seluruhnya                                                                               | PHASE 1 | 2026-08-05 |
 | NOTE-002 | Vitest memakai Vite hanya sebagai internal test transformer; plugin dipilih `@vitejs/plugin-react-swc` karena `@vitejs/plugin-react@6` konflik peer Babel 8. Bukan pelanggaran ARCH-010/ARCH-012 (Vite bukan build tool aplikasi) | PHASE 1 | 2026-08-05 |
 | NOTE-003 | shadcn v4 style default `base-nova` memakai `@base-ui/react` (Base UI) sebagai primitive layer + preset `shadcn/tailwind.css`; kustomisasi penuh tema dilakukan PHASE 2 sesuai LOCK-TECH-011                                      | PHASE 1 | 2026-08-05 |
 | NOTE-004 | Scaffold via subfolder sementara karena npm menolak nama folder kapital `PT-AI`; nama package: `pt-ai-lms`                                                                                                                        | PHASE 1 | 2026-08-05 |
