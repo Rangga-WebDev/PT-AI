@@ -90,15 +90,8 @@ export interface CaseDetail {
   sourceIds: string[];
 }
 
-// Tipe sumber, kriteria verifikasi, dan klaim kini berasal dari database:
-// lihat src/lib/constants/verification.ts dan src/server/repositories/sources.ts.
-
-export interface AIFeedbackItem {
-  id: string;
-  kind: "guiding-question" | "strength" | "gap" | "counter-argument" | "hint";
-  title: string;
-  body: string;
-}
+// Tipe sumber, kriteria verifikasi, klaim, dan umpan balik AI kini berasal dari
+// database: lihat src/lib/constants/*, src/server/repositories/{sources,ai}.ts.
 
 export interface ReviewQueueItem {
   id: string;

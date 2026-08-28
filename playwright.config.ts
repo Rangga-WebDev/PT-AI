@@ -34,6 +34,7 @@ const authenticatedProjects = [
             "**/student.spec.ts",
             "**/attempt.spec.ts",
             "**/verification.spec.ts",
+            "**/ai-coach.spec.ts",
           ],
           use: { ...devices["Desktop Chrome"], storageState: STUDENT_STATE },
           dependencies: ["setup"],
@@ -104,5 +105,8 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // Provider AI palsu: E2E harus deterministik dan tidak memakai kuota.
+    // Integrasi Gemini yang sebenarnya diuji lewat `npm run ai:check`.
+    env: { ...process.env, AI_PROVIDER_MODE: "fake" } as Record<string, string>,
   },
 });

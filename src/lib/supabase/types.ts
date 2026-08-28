@@ -10,10 +10,50 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
+      _applied_migrations: {
+        Row: {
+          applied_at: string
+          filename: string
+        }
+        Insert: {
+          applied_at?: string
+          filename: string
+        }
+        Update: {
+          applied_at?: string
+          filename?: string
+        }
+        Relationships: []
+      }
       academic_periods: {
         Row: {
           code: string
@@ -3253,6 +3293,19 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_enrolled_in_class: { Args: { p_class_id: string }; Returns: boolean }
       is_lecturer_of_class: { Args: { p_class_id: string }; Returns: boolean }
+      match_source_chunks: {
+        Args: { p_activity_id: string; p_match_count?: number; p_query: string }
+        Returns: {
+          chunk_id: string
+          chunk_index: number
+          content: string
+          similarity: number
+          source_id: string
+          source_title: string
+          source_version_id: string
+        }[]
+      }
+      pending_embedding_count: { Args: never; Returns: number }
     }
     Enums: {
       ai_function:
@@ -3312,79 +3365,6 @@ export type Database = {
         | "reflection"
       verification_outcome: "verified" | "not_verified" | "contradicted"
       verification_verdict: "credible" | "questionable" | "not_usable"
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  research: {
-    Tables: {
-      participants: {
-        Row: {
-          consent_record_id: string
-          created_at: string
-          enrolled_at: string
-          id: string
-          profile_id: string
-          pseudonym: string
-        }
-        Insert: {
-          consent_record_id: string
-          created_at?: string
-          enrolled_at?: string
-          id?: string
-          profile_id: string
-          pseudonym: string
-        }
-        Update: {
-          consent_record_id?: string
-          created_at?: string
-          enrolled_at?: string
-          id?: string
-          profile_id?: string
-          pseudonym?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      v_ai_usage: {
-        Row: {
-          accepted_count: number | null
-          function: Database["public"]["Enums"]["ai_function"] | null
-          interaction_count: number | null
-          pseudonym: string | null
-          reported_count: number | null
-          status: Database["public"]["Enums"]["ai_interaction_status"] | null
-        }
-        Relationships: []
-      }
-      v_attempt_metrics: {
-        Row: {
-          activity_id: string | null
-          attempt_submitted_at: string | null
-          first_revision_at: string | null
-          pseudonym: string | null
-          revision_count: number | null
-        }
-        Relationships: []
-      }
-      v_ct_scores: {
-        Row: {
-          dimension: Database["public"]["Enums"]["ct_dimension"] | null
-          measured_at: string | null
-          measurement_source: string | null
-          pseudonym: string | null
-          score: number | null
-        }
-        Relationships: []
-      }
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3510,6 +3490,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       ai_function: [
@@ -3576,8 +3559,5 @@ export const Constants = {
       verification_outcome: ["verified", "not_verified", "contradicted"],
       verification_verdict: ["credible", "questionable", "not_usable"],
     },
-  },
-  research: {
-    Enums: {},
   },
 } as const

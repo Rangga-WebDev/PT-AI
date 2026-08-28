@@ -36,17 +36,26 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 
 | Suite                                  | Jumlah  | Hasil terakhir |
 | -------------------------------------- | ------- | -------------- |
-| Unit dan component (Vitest, 15 file)   | 84 test | ✅ lulus       |
+| Unit dan component (Vitest, 16 file)   | 97 test | ✅ lulus       |
 | SQL/pgTAP `rls.test.sql`               | 18 test | ✅ lulus       |
 | SQL/pgTAP `academic-access.test.sql`   | 8 test  | ✅ lulus       |
 | SQL/pgTAP `content-access.test.sql`    | 10 test | ✅ lulus       |
 | SQL/pgTAP `attempt-integrity.test.sql` | 10 test | ✅ lulus       |
 | SQL/pgTAP `source-access.test.sql`     | 11 test | ✅ lulus       |
-| E2E (guest, student, lecturer, admin)  | 53 test | ✅ lulus       |
+| SQL/pgTAP `ai-policy.test.sql`         | 12 test | ✅ lulus       |
+| E2E (guest, student, lecturer, admin)  | 60 test | ✅ lulus       |
 
-Total: 84 unit/component + 57 SQL + 53 E2E. Build menghasilkan 29 route.
+Total: 97 unit/component + 69 SQL + 60 E2E. Build menghasilkan 29 route.
 
-Berkas pengujian PHASE 9: `src/test/source-validation.test.ts`, `supabase/tests/source-access.test.sql`, `e2e/verification.spec.ts`, `e2e/curation.spec.ts`.
+Berkas pengujian PHASE 10: `src/test/ai-schema.test.ts`, `supabase/tests/ai-policy.test.sql`, `e2e/ai-coach.spec.ts`.
+
+### Menguji AI tanpa memanggil penyedia
+
+E2E berjalan dengan `AI_PROVIDER_MODE=fake` yang diatur `playwright.config.ts`, sehingga hasilnya deterministik dan kuota tier gratis tidak terpakai. Provider palsu sengaja mengembalikan satu kutipan sah dan satu kutipan di luar source pack agar penandaan `is_traceable = false` ikut teruji.
+
+Integrasi Gemini yang sebenarnya diuji terpisah lewat `npm run ai:check`: embedding 1536 dimensi, retrieval berbasis sesi mahasiswa, batas akses tanpa sesi, dan structured output.
+
+Catatan: `models.list` pada Gemini tetap mengembalikan 200 OK meskipun project diblokir, sehingga endpoint itu tidak sah dipakai sebagai uji kesehatan kunci.
 
 ### Menguji data yang tidak dapat dibatalkan
 

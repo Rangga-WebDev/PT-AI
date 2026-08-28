@@ -257,7 +257,8 @@ try {
         prompt:
           "Tuliskan rumusan masalah kebijakan pada kasus tersebut, lalu sebutkan informasi apa yang masih Anda butuhkan untuk menilainya.",
         activity_type: "written_response",
-        allows_ai: false,
+        allows_ai: true,
+        allowed_ai_functions: ["guiding_questions", "rubric_feedback", "hint"],
         sequence: 1,
         status: "published",
         created_by: lecturerId,
@@ -267,6 +268,15 @@ try {
     if (error) throw new Error(`activities: ${error.message}`);
     activityId = data.id;
   }
+
+  // Idempotensi: aktivitas lama dari seed sebelumnya ikut diaktifkan AI-nya.
+  await supabase
+    .from("activities")
+    .update({
+      allows_ai: true,
+      allowed_ai_functions: ["guiding_questions", "rubric_feedback", "hint"],
+    })
+    .eq("id", activityId);
 
   const existingInstruction = await findOne(
     "activity_instructions",

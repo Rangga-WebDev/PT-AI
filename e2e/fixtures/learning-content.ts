@@ -127,7 +127,8 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
       title: "Aktivitas Uji Attempt",
       prompt: "Tuliskan rumusan masalah kebijakan pada kasus tersebut.",
       activity_type: "written_response",
-      allows_ai: false,
+      allows_ai: true,
+      allowed_ai_functions: ["guiding_questions"],
       sequence: 1,
       status: "published",
       created_by: lecturer.lecturer_id,
@@ -167,7 +168,7 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
     throw new Error(`Gagal membuat sumber uji: ${sourceError?.message}`);
   }
 
-  const { error: versionError } = await supabase
+  const { data: version, error: versionError } = await supabase
     .from("source_versions")
     .insert({
       source_id: source.id,
@@ -176,10 +177,30 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
       content_text:
         "Kutipan sumber untuk pengujian otomatis verifikasi enam kriteria.",
       created_by: lecturer.lecturer_id,
-    });
+    })
+    .select("id")
+    .single();
 
-  if (versionError) {
-    throw new Error(`Gagal membuat versi sumber uji: ${versionError.message}`);
+  if (versionError || !version) {
+    throw new Error(`Gagal membuat versi sumber uji: ${versionError?.message}`);
+  }
+
+  // Potongan ter-embed dibutuhkan agar retrieval RAG mengembalikan hasil.
+  const raw = Array.from({ length: 1536 }, (_, index) => Math.sin(index + 1));
+  const norm = Math.sqrt(raw.reduce((sum, value) => sum + value * value, 0));
+  const embedding = JSON.stringify(raw.map((value) => value / norm));
+
+  const { error: chunkError } = await supabase.from("source_chunks").insert({
+    source_version_id: version.id,
+    chunk_index: 0,
+    content: "Kutipan sumber untuk pengujian otomatis alur bantuan AI.",
+    token_count: 16,
+    embedding,
+    embedded_at: stamp,
+  });
+
+  if (chunkError) {
+    throw new Error(`Gagal membuat potongan sumber uji: ${chunkError.message}`);
   }
 
   const { error: packError } = await supabase.from("case_sources").insert({

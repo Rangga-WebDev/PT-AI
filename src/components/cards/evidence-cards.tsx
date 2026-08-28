@@ -1,11 +1,6 @@
 /** @format */
 
-import {
-  ExternalLink,
-  ShieldCheck,
-  ShieldQuestion,
-  Sparkles,
-} from "lucide-react";
+import { ExternalLink, ShieldCheck, ShieldQuestion } from "lucide-react";
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -18,20 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { AIFeedbackItem } from "@/types/learning";
 import {
   SOURCE_TYPE_LABEL,
   type SourceType,
 } from "@/lib/constants/verification";
 import { cn } from "@/lib/utils";
-
-const AI_KIND_LABEL: Record<AIFeedbackItem["kind"], string> = {
-  "guiding-question": "Pertanyaan penuntun",
-  strength: "Kekuatan",
-  gap: "Kesenjangan",
-  "counter-argument": "Kontraargumen",
-  hint: "Petunjuk",
-};
 
 export interface EvidenceCardItem {
   id: string;
@@ -82,31 +68,6 @@ export function EvidenceCard({ item, href, className }: EvidenceCardProps) {
           <ExternalLink aria-hidden="true" />
         </Button>
       </CardFooter>
-    </Card>
-  );
-}
-
-interface AIFeedbackCardProps {
-  item: AIFeedbackItem;
-  className?: string | undefined;
-}
-
-export function AIFeedbackCard({ item, className }: AIFeedbackCardProps) {
-  return (
-    <Card
-      className={cn("border-l-2 border-l-ai bg-ai/[0.06]", className)}
-      size="sm"
-    >
-      <CardHeader>
-        <p className="inline-flex items-center gap-1.5 font-mono text-xs tracking-widest text-ai uppercase">
-          <Sparkles aria-hidden="true" className="size-3" />
-          {AI_KIND_LABEL[item.kind]}
-        </p>
-        <CardTitle className="text-base">{item.title}</CardTitle>
-      </CardHeader>
-      <CardContent className="text-sm text-muted-foreground">
-        {item.body}
-      </CardContent>
     </Card>
   );
 }

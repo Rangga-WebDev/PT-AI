@@ -7,20 +7,26 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { StatusBadge } from "@/components/shared/status-badge";
+import { AiDisclosureForm } from "@/features/ai-coach/components/ai-disclosure-form";
 import { AIFeedbackPanel } from "@/features/ai-coach/components/ai-feedback-panel";
 import { AnswerEditor } from "@/features/learning-workspace/components/answer-editor";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { AIFeedbackItem } from "@/types/learning";
+import type { AiFunction } from "@/lib/constants/stages";
+import type { StoredFeedback } from "@/server/repositories/ai";
 
 interface AttemptGateProps {
   activityId: string;
+  classId: string;
   prompt: string;
   initialDraft: string;
   initialSavedAt: string | null;
-  baseline: { content: string; submittedAt: string } | null;
-  aiFeedback: AIFeedbackItem[];
+  baseline: { id: string; content: string; submittedAt: string } | null;
+  allowsAi: boolean;
+  allowedFunctions: AiFunction[];
+  feedbackItems: StoredFeedback[];
+  disclosure: { statement: string; functionsUsed: string[] } | null;
 }
 
 function formatDateTime(iso: string): string {
@@ -37,11 +43,15 @@ function formatDateTime(iso: string): string {
  */
 export function AttemptGate({
   activityId,
+  classId,
   prompt,
   initialDraft,
   initialSavedAt,
   baseline,
-  aiFeedback,
+  allowsAi,
+  allowedFunctions,
+  feedbackItems,
+  disclosure,
 }: AttemptGateProps) {
   const router = useRouter();
   const [revision, setRevision] = useState("");
@@ -89,7 +99,34 @@ export function AttemptGate({
 
       {hasAttempt ? (
         <>
-          <AIFeedbackPanel items={aiFeedback} />
+          {allowsAi ? (
+            <AIFeedbackPanel
+              activityId={activityId}
+              attemptId={baseline.id}
+              classId={classId}
+              allowedFunctions={allowedFunctions}
+              items={feedbackItems}
+            />
+          ) : (
+            <section
+              data-slot="ai-disabled"
+              className="rounded-xl border border-dashed border-border p-5"
+            >
+              <p className="text-sm text-muted-foreground">
+                Dosen tidak mengaktifkan bantuan AI pada aktivitas ini.
+              </p>
+            </section>
+          )}
+
+          <AiDisclosureForm
+            activityId={activityId}
+            attemptId={baseline.id}
+            usedFunctions={[
+              ...new Set(feedbackItems.map((item) => item.function)),
+            ]}
+            existing={disclosure}
+          />
+
           <section
             aria-labelledby="revision-heading"
             className="flex flex-col gap-3"

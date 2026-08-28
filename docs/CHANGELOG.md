@@ -4,6 +4,33 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 10] — 2026-08-28 — AI Coach and RAG
+
+### Ditambahkan
+
+- `supabase/migrations/20260828100016_ai_retrieval.sql` — `match_source_chunks()` (`security definer`, dibatasi source pack) dan `pending_embedding_count()`.
+- `src/server/ai/{provider,types,fake-provider,prompts,schemas,coach}.ts` — adapter Gemini, prompt berpseudonim, validasi keluaran, dan orkestrator interaksi.
+- `src/lib/ai/vector.ts` — normalisasi vektor embedding.
+- `src/actions/ai/coach.ts` dan `src/server/repositories/ai.ts`.
+- `src/features/ai-coach/components/ai-disclosure-form.tsx`; panel AI ditulis ulang memakai data nyata.
+- Skrip: `db:migrate`, `ai:index`, `ai:check`.
+- Test: `ai-schema.test.ts` (10), `ai-policy.test.sql` (12), `ai-coach.spec.ts` (7).
+
+### Diubah
+
+- `AttemptGate` menerima izin AI, riwayat umpan balik, dan pernyataan penggunaan AI.
+- `playwright.config.ts` menjalankan server E2E dengan `AI_PROVIDER_MODE=fake`.
+- `scripts/seed-dev-academics.mjs` mengaktifkan tiga fungsi AI pada aktivitas seed.
+- `.env.example` memakai `GEMINI_API_KEY`; `check:secrets` memindainya.
+
+### Dihapus
+
+- `src/mocks/ai-feedback.ts`, komponen `AIFeedbackCard`, dan tipe `AIFeedbackItem`.
+
+### Dependency baru
+
+- `@google/genai@^2.19.0`
+
 ## [PHASE 9] — 2026-08-28 — Source Verification
 
 ### Ditambahkan

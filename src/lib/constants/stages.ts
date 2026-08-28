@@ -4,6 +4,7 @@ import type { Database } from "@/lib/supabase/types";
 
 export type StageKey = Database["public"]["Enums"]["stage_key"];
 export type CtDimension = Database["public"]["Enums"]["ct_dimension"];
+export type AiFunction = Database["public"]["Enums"]["ai_function"];
 
 /** Urutan enam tahap bersifat LOCKED (LOCK-PED-002) dan tidak dapat diubah. */
 export const STAGE_ORDER: readonly StageKey[] = [

@@ -17,13 +17,55 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 6    | Academic Structure                  | ✅ SELESAI — disetujui                     | 2026-08-12 | 2026-08-12 |
 | 7    | Course Builder                      | ✅ SELESAI — disetujui                     | 2026-08-12 | 2026-08-12 |
 | 8    | Student Learning Workspace          | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 9    | Source Verification                 | ✅ SELESAI — menunggu persetujuan PHASE 10 | 2026-08-28 | 2026-08-28 |
-| 10   | AI Coach and RAG                    | ⬜ Belum dimulai                           | —          | —          |
+| 9    | Source Verification                 | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
+| 10   | AI Coach and RAG                    | ✅ SELESAI — menunggu persetujuan PHASE 11 | 2026-08-28 | 2026-08-28 |
 | 11   | Mastery and Branching               | ⬜ Belum dimulai                           | —          | —          |
 | 12   | Revision and Reflection             | ⬜ Belum dimulai                           | —          | —          |
 | 13   | Analytics                           | ⬜ Belum dimulai                           | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                           | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                           | —          | —          |
+
+## Log PHASE 10 — AI Coach and RAG (2026-08-28)
+
+### Yang dikerjakan
+
+- **Adapter penyedia** `src/server/ai/provider.ts` (`server-only`) memakai `@google/genai`. Satu-satunya titik keluar ke Gemini; dilarang dipanggil dari browser (LOCK-TECH-022 rev. CR-001).
+- **Retrieval RAG** lewat migration `20260828100016_ai_retrieval.sql`. `source_chunks` tetap tertutup RLS, sehingga pencarian memakai fungsi `security definer` `match_source_chunks()` yang memeriksa sendiri `can_access_activity()`. Cakupannya dibatasi source pack kasus — AI tidak dapat mengutip di luar sumber yang dilampirkan dosen.
+- **Pseudonimisasi (syarat CR-001).** Prompt hanya memuat kasus, rubrik, potongan sumber, dan jawaban anonim. Tanpa nama, NIM, atau surel. `ai_interactions.request_digest` menyimpan SHA-256 prompt, bukan salinannya.
+- **Enam fungsi AI** tersedia sesuai izin dosen per aktivitas, dengan structured output yang divalidasi Zod. Keluaran yang tidak sesuai skema dicatat `schema_rejected` dan **tidak pernah ditampilkan**.
+- **Kutipan tak terlacak tetap terlihat.** Kutipan yang `chunkId`-nya di luar potongan yang diberikan disimpan `is_traceable = false` dan ditandai jelas di UI, bukan disembunyikan (LOCK-PED-005).
+- **Sikap mahasiswa dicatat**: terima, abaikan, laporkan; laporan masuk `ai_incidents`. Verifikasi kutipan dan pernyataan penggunaan AI (`ai_disclosures`) tersedia (LOCK-PED-011).
+- Skrip baru: `npm run db:migrate`, `npm run ai:index`, `npm run ai:check`.
+- `src/mocks/ai-feedback.ts` **dihapus** beserta `AIFeedbackCard` dan tipe `AIFeedbackItem` yang menjadi kode mati.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                                                         |
+| ---------------------------- | --------------------------------------------------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                                                     |
+| `npm run test`               | ✅ 16 file, **97 test** lulus                                                                 |
+| `npm run test:db`            | ✅ **69/69** lulus (18 RLS + 8 akademik + 10 konten + 10 attempt + 11 sumber + 12 AI)         |
+| `npm run test:e2e`           | ✅ **60/60** lulus; `ai-coach.spec.ts` dijalankan dua kali dan tetap hijau                    |
+| `npm run ai:check`           | ✅ embedding 1536, retrieval 2 potongan, batas akses 0 potongan tanpa sesi, structured output |
+| `npm run build`              | ✅ 29 route                                                                                   |
+| `npm run check:secrets`      | ✅ nol kebocoran (5 nilai rahasia dipindai, termasuk `GEMINI_API_KEY`)                        |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                                                     |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Kunci Gemini pertama diblokir di tingkat project.** `models.list` tetap 200 OK sementara seluruh endpoint inferensi 403 — sehingga `models.list` **tidak boleh** dipakai sebagai uji kesehatan kunci. Diselesaikan dengan kunci baru.
+2. **Embedding 1536 tidak ternormalisasi** (norma L2 ≈ 0,6965). Adapter menormalisasi ulang; diuji di `ai-schema.test.ts`.
+3. **Skrip migration sempat membuat `public._applied_migrations` tanpa RLS**, dan uji RLS nomor 18 menangkapnya. Tabel dipindahkan ke schema `ops`.
+4. **Encoding `docs/DECISIONS.md` rusak** karena `Get-Content -Raw` di PowerShell 5.1 membaca UTF-8 sebagai ANSI. Berkas dipulihkan dari commit bersih; aturan barunya: berkas disunting lewat perkakas edit, bukan skrip shell.
+5. **`npx` menggantung** menunggu konfirmasi pemasangan versi CLI baru; versi kini dipin.
+
+### Mock yang masih tersisa
+
+`src/mocks/{analytics,users}.ts` — dihapus pada PHASE 13.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 11 — Mastery and Branching.
 
 ## Log PHASE 9 — Source Verification (2026-08-28)
 

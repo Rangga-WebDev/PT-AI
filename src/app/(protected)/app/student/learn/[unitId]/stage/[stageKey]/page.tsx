@@ -20,8 +20,8 @@ import {
   STAGE_LABEL,
 } from "@/lib/constants/stages";
 import { requireStudentAccess } from "@/lib/supabase/auth";
-import { MOCK_AI_FEEDBACK } from "@/mocks/ai-feedback";
 import { getActivityWorkState } from "@/server/repositories/attempts";
+import { getDisclosure, listAttemptFeedback } from "@/server/repositories/ai";
 import { getStudentUnitWorkspace } from "@/server/repositories/content";
 import {
   listCaseSources,
@@ -67,6 +67,12 @@ export default async function LearnStagePage({
     access === "available" && primaryActivity
       ? listVerifiedSourceIds(primaryActivity.id, student.id)
       : Promise.resolve(new Set<string>()),
+  ]);
+
+  const baselineId = workState?.baseline?.id ?? null;
+  const [feedbackItems, disclosure] = await Promise.all([
+    baselineId ? listAttemptFeedback(baselineId) : Promise.resolve([]),
+    baselineId ? getDisclosure(baselineId, student.id) : Promise.resolve(null),
   ]);
 
   // Status ketuntasan nyata baru tersedia setelah attempt dan penilaian ada
@@ -223,18 +229,25 @@ export default async function LearnStagePage({
                 {primaryActivity && workState ? (
                   <AttemptGate
                     activityId={primaryActivity.id}
+                    classId={workspace.unit.classId}
                     prompt={primaryActivity.prompt}
                     initialDraft={workState.draft}
                     initialSavedAt={workState.draftUpdatedAt}
                     baseline={
                       workState.baseline
                         ? {
+                            id: workState.baseline.id,
                             content: workState.baseline.content,
                             submittedAt: workState.baseline.submittedAt,
                           }
                         : null
                     }
-                    aiFeedback={MOCK_AI_FEEDBACK}
+                    allowsAi={primaryActivity.allowsAi}
+                    allowedFunctions={
+                      primaryActivity.allowedAiFunctions as never
+                    }
+                    feedbackItems={feedbackItems}
+                    disclosure={disclosure}
                   />
                 ) : null}
 
