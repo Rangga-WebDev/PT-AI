@@ -71,8 +71,11 @@ test.describe("Ruang belajar mahasiswa", () => {
     );
     await page.goto(stagePath);
 
+    // Sejak PHASE 11 alasan penguncian berasal dari `computeStageAccess`, yang
+    // menyebutkan syaratnya secara spesifik alih-alih kalimat umum.
+    await expect(page.getByText(/Tahap Analisis terkunci/i)).toBeVisible();
     await expect(
-      page.getByText(/terbuka setelah tahap sebelumnya/i),
+      page.getByText(/Selesaikan tahap sebelumnya terlebih dahulu/i),
     ).toBeVisible();
   });
 

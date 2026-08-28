@@ -9,11 +9,7 @@ import {
   rubricCriterionSchema,
   stageUpdateSchema,
 } from "@/lib/validation/content";
-import {
-  resolveStageAccess,
-  STAGE_LABEL,
-  STAGE_ORDER,
-} from "@/lib/constants/stages";
+import { STAGE_LABEL, STAGE_ORDER } from "@/lib/constants/stages";
 
 describe("Skema validasi konten", () => {
   it("menolak tujuan pembelajaran yang terlalu pendek", () => {
@@ -99,7 +95,7 @@ describe("Skema validasi konten", () => {
   });
 });
 
-describe("Urutan dan penguncian tahap (LOCK-PED-002)", () => {
+describe("Urutan tahap (LOCK-PED-002)", () => {
   it("mempertahankan enam tahap dalam urutan tetap", () => {
     expect(STAGE_ORDER).toEqual([
       "interpretation",
@@ -110,14 +106,5 @@ describe("Urutan dan penguncian tahap (LOCK-PED-002)", () => {
       "reflection",
     ]);
     expect(Object.keys(STAGE_LABEL)).toHaveLength(6);
-  });
-
-  it("membuka tahap pertama dan mengunci tahap sesudahnya", () => {
-    expect(resolveStageAccess(1, true)).toBe("available");
-    expect(resolveStageAccess(2, true)).toBe("locked");
-  });
-
-  it("menandai tahap yang dinonaktifkan dosen secara terpisah", () => {
-    expect(resolveStageAccess(1, false)).toBe("disabled");
   });
 });

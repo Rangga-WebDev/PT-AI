@@ -1,6 +1,7 @@
 /** @format */
 
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { AnalyticsCard } from "@/components/cards/insight-cards";
 import { PageContainer } from "@/components/layout/page-container";
@@ -52,8 +53,16 @@ export default async function LecturerReviewPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <StatusBadge status="verified">Baseline</StatusBadge>
-                      <Button variant="outline" size="sm" disabled>
-                        Nilai (PHASE 11)
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        render={
+                          <Link
+                            href={`/app/lecturer/review/${item.attemptId}`}
+                          />
+                        }
+                      >
+                        Nilai
                       </Button>
                     </div>
                   </div>

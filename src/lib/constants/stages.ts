@@ -56,18 +56,5 @@ export const PUBLICATION_LABEL: Record<string, string> = {
   archived: "Arsip",
 };
 
-export type StageAccess = "available" | "locked" | "disabled";
-
-/**
- * Penguncian tahap menegakkan urutan LOCK-PED-002. Selama ketuntasan belum
- * dibangun (PHASE 11), hanya tahap pertama yang terbuka; parameter
- * `highestUnlockedSequence` disiapkan agar dapat diperluas tanpa mengubah UI.
- */
-export function resolveStageAccess(
-  sequence: number,
-  isEnabled: boolean,
-  highestUnlockedSequence = 1,
-): StageAccess {
-  if (!isEnabled) return "disabled";
-  return sequence <= highestUnlockedSequence ? "available" : "locked";
-}
+// Penguncian tahap kini dihitung dari hasil ketuntasan nyata:
+// lihat src/lib/mastery/access.ts.

@@ -10,11 +10,47 @@ const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
 
 export interface DisposableUnit {
   unitId: string;
+  unitTitle: string;
   activityId: string;
   caseId: string;
   sourceId: string;
   sourceTitle: string;
   claimId: string;
+}
+
+/**
+ * Mengambil id respons awal dari basis data. Dipakai agar E2E tidak bergantung
+ * pada urutan antrean review yang ikut memuat data uji lain.
+ */
+export async function findBaselineAttemptId(
+  activityId: string,
+): Promise<string> {
+  if (!url || !serviceRoleKey) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY dibutuhkan untuk fixture E2E.",
+    );
+  }
+
+  const supabase = createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const { data, error } = await supabase
+    .from("attempts")
+    .select("id")
+    .eq("activity_id", activityId)
+    .eq("is_baseline", true)
+    .order("submitted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    throw new Error(
+      `Respons awal untuk aktivitas ${activityId} tidak ditemukan: ${error?.message ?? "kosong"}`,
+    );
+  }
+
+  return data.id;
 }
 
 export async function createDisposableUnit(): Promise<DisposableUnit> {
@@ -72,24 +108,40 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
     .limit(1)
     .maybeSingle();
 
-  const sequence = (last?.sequence ?? 0) + 1;
   const stamp = new Date().toISOString();
+  const unitTitle = `Unit Uji Attempt ${stamp}`;
 
-  const { data: unit, error: unitError } = await supabase
-    .from("learning_units")
-    .insert({
-      module_id: moduleRow.id,
-      title: `Unit Uji Attempt ${stamp}`,
-      objective:
-        "Unit sekali pakai untuk pengujian otomatis respons awal mahasiswa.",
-      sequence,
-      status: "draft",
-      created_by: lecturer.lecturer_id,
-    })
-    .select("id")
-    .single();
+  // Beberapa spec berjalan paralel dan dapat menghitung sequence yang sama,
+  // sehingga bentrok pada uq_learning_units_sequence. Coba lagi dengan angka
+  // berikutnya alih-alih menggagalkan seluruh berkas uji.
+  let unit: { id: string } | null = null;
+  let unitError: { message: string } | null = null;
 
-  if (unitError || !unit) {
+  for (let offset = 1; offset <= 25 && !unit; offset += 1) {
+    const attempt = await supabase
+      .from("learning_units")
+      .insert({
+        module_id: moduleRow.id,
+        title: unitTitle,
+        objective:
+          "Unit sekali pakai untuk pengujian otomatis respons awal mahasiswa.",
+        sequence: (last?.sequence ?? 0) + offset,
+        status: "draft",
+        created_by: lecturer.lecturer_id,
+      })
+      .select("id")
+      .single();
+
+    unit = attempt.data;
+    unitError = attempt.error;
+
+    if (unitError && unitError.message.includes("uq_learning_units_sequence")) {
+      continue;
+    }
+    break;
+  }
+
+  if (!unit) {
     throw new Error(`Gagal membuat unit uji: ${unitError?.message}`);
   }
 
@@ -231,6 +283,7 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
 
   return {
     unitId: unit.id,
+    unitTitle,
     activityId: activity.id,
     caseId: caseRow.id,
     sourceId: source.id,

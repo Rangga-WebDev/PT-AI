@@ -35,9 +35,11 @@
 | `/app/lecturer/classes/[classId]`                        | `.../[classId]/page.tsx`          | Dynamic | Detail kelas dosen                                                             |
 | `/app/lecturer/classes/[classId]/builder`                | `.../builder/page.tsx`            | Dynamic | Perancang materi: modul dan unit                                               |
 | `/app/lecturer/classes/[classId]/builder/units/[unitId]` | `.../units/[unitId]/page.tsx`     | Dynamic | Kasus, enam tahap, aktivitas, instruksi                                        |
+| `/app/lecturer/classes/[classId]/branching`              | `.../branching/page.tsx`          | Dynamic | Aturan percabangan kelas (remedial, pengayaan, ulangi)                         |
 | `/app/lecturer/rubrics`                                  | `.../lecturer/rubrics/page.tsx`   | Dynamic | Rubrik, kriteria per dimensi, dan level                                        |
 | `/app/lecturer/sources`                                  | `.../lecturer/sources/page.tsx`   | Dynamic | Kurasi sumber dan versinya                                                     |
 | `/app/lecturer/review`                                   | `.../lecturer/review/page.tsx`    | Dynamic | Antrean respons awal mahasiswa                                                 |
+| `/app/lecturer/review/[attemptId]`                       | `.../[attemptId]/page.tsx`        | Dynamic | Penilaian rubrik, keputusan jalur belajar, dan override dosen                  |
 
 Boundary area: `(protected)/app/student/{loading,error}.tsx` dan `(protected)/app/lecturer/{loading,error}.tsx`.
 

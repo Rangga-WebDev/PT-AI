@@ -18,12 +18,64 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 7    | Course Builder                      | ✅ SELESAI — disetujui                     | 2026-08-12 | 2026-08-12 |
 | 8    | Student Learning Workspace          | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
 | 9    | Source Verification                 | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 10   | AI Coach and RAG                    | ✅ SELESAI — menunggu persetujuan PHASE 11 | 2026-08-28 | 2026-08-28 |
-| 11   | Mastery and Branching               | ⬜ Belum dimulai                           | —          | —          |
+| 10   | AI Coach and RAG                    | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
+| 11   | Mastery and Branching               | ✅ SELESAI — menunggu persetujuan PHASE 12 | 2026-08-28 | 2026-08-28 |
 | 12   | Revision and Reflection             | ⬜ Belum dimulai                           | —          | —          |
 | 13   | Analytics                           | ⬜ Belum dimulai                           | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                           | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                           | —          | —          |
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 12 — Revision and Reflection.
+
+## Log PHASE 11 — Mastery and Branching (2026-08-28)
+
+### Keputusan pedagogis fase ini
+
+**Sistem mengusulkan, dosen memutuskan.** Sistem hanya menilai **kelengkapan proses** — apakah respons awal terkirim, sumber wajib terverifikasi, umpan balik AI tertanggapi. Bila lengkap, sistem menulis `mastery_results` dengan `evaluator_kind = 'system'`, `outcome = 'partially_met'`, dan `is_final = false`, lalu membuka tahap berikutnya **sementara** dengan label "menunggu konfirmasi dosen".
+
+Mutu penalaran dinilai dosen lewat rubrik. Hanya keputusan dosen yang `is_final = true` (LOCK-PED-008, LOCK-PED-010). Constraint `ck_mastery_results_evaluator` menegakkan pembagian ini di database: penilai `lecturer` **wajib** menyertakan `evaluator_id`, penilai `system` **dilarang** menyertakannya — sehingga keputusan otomatis tidak dapat menyamar sebagai keputusan dosen.
+
+### Yang dikerjakan
+
+- **Logika akses tahap** dipisah ke `src/lib/mastery/access.ts` sebagai fungsi murni tanpa I/O, sehingga aturan pedagogis dapat diuji langsung tanpa database atau browser.
+- **Penilaian rubrik dosen** di `/app/lecturer/review/[attemptId]`: skor per kriteria, pratinjau skor terbobot, hasil ketuntasan, dan catatan minimal 10 karakter. Skor tersimpan ke `critical_thinking_scores` per dimensi berpikir kritis.
+- **Keputusan jalur belajar** (`branching_decisions`) selalu menyertakan alasan; alasan itu ditampilkan kepada mahasiswa di halaman progres (LOCK-PED-009).
+- **Aturan percabangan kelas** di `/app/lecturer/classes/[classId]/branching` dengan prioritas dan kategori kesalahan.
+- **Override dosen** menulis `lecturer_overrides` (nilai lama, nilai baru, alasan) lalu menerbitkan `mastery_results` baru — riwayatnya utuh karena kedua tabel append-only.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                                                              |
+| ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                                                          |
+| `npm run test`               | ✅ 17 file, **109 test** lulus                                                                     |
+| `npm run test:db`            | ✅ **81/81** lulus (18 RLS + 8 akademik + 10 konten + 10 attempt + 11 sumber + 12 AI + 12 mastery) |
+| `npm run test:e2e`           | ✅ **67/67** lulus; dijalankan dua kali berturut-turut dan tetap hijau                             |
+| `npm run build`              | ✅ 33 route                                                                                        |
+| `npm run check:secrets`      | ✅ nol kebocoran (41 bundel klien dipindai)                                                        |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                                                          |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Suntingan berkas tidak sampai ke disk.** `e2e/mastery.spec.ts` di editor berbeda isinya dengan berkas di disk, sehingga versi asersi lama yang dijalankan. Akibatnya test melaporkan lulus padahal respons awal tidak pernah terkirim. Sejak itu setiap suntingan diverifikasi ulang dengan membaca berkas dari disk.
+2. **Asersi yang lulus karena alasan yang salah.** `expect(getByText(/tidak dapat diubah/i))` juga cocok dengan teks yang muncul **sebelum** pengiriman. Diganti `expect(getByLabel(/Tuliskan jawaban Anda/i)).toHaveCount(0)` yang hanya benar setelah editor terkunci.
+3. **E2E di atas `next dev` mengukur waktu kompilasi, bukan aplikasi.** Halaman perancang materi melewati 60 detik pada akses pertama dan satu rangkaian penuh memakan 6,6 menit dengan 11 kegagalan. Setelah `webServer` diganti ke `npm run build && npm run start`, rangkaian yang sama selesai **1,4 menit dengan 67/67 lulus**.
+4. **`nativeButton={false}` mengubah semantik tautan.** Upaya membungkam peringatan Base UI justru menambahkan `role="button"` pada `Link`, sehingga tautan navigasi diumumkan sebagai tombol. Perubahan dikembalikan; peringatan itu tercatat sebagai utang teknis, bukan ditutupi.
+5. **Balapan `uq_learning_units_sequence`** saat dua spec membuat unit sekali pakai bersamaan. Fixture kini mencoba urutan berikutnya.
+6. **Asersi warisan yang usang.** `review.spec.ts` masih menuntut tombol "Nilai" nonaktif dan `student.spec.ts` masih mencari kalimat penguncian versi lama. Keduanya diperbarui mengikuti perilaku PHASE 11.
+
+### Utang teknis yang dicatat
+
+- Base UI memperingatkan setiap `Button` yang dirender sebagai `Link`. Perbaikan yang benar adalah menata `Link` memakai `buttonVariants`, bukan membungkusnya dengan `Button`. Ditunda ke PHASE 15 agar tidak mencampur perubahan lintas fase.
+- Belum ada halaman dosen untuk `ai_incidents`; RLS sudah mengizinkan pembacaannya.
+
+### Mock yang masih tersisa
+
+`src/mocks/{analytics,users}.ts` — dihapus pada PHASE 13.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 12 — Revision and Reflection.
 
 ## Log PHASE 10 — AI Coach and RAG (2026-08-28)
 

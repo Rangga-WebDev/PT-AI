@@ -4,6 +4,29 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 11] — 2026-08-28 — Mastery and Branching
+
+### Ditambahkan
+
+- `src/lib/mastery/access.ts` — `computeStageAccess()`, `evaluateProcessCriteria()`, `weightedRubricScore()`. Logika murni tanpa I/O sehingga dapat diuji langsung.
+- `src/lib/validation/assessment.ts` — skema penilaian rubrik, aturan percabangan, keputusan percabangan, dan override.
+- `src/server/repositories/mastery.ts`, `src/actions/assessment/{scoring,branching}.ts`.
+- `src/features/assessment/components/{scoring-form,branching-rule-form}.tsx`.
+- Route `/app/lecturer/review/[attemptId]` (penilaian rubrik, keputusan jalur, override) dan `/app/lecturer/classes/[classId]/branching` (aturan percabangan kelas).
+- Test: `mastery-access.test.ts` (12), `mastery-branching.test.sql` (12), `mastery.spec.ts` (7).
+
+### Diubah
+
+- Halaman tahap mahasiswa memakai `computeStageAccess()`; status `provisional` ditampilkan sebagai "menunggu konfirmasi dosen", bukan sebagai kelulusan.
+- `MasteryStatus` menerima hasil ketuntasan nyata beserta jenis penilai dan kriteria proses.
+- Halaman progres mahasiswa menampilkan hasil ketuntasan dan alasan keputusan jalur belajar.
+- **`playwright.config.ts` menjalankan E2E di atas server produksi** (`npm run build && npm run start`), bukan `next dev`. Kompilasi Turbopack pada akses pertama membuat halaman berat melewati 60 detik, sehingga E2E mengukur waktu kompilasi alih-alih perilaku aplikasi.
+- `e2e/fixtures/learning-content.ts` mencoba ulang saat `uq_learning_units_sequence` bentrok antar-spec paralel.
+
+### Dihapus
+
+- `resolveStageAccess()` dan tipe `StageAccess` dari `src/lib/constants/stages.ts`, digantikan modul mastery.
+
 ## [PHASE 10] — 2026-08-28 — AI Coach and RAG
 
 ### Ditambahkan

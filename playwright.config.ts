@@ -35,6 +35,7 @@ const authenticatedProjects = [
             "**/attempt.spec.ts",
             "**/verification.spec.ts",
             "**/ai-coach.spec.ts",
+            "**/mastery.spec.ts",
           ],
           use: { ...devices["Desktop Chrome"], storageState: STUDENT_STATE },
           dependencies: ["setup"],
@@ -76,6 +77,7 @@ export default defineConfig({
   // Dev server mengompilasi route saat pertama diakses; batas ini memberi
   // ruang untuk kompilasi tanpa menutupi kegagalan yang sebenarnya.
   workers: process.env.CI ? 2 : 4,
+  timeout: 60_000,
   expect: { timeout: 15_000 },
   reporter: [["list"]],
   use: {
@@ -101,10 +103,14 @@ export default defineConfig({
     ...authenticatedProjects,
   ],
   webServer: {
-    command: "npm run dev",
+    // Server produksi, bukan `next dev`. Turbopack mengompilasi route pada
+    // akses pertama, sehingga E2E di atas dev server mengukur waktu kompilasi
+    // dan bukan perilaku aplikasi — halaman berat sempat melewati 60 detik.
+    // `next start` juga membuat E2E menguji artefak yang benar-benar dirilis.
+    command: "npm run build && npm run start",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 240_000,
     // Provider AI palsu: E2E harus deterministik dan tidak memakai kuota.
     // Integrasi Gemini yang sebenarnya diuji lewat `npm run ai:check`.
     env: { ...process.env, AI_PROVIDER_MODE: "fake" } as Record<string, string>,

@@ -14,15 +14,16 @@ import {
   PhaseRail,
   PhaseStepper,
 } from "@/features/learning-workspace/components/phase-navigation";
+import { AI_FUNCTION_LABEL, STAGE_LABEL } from "@/lib/constants/stages";
 import {
-  AI_FUNCTION_LABEL,
-  resolveStageAccess,
-  STAGE_LABEL,
-} from "@/lib/constants/stages";
+  computeStageAccess,
+  evaluateProcessCriteria,
+} from "@/lib/mastery/access";
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { getActivityWorkState } from "@/server/repositories/attempts";
 import { getDisclosure, listAttemptFeedback } from "@/server/repositories/ai";
 import { getStudentUnitWorkspace } from "@/server/repositories/content";
+import { getUnitMastery } from "@/server/repositories/mastery";
 import {
   listCaseSources,
   listVerifiedSourceIds,
@@ -50,21 +51,34 @@ export default async function LearnStagePage({
   const stage = workspace.stages.find((item) => item.stageKey === stageKey);
   if (!stage) notFound();
 
-  const access = resolveStageAccess(stage.sequence, stage.isEnabled);
+  const mastery = await getUnitMastery(unitId, student.id);
+  const accessByStage = computeStageAccess(
+    workspace.stages.map((item) => ({
+      stageKey: item.stageKey,
+      sequence: item.sequence,
+      isEnabled: item.isEnabled,
+    })),
+    mastery,
+  );
+
+  const currentAccess = accessByStage.find(
+    (item) => item.stageKey === stage.stageKey,
+  );
+  const isOpen =
+    currentAccess?.availability === "available" ||
+    currentAccess?.availability === "provisional";
 
   // Aktivitas pertama tahap menjadi titik masuk penulisan respons awal.
   const primaryActivity = stage.activities[0] ?? null;
   const workState =
-    access === "available" && primaryActivity
+    isOpen && primaryActivity
       ? await getActivityWorkState(primaryActivity.id, student.id)
       : null;
 
   const caseId = workspace.caseDetail?.id ?? null;
   const [casePack, verifiedIds] = await Promise.all([
-    access === "available" && caseId
-      ? listCaseSources(caseId)
-      : Promise.resolve([]),
-    access === "available" && primaryActivity
+    isOpen && caseId ? listCaseSources(caseId) : Promise.resolve([]),
+    isOpen && primaryActivity
       ? listVerifiedSourceIds(primaryActivity.id, student.id)
       : Promise.resolve(new Set<string>()),
   ]);
@@ -75,21 +89,40 @@ export default async function LearnStagePage({
     baselineId ? getDisclosure(baselineId, student.id) : Promise.resolve(null),
   ]);
 
-  // Status ketuntasan nyata baru tersedia setelah attempt dan penilaian ada
-  // (PHASE 8 dan PHASE 11); sampai saat itu tahap ditampilkan apa adanya.
   const navStages: LearningStage[] = workspace.stages.map((item) => {
-    const itemAccess = resolveStageAccess(item.sequence, item.isEnabled);
+    const itemAccess = accessByStage.find(
+      (entry) => entry.stageKey === item.stageKey,
+    );
+    const itemMastery = mastery.get(item.sequence);
+
     return {
       key: item.stageKey,
       order: item.sequence,
       title: item.title,
       focus: item.focus,
-      status: itemAccess === "available" ? "in-progress" : "locked",
+      status:
+        itemMastery?.outcome === "met"
+          ? "mastered"
+          : itemAccess?.availability === "available" ||
+              itemAccess?.availability === "provisional"
+            ? "in-progress"
+            : "locked",
       cyclePhase: "attempt",
     };
   });
 
-  const currentNavStage = navStages.find((item) => item.key === stage.stageKey);
+  const currentMastery = mastery.get(stage.sequence) ?? null;
+
+  const { criteria: processCriteria } = evaluateProcessCriteria({
+    hasBaseline: workState?.baseline !== null && workState !== null,
+    requiredSourceCount: casePack.filter((item) => item.isRequired).length,
+    verifiedSourceCount: casePack.filter(
+      (item) => item.isRequired && verifiedIds.has(item.sourceId),
+    ).length,
+    pendingAiFeedbackCount: feedbackItems.filter(
+      (item) => item.studentAction === "pending",
+    ).length,
+  });
   const buildHref = (key: string) =>
     `/app/student/learn/${unitId}/stage/${key}`;
 
@@ -118,14 +151,29 @@ export default async function LearnStagePage({
           </div>
 
           <div className="flex min-w-0 flex-col gap-6">
-            {access === "disabled" ? (
-              <LockedState description="Tahap ini dinonaktifkan dosen untuk unit tersebut." />
-            ) : access === "locked" ? (
+            {!isOpen ? (
               <LockedState
-                description={`Tahap ${STAGE_LABEL[stage.stageKey]} terbuka setelah tahap sebelumnya memenuhi kriteria kinerja. Penilaian ketuntasan otomatis belum aktif pada tahap pengembangan ini.`}
+                title={
+                  currentAccess?.availability === "disabled"
+                    ? "Tahap dinonaktifkan"
+                    : `Tahap ${STAGE_LABEL[stage.stageKey]} terkunci`
+                }
+                description={
+                  currentAccess?.reason ?? "Tahap ini belum terbuka untuk Anda."
+                }
               />
             ) : (
               <>
+                {currentAccess?.availability === "provisional" ? (
+                  <p
+                    role="status"
+                    data-slot="provisional-notice"
+                    className="rounded-lg border border-evidence/40 bg-evidence/10 px-3 py-2 text-sm text-foreground"
+                  >
+                    {currentAccess.reason}
+                  </p>
+                ) : null}
+
                 {workspace.caseDetail ? (
                   <CaseReader
                     caseDetail={{
@@ -251,9 +299,13 @@ export default async function LearnStagePage({
                   />
                 ) : null}
 
-                {currentNavStage ? (
-                  <MasteryStatus stage={currentNavStage} />
-                ) : null}
+                <MasteryStatus
+                  outcome={currentMastery?.outcome ?? null}
+                  evaluatorKind={currentMastery?.evaluatorKind ?? null}
+                  isFinal={currentMastery?.isFinal ?? false}
+                  decidedAt={null}
+                  processCriteria={processCriteria}
+                />
               </>
             )}
           </div>

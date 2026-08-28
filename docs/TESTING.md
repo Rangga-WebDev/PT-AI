@@ -32,22 +32,31 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 8)
+## 4. Status Saat Ini (PHASE 11)
 
-| Suite                                  | Jumlah  | Hasil terakhir |
-| -------------------------------------- | ------- | -------------- |
-| Unit dan component (Vitest, 16 file)   | 97 test | ✅ lulus       |
-| SQL/pgTAP `rls.test.sql`               | 18 test | ✅ lulus       |
-| SQL/pgTAP `academic-access.test.sql`   | 8 test  | ✅ lulus       |
-| SQL/pgTAP `content-access.test.sql`    | 10 test | ✅ lulus       |
-| SQL/pgTAP `attempt-integrity.test.sql` | 10 test | ✅ lulus       |
-| SQL/pgTAP `source-access.test.sql`     | 11 test | ✅ lulus       |
-| SQL/pgTAP `ai-policy.test.sql`         | 12 test | ✅ lulus       |
-| E2E (guest, student, lecturer, admin)  | 60 test | ✅ lulus       |
+| Suite                                  | Jumlah   | Hasil terakhir |
+| -------------------------------------- | -------- | -------------- |
+| Unit dan component (Vitest, 17 file)   | 109 test | ✅ lulus       |
+| SQL/pgTAP `rls.test.sql`               | 18 test  | ✅ lulus       |
+| SQL/pgTAP `academic-access.test.sql`   | 8 test   | ✅ lulus       |
+| SQL/pgTAP `content-access.test.sql`    | 10 test  | ✅ lulus       |
+| SQL/pgTAP `attempt-integrity.test.sql` | 10 test  | ✅ lulus       |
+| SQL/pgTAP `source-access.test.sql`     | 11 test  | ✅ lulus       |
+| SQL/pgTAP `ai-policy.test.sql`         | 12 test  | ✅ lulus       |
+| SQL/pgTAP `mastery-branching.test.sql` | 12 test  | ✅ lulus       |
+| E2E (guest, student, lecturer, admin)  | 67 test  | ✅ lulus       |
 
-Total: 97 unit/component + 69 SQL + 60 E2E. Build menghasilkan 29 route.
+Total: 109 unit/component + 81 SQL + 67 E2E. Build menghasilkan 33 route.
 
-Berkas pengujian PHASE 10: `src/test/ai-schema.test.ts`, `supabase/tests/ai-policy.test.sql`, `e2e/ai-coach.spec.ts`.
+Berkas pengujian PHASE 11: `src/test/mastery-access.test.ts`, `supabase/tests/mastery-branching.test.sql`, `e2e/mastery.spec.ts`.
+
+### E2E berjalan di atas server produksi
+
+`playwright.config.ts` menyalakan `npm run build && npm run start`, bukan `next dev`. Turbopack mengompilasi route pada akses pertama, sehingga E2E di atas dev server mengukur waktu kompilasi dan bukan perilaku aplikasi — halaman perancang materi sempat melewati 60 detik dan satu rangkaian penuh memakan 6,6 menit. Dengan server produksi, rangkaian yang sama selesai dalam 1,4 menit. Efek sampingnya menguntungkan: E2E menguji artefak yang benar-benar dirilis.
+
+### Menguji alur dua peran
+
+`e2e/mastery.spec.ts` harus melibatkan mahasiswa **dan** dosen dalam satu alur: mahasiswa mengirim respons awal, dosen menilai, lalu tahap berikutnya terbuka. Spec berjalan pada project `student`, dan langkah dosen memakai `browser.newContext({ storageState: "playwright/.auth/lecturer.json" })`. Id respons awal diambil dari database lewat `findBaselineAttemptId()` supaya pengujian tidak bergantung pada urutan antrean review yang ikut memuat data uji lain.
 
 ### Menguji AI tanpa memanggil penyedia
 

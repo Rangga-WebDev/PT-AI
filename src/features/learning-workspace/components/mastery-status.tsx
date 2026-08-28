@@ -1,28 +1,40 @@
 /** @format */
 
+import { Check, Circle } from "lucide-react";
+
 import { StatusBadge } from "@/components/shared/status-badge";
-import type { LearningStage } from "@/types/learning";
+import type {
+  EvaluatorKind,
+  MasteryOutcome,
+  ProcessCriterion,
+} from "@/lib/mastery/access";
 
-const CYCLE_STEPS = [
-  { key: "attempt", label: "Attempt" },
-  { key: "feedback", label: "Feedback" },
-  { key: "verify", label: "Verify" },
-  { key: "revise", label: "Revise" },
-  { key: "mastery", label: "Mastery" },
-] as const;
+const OUTCOME_LABEL: Record<MasteryOutcome, string> = {
+  not_met: "Belum memenuhi",
+  partially_met: "Sebagian memenuhi",
+  met: "Memenuhi",
+};
 
-const MASTERY_CRITERIA = [
-  "Klaim dibedakan dari fakta dan asumsi.",
-  "Setiap klaim utama ditautkan ke sumber yang diperiksa.",
-  "Keterbatasan bukti dinyatakan secara eksplisit.",
-  "Kontraargumen ditanggapi dengan alasan.",
-];
+interface MasteryStatusProps {
+  outcome: MasteryOutcome | null;
+  evaluatorKind: EvaluatorKind | null;
+  isFinal: boolean;
+  decidedAt: string | null;
+  processCriteria: ProcessCriterion[];
+}
 
 /** Ketuntasan ditentukan kriteria kinerja, bukan aktivitas klik (LOCK-PED-008). */
-export function MasteryStatus({ stage }: { stage: LearningStage }) {
+export function MasteryStatus({
+  outcome,
+  evaluatorKind,
+  isFinal,
+  decidedAt,
+  processCriteria,
+}: MasteryStatusProps) {
   return (
     <section
       aria-labelledby="mastery-heading"
+      data-slot="mastery-status"
       className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -30,56 +42,64 @@ export function MasteryStatus({ stage }: { stage: LearningStage }) {
           Status ketuntasan
         </h3>
         <StatusBadge
-          status={stage.status === "mastered" ? "verified" : "in-progress"}
+          status={
+            outcome === "met"
+              ? "verified"
+              : outcome === "partially_met"
+                ? "evidence"
+                : outcome === "not_met"
+                  ? "danger"
+                  : "in-progress"
+          }
         >
-          {stage.status === "mastered" ? "Tuntas" : "Belum tuntas"}
+          {outcome ? OUTCOME_LABEL[outcome] : "Belum dinilai"}
         </StatusBadge>
       </div>
 
-      <ol className="flex flex-wrap items-center gap-2">
-        {CYCLE_STEPS.map((step, index) => {
-          const isActive = step.key === stage.cyclePhase;
-          return (
-            <li key={step.key} className="flex items-center gap-2">
-              <span
-                aria-current={isActive ? "step" : undefined}
-                className={
-                  isActive
-                    ? "rounded-md border border-primary/50 bg-primary/12 px-2 py-1 font-mono text-xs text-primary uppercase"
-                    : "rounded-md border border-border px-2 py-1 font-mono text-xs text-subtle uppercase"
-                }
-              >
-                {step.label}
-              </span>
-              {index < CYCLE_STEPS.length - 1 ? (
-                <span aria-hidden="true" className="text-subtle">
-                  →
-                </span>
-              ) : null}
-            </li>
-          );
-        })}
-      </ol>
+      {outcome ? (
+        <p className="font-mono text-xs text-subtle">
+          {evaluatorKind === "lecturer" ? "Dinilai dosen" : "Usulan sistem"}
+          {isFinal ? " · final" : " · menunggu konfirmasi dosen"}
+          {decidedAt
+            ? ` · ${new Date(decidedAt).toLocaleString("id-ID", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}`
+            : ""}
+        </p>
+      ) : null}
 
       <div className="flex flex-col gap-2">
         <p className="font-mono text-xs tracking-widest text-subtle uppercase">
-          Kriteria kinerja
+          Kelengkapan proses
         </p>
-        <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-          {MASTERY_CRITERIA.map((criterion) => (
-            <li key={criterion} className="flex gap-2">
-              <span aria-hidden="true" className="text-subtle">
-                •
-              </span>
-              {criterion}
+        <ul className="flex flex-col gap-1.5">
+          {processCriteria.map((criterion) => (
+            <li
+              key={criterion.key}
+              className="flex items-start gap-2 text-sm text-muted-foreground"
+            >
+              {criterion.met ? (
+                <Check
+                  aria-hidden="true"
+                  className="mt-0.5 size-4 shrink-0 text-success"
+                />
+              ) : (
+                <Circle
+                  aria-hidden="true"
+                  className="mt-0.5 size-3 shrink-0 text-subtle"
+                />
+              )}
+              <span>{criterion.label}</span>
             </li>
           ))}
         </ul>
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Penilaian akhir tetap berada pada dosen. AI tidak menentukan kelulusan
-        maupun nilai.
+        Kelengkapan proses membuka tahap berikutnya sementara. Penilaian mutu
+        penalaran tetap berada pada dosen — AI tidak menentukan kelulusan maupun
+        nilai.
       </p>
     </section>
   );

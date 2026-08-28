@@ -21,10 +21,15 @@ test.describe("Antrean review dosen", () => {
     await page.goto("/app/lecturer/review");
 
     await expect(page.getByRole("textbox")).toHaveCount(0);
-    for (const button of await page
-      .getByRole("button", { name: /Nilai/i })
-      .all()) {
-      await expect(button).toBeDisabled();
+
+    // Sejak PHASE 11 "Nilai" adalah tautan ke halaman penilaian, bukan kendali
+    // penyuntingan. Respons tetap append-only dan tidak dapat diubah dari sini.
+    for (const link of await page.getByRole("link", { name: "Nilai" }).all()) {
+      await expect(link).toHaveAttribute(
+        "href",
+        /^\/app\/lecturer\/review\/[0-9a-f-]{36}$/,
+      );
     }
+    await expect(page.getByRole("button", { name: /Nilai/i })).toHaveCount(0);
   });
 });
