@@ -36,22 +36,25 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 
 | Suite                                  | Jumlah  | Hasil terakhir |
 | -------------------------------------- | ------- | -------------- |
-| Unit dan component (Vitest, 14 file)   | 73 test | ✅ lulus       |
+| Unit dan component (Vitest, 15 file)   | 84 test | ✅ lulus       |
 | SQL/pgTAP `rls.test.sql`               | 18 test | ✅ lulus       |
 | SQL/pgTAP `academic-access.test.sql`   | 8 test  | ✅ lulus       |
 | SQL/pgTAP `content-access.test.sql`    | 10 test | ✅ lulus       |
 | SQL/pgTAP `attempt-integrity.test.sql` | 10 test | ✅ lulus       |
-| E2E (guest, student, lecturer, admin)  | 45 test | ✅ lulus       |
+| SQL/pgTAP `source-access.test.sql`     | 11 test | ✅ lulus       |
+| E2E (guest, student, lecturer, admin)  | 53 test | ✅ lulus       |
 
-Total: 73 unit/component + 46 SQL + 45 E2E. Build menghasilkan 28 route.
+Total: 84 unit/component + 57 SQL + 53 E2E. Build menghasilkan 29 route.
 
-Berkas pengujian PHASE 8: `src/test/attempt-validation.test.ts`, `supabase/tests/attempt-integrity.test.sql`, `e2e/attempt.spec.ts`, `e2e/review.spec.ts`.
+Berkas pengujian PHASE 9: `src/test/source-validation.test.ts`, `supabase/tests/source-access.test.sql`, `e2e/verification.spec.ts`, `e2e/curation.spec.ts`.
 
 ### Menguji data yang tidak dapat dibatalkan
 
-`attempts` bersifat append-only dan trigger `prevent_mutation()` menolak UPDATE maupun DELETE dari koneksi mana pun, termasuk `service_role`. Karena itu pengujian tidak dapat membersihkan baseline setelah dijalankan.
+`attempts` dan `source_verifications` bersifat append-only; trigger `prevent_mutation()` menolak UPDATE maupun DELETE dari koneksi mana pun, termasuk `service_role`. Karena itu pengujian tidak dapat membersihkan hasilnya.
 
-Solusinya: `e2e/fixtures/learning-content.ts` membuat **unit sekali pakai** pada setiap eksekusi, sehingga `attempt.spec.ts` selalu bermula dari keadaan kosong dan dapat dijalankan berulang. Spesifikasi lain dilarang mengirim baseline agar tidak merusak keadaan bersama.
+Solusinya: `e2e/fixtures/learning-content.ts` membuat **unit, kasus, aktivitas, sumber, dan klaim sekali pakai** pada setiap eksekusi, sehingga `attempt.spec.ts` dan `verification.spec.ts` selalu bermula dari keadaan kosong. Spesifikasi lain dilarang mengirim baseline atau verifikasi agar tidak merusak keadaan bersama.
+
+`plan(n)` pada berkas pgTAP diperiksa runner: jumlah test yang benar-benar berjalan harus sama dengan angka pada plan, agar berkas yang berhenti di tengah jalan tidak lolos diam-diam.
 
 ### Catatan pengujian yang mudah menyesatkan
 
@@ -62,6 +65,6 @@ Solusinya: `e2e/fixtures/learning-content.ts` membuat **unit sekali pakai** pada
 
 ## 5. Rencana Berikutnya
 
-- PHASE 8: E2E alur attempt → feedback → verify → revise → mastery dengan data nyata.
-- PHASE 10: pengujian batas peran AI (attempt-first, larangan jawaban final).
+- PHASE 10: pengujian batas peran AI (attempt-first, larangan jawaban final, keterlacakan kutipan).
 - PHASE 11: pengujian pembukaan tahap berbasis kriteria kinerja.
+- PHASE 12: pengujian revisi sebagai versi baru tanpa menimpa baseline.

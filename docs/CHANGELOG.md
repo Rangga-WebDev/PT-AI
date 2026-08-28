@@ -4,6 +4,32 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 9] — 2026-08-28 — Source Verification
+
+### Ditambahkan
+
+- `src/lib/constants/verification.ts` — enam kriteria LOCK-PED-007 dengan kunci yang sama seperti constraint database.
+- `src/lib/validation/sources.ts`, `src/server/repositories/sources.ts`.
+- `src/actions/sources/{curation,verification}.ts` — kurasi sumber, source pack, klaim kasus, verifikasi, penautan bukti.
+- Rute `/app/lecturer/sources`; source pack dan klaim pada halaman unit perancang materi.
+- Test: `source-validation.test.ts` (9), `source-access.test.sql` (11), `verification.spec.ts` (6), `curation.spec.ts` (3).
+
+### Diubah
+
+- `VerificationChecklist` dan `ClaimEvidenceLinker` menyimpan ke database, bukan state lokal.
+- `SourceViewer` dan `EvidenceCard` memakai data sumber nyata beserta status verifikasi mahasiswa.
+- Halaman sumber menerima parameter `?activity=` karena verifikasi selalu tercatat dalam konteks tugas.
+- `scripts/run-db-tests.mjs` menolak berkas pgTAP yang jumlah testnya tidak cocok dengan `plan(n)`.
+- `scripts/seed-dev-academics.mjs` menyeed dua sumber terkurasi dan dua klaim kasus.
+
+### Dihapus
+
+- `src/mocks/sources.ts` dan `src/mocks/claims.ts`; tipe sumber dan klaim dibuang dari `types/learning.ts`.
+
+### Dependency baru
+
+Tidak ada. Unggah berkas ke Supabase Storage ditunda — `source_files` sudah siap tetapi belum dibutuhkan.
+
 ## [PHASE 8] — 2026-08-28 — Student Learning Workspace
 
 ### Ditambahkan

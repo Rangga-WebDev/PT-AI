@@ -36,7 +36,8 @@
 | `/app/lecturer/classes/[classId]/builder`                | `.../builder/page.tsx`            | Dynamic | Perancang materi: modul dan unit                                               |
 | `/app/lecturer/classes/[classId]/builder/units/[unitId]` | `.../units/[unitId]/page.tsx`     | Dynamic | Kasus, enam tahap, aktivitas, instruksi                                        |
 | `/app/lecturer/rubrics`                                  | `.../lecturer/rubrics/page.tsx`   | Dynamic | Rubrik, kriteria per dimensi, dan level                                        |
-| `/app/lecturer/review`                                   | `.../lecturer/review/page.tsx`    | Static  | Antrean review                                                                 |
+| `/app/lecturer/sources`                                  | `.../lecturer/sources/page.tsx`   | Dynamic | Kurasi sumber dan versinya                                                     |
+| `/app/lecturer/review`                                   | `.../lecturer/review/page.tsx`    | Dynamic | Antrean respons awal mahasiswa                                                 |
 
 Boundary area: `(protected)/app/student/{loading,error}.tsx` dan `(protected)/app/lecturer/{loading,error}.tsx`.
 

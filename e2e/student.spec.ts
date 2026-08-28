@@ -79,17 +79,8 @@ test.describe("Ruang belajar mahasiswa", () => {
   // Penguncian AI dan pengiriman baseline diuji di attempt.spec.ts memakai unit
   // sekali pakai, karena baseline append-only membuat status di sini berubah
   // permanen setelah satu kali pengiriman.
-
-  test("halaman sumber menampilkan checklist verifikasi enam kriteria", async ({
-    page,
-  }) => {
-    await page.goto("/app/student/sources/sumber-berita-daring");
-
-    await expect(
-      page.getByRole("heading", { name: "Checklist verifikasi" }),
-    ).toBeVisible();
-    await expect(page.getByRole("checkbox")).toHaveCount(6);
-  });
+  // Checklist verifikasi diuji di verification.spec.ts karena membutuhkan
+  // konteks aktivitas dan sumber sekali pakai.
 });
 
 test.describe("Ruang belajar — mobile", () => {

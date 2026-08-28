@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { EvidenceCard } from "@/components/cards/evidence-cards";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
-import { MockBanner } from "@/components/shared/mock-banner";
 import { EmptyState } from "@/components/shared/states/empty-state";
 import { LockedState } from "@/components/shared/states/locked-state";
 import { AttemptGate } from "@/features/learning-workspace/components/attempt-gate";
@@ -22,9 +21,12 @@ import {
 } from "@/lib/constants/stages";
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { MOCK_AI_FEEDBACK } from "@/mocks/ai-feedback";
-import { MOCK_SOURCES } from "@/mocks/sources";
 import { getActivityWorkState } from "@/server/repositories/attempts";
 import { getStudentUnitWorkspace } from "@/server/repositories/content";
+import {
+  listCaseSources,
+  listVerifiedSourceIds,
+} from "@/server/repositories/sources";
 import type { LearningStage } from "@/types/learning";
 
 /** Teks kasus disimpan sebagai satu blok; paragraf dipisah baris kosong. */
@@ -56,6 +58,16 @@ export default async function LearnStagePage({
     access === "available" && primaryActivity
       ? await getActivityWorkState(primaryActivity.id, student.id)
       : null;
+
+  const caseId = workspace.caseDetail?.id ?? null;
+  const [casePack, verifiedIds] = await Promise.all([
+    access === "available" && caseId
+      ? listCaseSources(caseId)
+      : Promise.resolve([]),
+    access === "available" && primaryActivity
+      ? listVerifiedSourceIds(primaryActivity.id, student.id)
+      : Promise.resolve(new Set<string>()),
+  ]);
 
   // Status ketuntasan nyata baru tersedia setelah attempt dan penilaian ada
   // (PHASE 8 dan PHASE 11); sampai saat itu tahap ditampilkan apa adanya.
@@ -172,8 +184,6 @@ export default async function LearnStagePage({
                   )}
                 </section>
 
-                <MockBanner />
-
                 <section
                   aria-labelledby="sumber-heading"
                   className="flex flex-col gap-3"
@@ -184,15 +194,30 @@ export default async function LearnStagePage({
                   >
                     Sumber terkurasi
                   </h3>
-                  <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                    {MOCK_SOURCES.map((source) => (
-                      <EvidenceCard
-                        key={source.id}
-                        item={source}
-                        href={`/app/student/sources/${source.id}`}
-                      />
-                    ))}
-                  </div>
+                  {casePack.length === 0 ? (
+                    <EmptyState description="Belum ada sumber yang dilampirkan pada kasus ini." />
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                      {casePack.map((source) => (
+                        <EvidenceCard
+                          key={source.sourceId}
+                          item={{
+                            id: source.sourceId,
+                            title: source.title,
+                            publisher: source.publisher,
+                            sourceType: source.sourceType,
+                            isRequired: source.isRequired,
+                            isVerified: verifiedIds.has(source.sourceId),
+                          }}
+                          href={
+                            primaryActivity
+                              ? `/app/student/sources/${source.sourceId}?activity=${primaryActivity.id}`
+                              : `/app/student/sources/${source.sourceId}`
+                          }
+                        />
+                      ))}
+                    </div>
+                  )}
                 </section>
 
                 {primaryActivity && workState ? (

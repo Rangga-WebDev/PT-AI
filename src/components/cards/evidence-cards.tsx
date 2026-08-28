@@ -18,7 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { AIFeedbackItem, SourceItem } from "@/types/learning";
+import type { AIFeedbackItem } from "@/types/learning";
+import {
+  SOURCE_TYPE_LABEL,
+  type SourceType,
+} from "@/lib/constants/verification";
 import { cn } from "@/lib/utils";
 
 const AI_KIND_LABEL: Record<AIFeedbackItem["kind"], string> = {
@@ -29,8 +33,17 @@ const AI_KIND_LABEL: Record<AIFeedbackItem["kind"], string> = {
   hint: "Petunjuk",
 };
 
+export interface EvidenceCardItem {
+  id: string;
+  title: string;
+  publisher: string | null;
+  sourceType: SourceType;
+  isRequired: boolean;
+  isVerified: boolean;
+}
+
 interface EvidenceCardProps {
-  item: SourceItem;
+  item: EvidenceCardItem;
   href: string;
   className?: string | undefined;
 }
@@ -40,19 +53,20 @@ export function EvidenceCard({ item, href, className }: EvidenceCardProps) {
     <Card className={cn("border-l-2 border-l-evidence", className)}>
       <CardHeader>
         <p className="font-mono text-xs tracking-widest text-subtle uppercase">
-          {item.sourceType} · {item.version}
+          {SOURCE_TYPE_LABEL[item.sourceType]} ·{" "}
+          {item.isRequired ? "wajib dibaca" : "opsional"}
         </p>
         <CardTitle className="text-base">{item.title}</CardTitle>
         <CardDescription>
-          {item.publisher} · {item.publishedAt}
+          {item.publisher ?? "Penerbit tidak dicatat"}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2">
-        <StatusBadge status={item.verified ? "verified" : "evidence"}>
-          {item.verified ? (
+        <StatusBadge status={item.isVerified ? "verified" : "evidence"}>
+          {item.isVerified ? (
             <>
               <ShieldCheck aria-hidden="true" className="size-3" />
-              Terverifikasi
+              Sudah Anda verifikasi
             </>
           ) : (
             <>
@@ -60,9 +74,6 @@ export function EvidenceCard({ item, href, className }: EvidenceCardProps) {
               Belum diverifikasi
             </>
           )}
-        </StatusBadge>
-        <StatusBadge status="info" withDot={false}>
-          Kredibilitas: {item.credibility}
         </StatusBadge>
       </CardContent>
       <CardFooter>

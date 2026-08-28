@@ -302,9 +302,118 @@ try {
     .eq("id", unitId);
   if (publishError) throw new Error(`publish unit: ${publishError.message}`);
 
+  // --- Sumber terkurasi dan klaim kasus ---------------------------------------
+
+  const caseId = await findOne("cases", "learning_unit_id", unitId);
+  if (!caseId) throw new Error("Kasus unit seed tidak ditemukan.");
+
+  const SOURCE_SEED = [
+    {
+      title:
+        "Peraturan Wali Kota Sukamaju Nomor 14 Tahun 2025 tentang Tata Cara Konsultasi Publik",
+      sourceType: "regulation",
+      publisher: "Pemerintah Kota Sukamaju",
+      authors: "Bagian Hukum Sekretariat Daerah",
+      publishedAt: "2025-03-12",
+      versionLabel: "v1 — dokumen asli",
+      contentText: [
+        "Pengumuman konsultasi publik dilakukan paling singkat tujuh hari kerja sebelum pelaksanaan.",
+        "Penyelenggara wajib menyusun risalah tanggapan atas masukan yang diterima.",
+      ].join("\n\n"),
+    },
+    {
+      title: "Catatan Pemantauan Konsultasi Publik Ruang Terbuka Hijau",
+      sourceType: "report",
+      publisher: "Lembaga Pemantau Kebijakan Warga",
+      authors: "Tim Pemantau Kebijakan",
+      publishedAt: "2026-07-02",
+      versionLabel: "v2 — revisi metodologi",
+      contentText: [
+        "Dari 31 masukan tertulis, 19 di antaranya tidak memperoleh tanggapan tertulis hingga tanggal pemantauan.",
+        "Metode pemantauan berupa penelusuran dokumen publik dan wawancara terbatas.",
+      ].join("\n\n"),
+    },
+  ];
+
+  let sequence = 0;
+  for (const item of SOURCE_SEED) {
+    sequence += 1;
+    let sourceId = await findOne("sources", "title", item.title);
+
+    if (!sourceId) {
+      const { data, error } = await supabase
+        .from("sources")
+        .insert({
+          organization_id: organization.id,
+          title: item.title,
+          authors: item.authors,
+          publisher: item.publisher,
+          source_type: item.sourceType,
+          published_at: item.publishedAt,
+          created_by: lecturerId,
+        })
+        .select("id")
+        .single();
+      if (error) throw new Error(`sources: ${error.message}`);
+      sourceId = data.id;
+    }
+
+    const existingVersion = await findOne(
+      "source_versions",
+      "source_id",
+      sourceId,
+      { version_label: item.versionLabel },
+    );
+
+    if (!existingVersion) {
+      const { error } = await supabase.from("source_versions").insert({
+        source_id: sourceId,
+        version_label: item.versionLabel,
+        retrieved_at: new Date().toISOString(),
+        content_text: item.contentText,
+        created_by: lecturerId,
+      });
+      if (error) throw new Error(`source_versions: ${error.message}`);
+    }
+
+    const attached = await findOne("case_sources", "case_id", caseId, {
+      source_id: sourceId,
+    });
+
+    if (!attached) {
+      const { error } = await supabase.from("case_sources").insert({
+        case_id: caseId,
+        source_id: sourceId,
+        sequence,
+        is_required: sequence === 1,
+      });
+      if (error) throw new Error(`case_sources: ${error.message}`);
+    }
+  }
+
+  const CLAIM_SEED = [
+    "Proses konsultasi publik telah memenuhi ketentuan formal.",
+    "Sebagian besar masukan tertulis warga tidak memperoleh tanggapan.",
+  ];
+
+  for (const text of CLAIM_SEED) {
+    const existing = await findOne("claims", "case_id", caseId, { text });
+    if (existing) continue;
+
+    const { error } = await supabase.from("claims").insert({
+      case_id: caseId,
+      origin: "case",
+      text,
+      author_id: lecturerId,
+    });
+    if (error) throw new Error(`claims: ${error.message}`);
+  }
+
   console.log("  Modul       : Modul 1 (terbit)");
   console.log("  Unit        : Partisipasi Warga dalam Konsultasi Publik");
-  console.log("  Kasus       : 1 · Aktivitas: 1 (tahap interpretasi)\n");
+  console.log("  Kasus       : 1 · Aktivitas: 1 (tahap interpretasi)");
+  console.log("  Sumber      : 2 terkurasi + terlampir ke kasus");
+  console.log("  Klaim kasus : 2\n");
 } catch (error) {
   console.error(`\n[GAGAL] ${error.message}\n`);
   process.exit(1);

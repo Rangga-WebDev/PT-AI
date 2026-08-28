@@ -6,24 +6,62 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 
 ## Status Fase
 
-| Fase | Nama                                | Status                                    | Mulai      | Selesai    |
-| ---- | ----------------------------------- | ----------------------------------------- | ---------- | ---------- |
-| 0    | Repository Audit and Planning       | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
-| 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
-| 2    | Design System and Application Shell | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
-| 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
-| 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5 | 2026-08-11 | 2026-08-12 |
-| 5    | Supabase SSR Authentication         | ✅ SELESAI — menunggu persetujuan PHASE 6 | 2026-08-12 | 2026-08-12 |
-| 6    | Academic Structure                  | ✅ SELESAI — disetujui                    | 2026-08-12 | 2026-08-12 |
-| 7    | Course Builder                      | ✅ SELESAI — disetujui                    | 2026-08-12 | 2026-08-12 |
-| 8    | Student Learning Workspace          | ✅ SELESAI — menunggu persetujuan PHASE 9 | 2026-08-28 | 2026-08-28 |
-| 9    | Source Verification                 | ⬜ Belum dimulai                          | —          | —          |
-| 10   | AI Coach and RAG                    | ⬜ Belum dimulai                          | —          | —          |
-| 11   | Mastery and Branching               | ⬜ Belum dimulai                          | —          | —          |
-| 12   | Revision and Reflection             | ⬜ Belum dimulai                          | —          | —          |
-| 13   | Analytics                           | ⬜ Belum dimulai                          | —          | —          |
-| 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
-| 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
+| Fase | Nama                                | Status                                     | Mulai      | Selesai    |
+| ---- | ----------------------------------- | ------------------------------------------ | ---------- | ---------- |
+| 0    | Repository Audit and Planning       | ✅ SELESAI — disetujui                     | 2026-08-05 | 2026-08-05 |
+| 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                     | 2026-08-05 | 2026-08-05 |
+| 2    | Design System and Application Shell | ✅ SELESAI — disetujui                     | 2026-08-05 | 2026-08-05 |
+| 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4  | 2026-08-11 | 2026-08-11 |
+| 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5  | 2026-08-11 | 2026-08-12 |
+| 5    | Supabase SSR Authentication         | ✅ SELESAI — menunggu persetujuan PHASE 6  | 2026-08-12 | 2026-08-12 |
+| 6    | Academic Structure                  | ✅ SELESAI — disetujui                     | 2026-08-12 | 2026-08-12 |
+| 7    | Course Builder                      | ✅ SELESAI — disetujui                     | 2026-08-12 | 2026-08-12 |
+| 8    | Student Learning Workspace          | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
+| 9    | Source Verification                 | ✅ SELESAI — menunggu persetujuan PHASE 10 | 2026-08-28 | 2026-08-28 |
+| 10   | AI Coach and RAG                    | ⬜ Belum dimulai                           | —          | —          |
+| 11   | Mastery and Branching               | ⬜ Belum dimulai                           | —          | —          |
+| 12   | Revision and Reflection             | ⬜ Belum dimulai                           | —          | —          |
+| 13   | Analytics                           | ⬜ Belum dimulai                           | —          | —          |
+| 14   | Research and Governance             | ⬜ Belum dimulai                           | —          | —          |
+| 15   | Production Hardening                | ⬜ Belum dimulai                           | —          | —          |
+
+## Log PHASE 9 — Source Verification (2026-08-28)
+
+### Yang dikerjakan
+
+- **Kurasi sumber dosen** di `/app/lecturer/sources`: sumber, metadata, dan versi. Versi dipisahkan agar kutipan tetap dapat ditelusuri saat sumber diperbarui.
+- **Source pack kasus** dikelola dari halaman unit perancang materi. Sumber yang dilampirkan menjadi batas bukti — dan nanti menjadi batas cakupan RAG.
+- **Klaim kasus** (`origin='case'`) dibuat dosen sebagai bahan penautan bukti.
+- **Verifikasi enam kriteria** tersimpan ke `source_verifications`. Constraint `ck_source_verifications_checklist` menuntut keenam kunci ada, sehingga checklist setengah jadi ditolak database, bukan hanya oleh UI.
+- **Penautan klaim ke bukti** lewat `claim_source_links` dengan tiga jenis tautan; penaut dapat mencabut tautannya sendiri karena menautkan bukti adalah kerja eksploratif, berbeda dari attempt.
+- **Halaman tahap dan dashboard mahasiswa** menampilkan sumber nyata beserta status verifikasinya.
+- `src/mocks/sources.ts` dan `src/mocks/claims.ts` **dihapus**; tipe `SourceItem`, `SourceCredibility`, `VerificationCriterion`, dan `ClaimItem` dibuang dari `types/learning.ts`.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------ |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                                      |
+| `npm run test`               | ✅ 15 file, **84 test** lulus                                                  |
+| `npm run test:db`            | ✅ **57/57** lulus (18 RLS + 8 akademik + 10 konten + 10 attempt + 11 sumber)  |
+| `npm run test:e2e`           | ✅ **53/53** lulus; `verification.spec.ts` dijalankan dua kali dan tetap hijau |
+| `npm run build`              | ✅ 29 route                                                                    |
+| `npm run check:secrets`      | ✅ nol kebocoran                                                               |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                                      |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Runner pgTAP tidak memeriksa kecocokan `plan(n)`.** Berkas `source-access.test.sql` berisi 11 skenario tetapi ditulis `plan(10)`, dan runner tetap melaporkan lulus. Runner kini menolak berkas yang jumlah testnya berbeda dari plan-nya — tanpa itu, test yang berhenti di tengah jalan bisa lolos diam-diam.
+2. **`source_verifications` ternyata append-only.** Sama seperti `attempts`, tabel ini memakai trigger `prevent_mutation()`. Fixture E2E diperluas agar juga membuat sumber dan klaim sekali pakai.
+3. **Test warisan memakai id sumber mock.** `student.spec.ts` masih membuka `/app/student/sources/sumber-berita-daring`; pengujian checklist dipindahkan ke `verification.spec.ts` yang memiliki konteks aktivitas.
+
+### Mock yang masih tersisa
+
+`src/mocks/{ai-feedback,analytics,users}.ts` — dihapus pada PHASE 10 dan 13.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 10 — AI Coach and RAG.
 
 ## Log PHASE 8 — Student Learning Workspace (2026-08-28)
 

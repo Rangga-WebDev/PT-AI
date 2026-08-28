@@ -71,16 +71,33 @@ try {
       fail(`${file}: ${error.message}`);
     }
 
+    let planned = null;
+    let ran = 0;
+
     for (const line of lines) {
+      const plan = /^1\.\.(\d+)$/.exec(line.trim());
+      if (plan?.[1]) planned = Number(plan[1]);
+
       if (line.startsWith("not ok")) {
         failed += 1;
+        ran += 1;
         console.log(`  ✗ ${line}`);
       } else if (line.startsWith("ok ")) {
         passed += 1;
+        ran += 1;
         console.log(`  ✓ ${line}`);
       } else if (line.trim().length > 0) {
         console.log(`    ${line}`);
       }
+    }
+
+    // plan(n) yang tidak cocok berarti ada test yang lupa dihitung atau
+    // berhenti di tengah jalan; keduanya menyesatkan bila dibiarkan lolos.
+    if (planned !== null && planned !== ran) {
+      failed += 1;
+      console.log(
+        `  ✗ plan tidak cocok: plan(${planned}) tetapi ${ran} test dijalankan`,
+      );
     }
   }
 

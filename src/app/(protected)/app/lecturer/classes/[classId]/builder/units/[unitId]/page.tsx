@@ -15,6 +15,10 @@ import {
   CreateInstructionForm,
   StageForm,
 } from "@/features/course-builder/components/builder-forms";
+import {
+  AttachSourceForm,
+  CreateCaseClaimForm,
+} from "@/features/verification/components/case-source-forms";
 import { publishActivityAction } from "@/actions/courses/content";
 import {
   ACTIVITY_TYPE_LABEL,
@@ -22,9 +26,18 @@ import {
   PUBLICATION_LABEL,
   STAGE_LABEL,
 } from "@/lib/constants/stages";
+import {
+  LINK_TYPE_LABEL,
+  SOURCE_TYPE_LABEL,
+} from "@/lib/constants/verification";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import { getUnitDetail } from "@/server/repositories/content";
 import { listRubrics } from "@/server/repositories/rubrics";
+import {
+  listCaseClaims,
+  listCaseSources,
+  listSources,
+} from "@/server/repositories/sources";
 
 export default async function BuilderUnitPage({
   params,
@@ -36,7 +49,19 @@ export default async function BuilderUnitPage({
   const detail = await getUnitDetail(unitId);
   if (!detail || detail.unit.classId !== classId) notFound();
 
-  const rubrics = await listRubrics();
+  const caseId = detail.caseDetail?.id ?? null;
+
+  const [rubrics, allSources, casePack, caseClaims] = await Promise.all([
+    listRubrics(),
+    listSources(),
+    caseId ? listCaseSources(caseId) : Promise.resolve([]),
+    caseId ? listCaseClaims(caseId) : Promise.resolve([]),
+  ]);
+
+  const attachedIds = new Set(casePack.map((item) => item.sourceId));
+  const attachableSources = allSources
+    .filter((source) => !attachedIds.has(source.id))
+    .map((source) => ({ id: source.id, label: source.title }));
 
   const stageOptions = detail.stages.map((stage) => ({
     id: stage.id,
@@ -85,6 +110,89 @@ export default async function BuilderUnitPage({
             }
           />
         </AnalyticsCard>
+
+        {caseId ? (
+          <AnalyticsCard
+            title="Source pack kasus"
+            description="Sumber yang dilampirkan menjadi batas bukti yang boleh dipakai mahasiswa."
+          >
+            <div className="flex flex-col gap-4">
+              {casePack.length === 0 ? (
+                <EmptyState description="Belum ada sumber terlampir pada kasus ini." />
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {casePack.map((item) => (
+                    <li
+                      key={item.sourceId}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
+                    >
+                      <div className="flex min-w-0 flex-col">
+                        <span className="text-sm text-foreground">
+                          {item.sequence}. {item.title}
+                        </span>
+                        <span className="font-mono text-xs text-subtle">
+                          {SOURCE_TYPE_LABEL[item.sourceType]}
+                          {item.publisher ? ` · ${item.publisher}` : ""}
+                        </span>
+                      </div>
+                      <StatusBadge
+                        status={item.isRequired ? "evidence" : "info"}
+                      >
+                        {item.isRequired ? "Wajib" : "Opsional"}
+                      </StatusBadge>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {attachableSources.length > 0 ? (
+                <AttachSourceForm caseId={caseId} sources={attachableSources} />
+              ) : (
+                <p className="text-xs text-subtle">
+                  Seluruh sumber terkurasi sudah dilampirkan. Tambahkan sumber
+                  baru melalui halaman Kurasi sumber.
+                </p>
+              )}
+            </div>
+          </AnalyticsCard>
+        ) : null}
+
+        {caseId ? (
+          <AnalyticsCard
+            title="Klaim kasus"
+            description="Klaim yang harus ditelaah mahasiswa dan ditautkan ke bukti."
+          >
+            <div className="flex flex-col gap-4">
+              {caseClaims.length === 0 ? (
+                <EmptyState description="Belum ada klaim pada kasus ini." />
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {caseClaims.map((claim) => (
+                    <li
+                      key={claim.id}
+                      className="flex flex-col gap-1 rounded-lg border border-border px-3 py-2"
+                    >
+                      <span className="text-sm text-foreground">
+                        {claim.text}
+                      </span>
+                      <span className="font-mono text-xs text-subtle">
+                        {claim.links.length === 0
+                          ? "Belum ada bukti tertaut"
+                          : claim.links
+                              .map(
+                                (link) =>
+                                  `${LINK_TYPE_LABEL[link.linkType]}: ${link.sourceTitle}`,
+                              )
+                              .join(" · ")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <CreateCaseClaimForm caseId={caseId} />
+            </div>
+          </AnalyticsCard>
+        ) : null}
 
         <AnalyticsCard
           title="Enam tahap berpikir kritis"

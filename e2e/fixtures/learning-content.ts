@@ -11,6 +11,10 @@ const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
 export interface DisposableUnit {
   unitId: string;
   activityId: string;
+  caseId: string;
+  sourceId: string;
+  sourceTitle: string;
+  claimId: string;
 }
 
 export async function createDisposableUnit(): Promise<DisposableUnit> {
@@ -49,6 +53,17 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
     throw new Error("Dosen pengampu kelas seed tidak ditemukan.");
   }
 
+  const { data: lecturerProfile } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("id", lecturer.lecturer_id)
+    .single();
+
+  const organizationId = lecturerProfile?.organization_id;
+  if (!organizationId) {
+    throw new Error("Organisasi dosen pengampu tidak ditemukan.");
+  }
+
   const { data: last } = await supabase
     .from("learning_units")
     .select("sequence")
@@ -78,17 +93,21 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
     throw new Error(`Gagal membuat unit uji: ${unitError?.message}`);
   }
 
-  const { error: caseError } = await supabase.from("cases").insert({
-    learning_unit_id: unit.id,
-    title: "Kasus Uji Attempt",
-    context: "Konteks kasus untuk pengujian otomatis",
-    body: "Isi kasus untuk pengujian otomatis respons awal mahasiswa pada alur attempt-first.",
-    key_question: "Bukti apa yang Anda perlukan untuk menilai kasus ini?",
-    created_by: lecturer.lecturer_id,
-  });
+  const { data: caseRow, error: caseError } = await supabase
+    .from("cases")
+    .insert({
+      learning_unit_id: unit.id,
+      title: "Kasus Uji Attempt",
+      context: "Konteks kasus untuk pengujian otomatis",
+      body: "Isi kasus untuk pengujian otomatis respons awal mahasiswa pada alur attempt-first.",
+      key_question: "Bukti apa yang Anda perlukan untuk menilai kasus ini?",
+      created_by: lecturer.lecturer_id,
+    })
+    .select("id")
+    .single();
 
-  if (caseError)
-    throw new Error(`Gagal membuat kasus uji: ${caseError.message}`);
+  if (caseError || !caseRow)
+    throw new Error(`Gagal membuat kasus uji: ${caseError?.message}`);
 
   const { data: stage, error: stageError } = await supabase
     .from("learning_stages")
@@ -129,5 +148,72 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
     throw new Error(`Gagal menerbitkan unit uji: ${publishError.message}`);
   }
 
-  return { unitId: unit.id, activityId: activity.id };
+  // Sumber dan klaim juga sekali pakai: source_verifications append-only.
+  const sourceTitle = `Sumber Uji ${stamp}`;
+  const { data: source, error: sourceError } = await supabase
+    .from("sources")
+    .insert({
+      organization_id: organizationId,
+      title: sourceTitle,
+      authors: "Tim Uji Otomatis",
+      publisher: "Lembaga Uji",
+      source_type: "report",
+      created_by: lecturer.lecturer_id,
+    })
+    .select("id")
+    .single();
+
+  if (sourceError || !source) {
+    throw new Error(`Gagal membuat sumber uji: ${sourceError?.message}`);
+  }
+
+  const { error: versionError } = await supabase
+    .from("source_versions")
+    .insert({
+      source_id: source.id,
+      version_label: "v1 — uji",
+      retrieved_at: stamp,
+      content_text:
+        "Kutipan sumber untuk pengujian otomatis verifikasi enam kriteria.",
+      created_by: lecturer.lecturer_id,
+    });
+
+  if (versionError) {
+    throw new Error(`Gagal membuat versi sumber uji: ${versionError.message}`);
+  }
+
+  const { error: packError } = await supabase.from("case_sources").insert({
+    case_id: caseRow.id,
+    source_id: source.id,
+    sequence: 1,
+    is_required: true,
+  });
+
+  if (packError) {
+    throw new Error(`Gagal melampirkan sumber uji: ${packError.message}`);
+  }
+
+  const { data: claim, error: claimError } = await supabase
+    .from("claims")
+    .insert({
+      case_id: caseRow.id,
+      origin: "case",
+      text: "Klaim uji otomatis yang harus ditautkan ke bukti.",
+      author_id: lecturer.lecturer_id,
+    })
+    .select("id")
+    .single();
+
+  if (claimError || !claim) {
+    throw new Error(`Gagal membuat klaim uji: ${claimError?.message}`);
+  }
+
+  return {
+    unitId: unit.id,
+    activityId: activity.id,
+    caseId: caseRow.id,
+    sourceId: source.id,
+    sourceTitle,
+    claimId: claim.id,
+  };
 }

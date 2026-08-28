@@ -90,35 +90,8 @@ export interface CaseDetail {
   sourceIds: string[];
 }
 
-export type SourceCredibility = "tinggi" | "sedang" | "perlu-telaah";
-
-export interface SourceItem {
-  id: string;
-  title: string;
-  publisher: string;
-  authors: string;
-  publishedAt: string;
-  accessedAt: string;
-  sourceType: string;
-  url: string;
-  version: string;
-  credibility: SourceCredibility;
-  verified: boolean;
-  excerpt: string[];
-}
-
-/** Kriteria penilaian sumber oleh mahasiswa (LOCK-PED-007). */
-export interface VerificationCriterion {
-  id: string;
-  label: string;
-  question: string;
-}
-
-export interface ClaimItem {
-  id: string;
-  text: string;
-  linkedSourceIds: string[];
-}
+// Tipe sumber, kriteria verifikasi, dan klaim kini berasal dari database:
+// lihat src/lib/constants/verification.ts dan src/server/repositories/sources.ts.
 
 export interface AIFeedbackItem {
   id: string;

@@ -17,9 +17,9 @@ import { PageHeader } from "@/components/layout/page-header";
 import { MockBanner } from "@/components/shared/mock-banner";
 import { Button } from "@/components/ui/button";
 import { MOCK_DIMENSION_PROGRESS } from "@/mocks/analytics";
-import { MOCK_SOURCES } from "@/mocks/sources";
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { listStudentUnits } from "@/server/repositories/content";
+import { listPendingSourcesForStudent } from "@/server/repositories/sources";
 
 export const metadata: Metadata = {
   title: "Dashboard mahasiswa",
@@ -29,9 +29,11 @@ export default async function StudentDashboardPage() {
   const user = await requireStudentAccess();
   const firstName = user.fullName.split(" ")[0] ?? user.fullName;
 
-  const units = await listStudentUnits();
+  const [units, pendingSources] = await Promise.all([
+    listStudentUnits(),
+    listPendingSourcesForStudent(user.id),
+  ]);
   const activeUnit = units[0] ?? null;
-  const unverifiedSources = MOCK_SOURCES.filter((source) => !source.verified);
 
   return (
     <PageContainer>
@@ -92,7 +94,7 @@ export default async function StudentDashboardPage() {
           <InsightCard
             className="md:col-span-4 lg:col-span-3"
             label="Sumber perlu diperiksa"
-            value={String(unverifiedSources.length)}
+            value={String(pendingSources.length)}
             tone="evidence"
             description="Verifikasi sumber sebelum dipakai sebagai bukti."
           />
@@ -104,12 +106,19 @@ export default async function StudentDashboardPage() {
 
           <MockBanner className="md:col-span-12" />
 
-          {unverifiedSources.slice(0, 2).map((source) => (
+          {pendingSources.slice(0, 2).map((source) => (
             <EvidenceCard
-              key={source.id}
+              key={source.sourceId}
               className="md:col-span-4 lg:col-span-6"
-              item={source}
-              href={`/app/student/sources/${source.id}`}
+              item={{
+                id: source.sourceId,
+                title: source.title,
+                publisher: source.publisher,
+                sourceType: source.sourceType,
+                isRequired: source.isRequired,
+                isVerified: false,
+              }}
+              href={`/app/student/sources/${source.sourceId}?activity=${source.activityId}`}
             />
           ))}
         </BentoGrid>
