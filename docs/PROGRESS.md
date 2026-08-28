@@ -15,8 +15,8 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5 | 2026-08-11 | 2026-08-12 |
 | 5    | Supabase SSR Authentication         | ✅ SELESAI — menunggu persetujuan PHASE 6 | 2026-08-12 | 2026-08-12 |
 | 6    | Academic Structure                  | ✅ SELESAI — disetujui                    | 2026-08-12 | 2026-08-12 |
-| 7    | Course Builder                      | ✅ SELESAI — menunggu persetujuan PHASE 8 | 2026-08-12 | 2026-08-12 |
-| 8    | Student Learning Workspace          | ⬜ Belum dimulai                          | —          | —          |
+| 7    | Course Builder                      | ✅ SELESAI — disetujui                    | 2026-08-12 | 2026-08-12 |
+| 8    | Student Learning Workspace          | ✅ SELESAI — menunggu persetujuan PHASE 9 | 2026-08-28 | 2026-08-28 |
 | 9    | Source Verification                 | ⬜ Belum dimulai                          | —          | —          |
 | 10   | AI Coach and RAG                    | ⬜ Belum dimulai                          | —          | —          |
 | 11   | Mastery and Branching               | ⬜ Belum dimulai                          | —          | —          |
@@ -24,6 +24,44 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 13   | Analytics                           | ⬜ Belum dimulai                          | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                          | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                          | —          | —          |
+
+## Log PHASE 8 — Student Learning Workspace (2026-08-28)
+
+### Yang dikerjakan
+
+- **Attempt-first menjadi jaminan database.** `attempt_drafts` (mutable) dipakai untuk autosave, `attempts` (append-only) untuk baseline. Setelah baseline tersimpan, editor hilang permanen dan draf dihapus agar tidak ada dua sumber kebenaran.
+- **Repository** `src/server/repositories/attempts.ts`: keadaan kerja per aktivitas, riwayat pengiriman mahasiswa, dan antrean tinjauan dosen.
+- **Server Actions** `src/actions/learning/attempts.ts`: `saveDraftAction` dan `submitAttemptAction`. `content_hash` dihitung di server dengan `node:crypto`; nilai dari klien tidak dipercaya.
+- **Idempotensi pengiriman.** `client_submission_id` dibuat sekali per sesi editor. Kiriman ulang dengan penanda sama dijawab sebagai berhasil, bukan galat, sehingga klik ganda tidak menghasilkan baseline ganda.
+- **`AnswerEditor`** dengan autosave ter-debounce 1,5 detik, indikator status `role="status"`, dan penghitung karakter.
+- **Halaman progres mahasiswa** dan **antrean tinjauan dosen** membaca respons nyata. Halaman dosen tidak menyediakan satu pun kendali ubah.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                                    |
+| `npm run test`               | ✅ 14 file, **73 test** lulus                                                |
+| `npm run test:db`            | ✅ **46/46** lulus (18 RLS + 8 akademik + 10 konten + 10 integritas attempt) |
+| `npm run test:e2e`           | ✅ **45/45** lulus; `attempt.spec.ts` dijalankan dua kali dan tetap hijau    |
+| `npm run build`              | ✅ 28 route                                                                  |
+| `npm run check:secrets`      | ✅ nol kebocoran                                                             |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                                    |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Proyek Supabase sempat tidak dapat dijangkau.** Host proyek gagal diresolusi lewat DNS lokal maupun 8.8.8.8 dan 1.1.1.1, sementara host Supabase lain normal — proyek dijeda. Verifikasi ditahan dan PHASE 8 **tidak** dinyatakan selesai sampai `test:db` dan `test:e2e` benar-benar dijalankan.
+2. **Uji E2E saling merusak keadaan.** Setelah pengiriman menjadi nyata, `student.spec.ts` warisan PHASE 7 ikut membuat baseline sungguhan sehingga `attempt.spec.ts` kehilangan editornya. Karena baseline append-only dan tidak dapat dihapus siapa pun, pengujian attempt kini memakai **unit sekali pakai** yang dibuat fixture `e2e/fixtures/learning-content.ts`. Asersi penguncian AI dipindahkan sepenuhnya ke `attempt.spec.ts`.
+3. **Asersi teks ganda.** `getByText(/Draf tersimpan/i)` cocok ke indikator status sekaligus kalimat penjelasan di bawah editor; asersi dipersempit ke `role="status"`.
+4. **Timeout kompilasi awal.** Eksekusi E2E pertama setelah server dev dingin menghasilkan dua kegagalan `waitForURL`; keduanya hijau setelah server terkompilasi. Bukan cacat aplikasi.
+
+### Mock yang masih tersisa
+
+`src/mocks/{sources,claims,ai-feedback,analytics,users}.ts` — dihapus pada PHASE 9, 10, dan 13.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 9 — Source Verification.
 
 ## Log PHASE 7 — Course Builder (2026-08-12)
 

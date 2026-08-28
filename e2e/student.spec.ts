@@ -76,28 +76,9 @@ test.describe("Ruang belajar mahasiswa", () => {
     ).toBeVisible();
   });
 
-  test("ruang belajar mengunci AI sebelum respons awal disimpan", async ({
-    page,
-  }) => {
-    await page.goto("/app/student/dashboard");
-    await page
-      .getByRole("link", { name: /Lanjutkan tahap/i })
-      .first()
-      .click();
-
-    await expect(page.getByText("Bantuan AI terkunci")).toBeVisible();
-    await expect(page.locator('[data-slot="ai-feedback-panel"]')).toHaveCount(
-      0,
-    );
-
-    await page
-      .getByLabel(/Tuliskan jawaban Anda/i)
-      .fill("Partisipasi belum bermakna karena bukti kehadiran tidak memadai.");
-    await page.getByRole("button", { name: /Simpan respons awal/i }).click();
-
-    await expect(page.locator('[data-slot="ai-feedback-panel"]')).toBeVisible();
-    await expect(page.getByText("Batas peran AI")).toBeVisible();
-  });
+  // Penguncian AI dan pengiriman baseline diuji di attempt.spec.ts memakai unit
+  // sekali pakai, karena baseline append-only membuat status di sini berubah
+  // permanen setelah satu kali pengiriman.
 
   test("halaman sumber menampilkan checklist verifikasi enam kriteria", async ({
     page,

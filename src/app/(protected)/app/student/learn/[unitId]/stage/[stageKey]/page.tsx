@@ -23,6 +23,7 @@ import {
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { MOCK_AI_FEEDBACK } from "@/mocks/ai-feedback";
 import { MOCK_SOURCES } from "@/mocks/sources";
+import { getActivityWorkState } from "@/server/repositories/attempts";
 import { getStudentUnitWorkspace } from "@/server/repositories/content";
 import type { LearningStage } from "@/types/learning";
 
@@ -39,7 +40,7 @@ export default async function LearnStagePage({
 }: PageProps<"/app/student/learn/[unitId]/stage/[stageKey]">) {
   const { unitId, stageKey } = await params;
 
-  await requireStudentAccess();
+  const student = await requireStudentAccess();
 
   const workspace = await getStudentUnitWorkspace(unitId);
   if (!workspace) notFound();
@@ -48,6 +49,13 @@ export default async function LearnStagePage({
   if (!stage) notFound();
 
   const access = resolveStageAccess(stage.sequence, stage.isEnabled);
+
+  // Aktivitas pertama tahap menjadi titik masuk penulisan respons awal.
+  const primaryActivity = stage.activities[0] ?? null;
+  const workState =
+    access === "available" && primaryActivity
+      ? await getActivityWorkState(primaryActivity.id, student.id)
+      : null;
 
   // Status ketuntasan nyata baru tersedia setelah attempt dan penilaian ada
   // (PHASE 8 dan PHASE 11); sampai saat itu tahap ditampilkan apa adanya.
@@ -187,14 +195,23 @@ export default async function LearnStagePage({
                   </div>
                 </section>
 
-                <AttemptGate
-                  prompt={
-                    stage.activities[0]?.prompt ??
-                    workspace.caseDetail?.keyQuestion ??
-                    "Tuliskan respons awal Anda."
-                  }
-                  aiFeedback={MOCK_AI_FEEDBACK}
-                />
+                {primaryActivity && workState ? (
+                  <AttemptGate
+                    activityId={primaryActivity.id}
+                    prompt={primaryActivity.prompt}
+                    initialDraft={workState.draft}
+                    initialSavedAt={workState.draftUpdatedAt}
+                    baseline={
+                      workState.baseline
+                        ? {
+                            content: workState.baseline.content,
+                            submittedAt: workState.baseline.submittedAt,
+                          }
+                        : null
+                    }
+                    aiFeedback={MOCK_AI_FEEDBACK}
+                  />
+                ) : null}
 
                 {currentNavStage ? (
                   <MasteryStatus stage={currentNavStage} />

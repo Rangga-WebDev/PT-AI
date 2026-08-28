@@ -130,6 +130,22 @@ Aturan perubahan:
 | OPEN-005 | Strategi rate limiting (per user, per class, per activity)                                         | OPEN                                                                | PHASE 10                       |
 | OPEN-006 | Kebijakan retensi data penelitian                                                                  | OPEN                                                                | PHASE 14                       |
 
+## 6a. Change Request
+
+| ID     | Usulan                                                                              | Status                           | Diajukan   |
+| ------ | ----------------------------------------------------------------------------------- | -------------------------------- | ---------- |
+| CR-001 | Mengganti penyedia AI pada LOCK-TECH-022 dari OpenAI ke Google Gemini (tier gratis) | **DIAJUKAN** — final di PHASE 10 | 2026-08-28 |
+
+**CR-001 — detail**
+
+- **Alasan.** Pembimbing mengarahkan pemakaian layanan AI tanpa biaya.
+- **Konteks etik.** Pengguna menyatakan penelitian ini tidak memerlukan izin etik dan mahasiswa telah menyetujui keikutsertaan. Konsekuensi tier gratis Gemini — konten dipakai penyedia untuk memperbaiki produknya — karena itu diterima secara sadar.
+- **Dampak.** `LOCK-TECH-022` berubah pada nama penyedia saja. Bentuk akses tetap server-only provider adapter, dan larangan pemanggilan dari browser tetap berlaku.
+- **Dampak skema.** `DB-03` (`vector(1536)`) tetap dapat dipertahankan dengan menyetel `output_dimensionality` model embedding Gemini ke 1536 dan menormalisasi ulang vektor. Tidak ada migration baru.
+- **Risiko.** (1) Kuota tier gratis terbatas sehingga uji beban kelas penuh dapat tertahan; (2) konten mahasiswa dipakai penyedia; (3) dimensi embedding perlu dipotong, bukan native.
+- **Mitigasi wajib.** Prompt dipseudonimkan — tanpa nama dan tanpa NIM; hanya teks kasus, rubrik, potongan sumber, dan jawaban anonim.
+- **Alternatif yang dipertimbangkan.** Tetap OpenAI berbayar (≈$1,3–5,7 per kelas per semester); model open-source swahosting (gratis dan data tidak keluar, tetapi tidak dapat berjalan di Vercel).
+
 ## 7. Keputusan Ditunda (DEFERRED)
 
 | ID      | Item                                            | Status   | Alasan                                                                      |

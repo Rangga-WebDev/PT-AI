@@ -4,6 +4,29 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 8] — 2026-08-28 — Student Learning Workspace
+
+### Ditambahkan
+
+- `src/server/repositories/attempts.ts` — keadaan kerja aktivitas, riwayat mahasiswa, antrean tinjauan dosen.
+- `src/actions/learning/attempts.ts` — `saveDraftAction` dan `submitAttemptAction` dengan `content_hash` sisi server dan idempotensi `client_submission_id`.
+- `src/lib/validation/attempts.ts` — skema Zod draf dan pengiriman respons awal.
+- `src/features/learning-workspace/components/answer-editor.tsx` — autosave ter-debounce dengan indikator status.
+- `e2e/fixtures/learning-content.ts` — pembuat unit sekali pakai untuk pengujian attempt yang dapat diulang.
+- Test: `attempt-validation.test.ts` (5), `attempt-integrity.test.sql` (10), `attempt.spec.ts` (6), `review.spec.ts` (2).
+
+### Diubah
+
+- `AttemptGate` membaca draf dan baseline dari database; keadaan tidak lagi disimulasikan di klien.
+- Halaman tahap mahasiswa memuat keadaan kerja aktivitas pertama tahap tersebut.
+- `/app/student/progress` menampilkan respons yang sudah dikirim; `/app/lecturer/review` menampilkan antrean nyata tanpa kendali ubah.
+- `student.spec.ts` tidak lagi mengirim baseline — penguncian AI diuji di `attempt.spec.ts` dengan data sekali pakai.
+- `playwright.config.ts` mendaftarkan `attempt.spec.ts` dan `review.spec.ts`.
+
+### Dependency baru
+
+Tidak ada.
+
 ## [PHASE 7] — 2026-08-12 — Course Builder
 
 ### Ditambahkan

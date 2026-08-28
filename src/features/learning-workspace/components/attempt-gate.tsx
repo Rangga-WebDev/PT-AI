@@ -2,29 +2,48 @@
 
 "use client";
 
-import { CloudCheck, Lock, Save } from "lucide-react";
+import { Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { StatusBadge } from "@/components/shared/status-badge";
 import { AIFeedbackPanel } from "@/features/ai-coach/components/ai-feedback-panel";
+import { AnswerEditor } from "@/features/learning-workspace/components/answer-editor";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { AIFeedbackItem } from "@/types/learning";
 
 interface AttemptGateProps {
+  activityId: string;
   prompt: string;
+  initialDraft: string;
+  initialSavedAt: string | null;
+  baseline: { content: string; submittedAt: string } | null;
   aiFeedback: AIFeedbackItem[];
 }
 
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 /**
- * Attempt-first (LOCK-PED-004): bantuan AI substantif terkunci sampai
- * respons awal disimpan, dan baseline tidak dapat ditimpa setelah tersimpan.
- * Pada PHASE 3 penyimpanan hanya simulasi state lokal.
+ * Attempt-first (LOCK-PED-004): bantuan AI substantif terkunci sampai respons
+ * awal tersimpan. Baseline bersifat append-only di database — UI hanya
+ * mencerminkan aturan itu, bukan menegakkannya.
  */
-export function AttemptGate({ prompt, aiFeedback }: AttemptGateProps) {
-  const [draft, setDraft] = useState("");
-  const [baseline, setBaseline] = useState<string | null>(null);
+export function AttemptGate({
+  activityId,
+  prompt,
+  initialDraft,
+  initialSavedAt,
+  baseline,
+  aiFeedback,
+}: AttemptGateProps) {
+  const router = useRouter();
   const [revision, setRevision] = useState("");
 
   const hasAttempt = baseline !== null;
@@ -48,41 +67,23 @@ export function AttemptGate({ prompt, aiFeedback }: AttemptGateProps) {
         </div>
         <p className="text-sm text-muted-foreground">{prompt}</p>
 
-        {hasAttempt ? (
+        {baseline ? (
           <div className="flex flex-col gap-2">
             <p className="font-mono text-xs tracking-widest text-subtle uppercase">
-              Baseline — tidak dapat diubah
+              Baseline — tidak dapat diubah · dikirim{" "}
+              {formatDateTime(baseline.submittedAt)}
             </p>
             <blockquote className="rounded-lg border border-border bg-surface-active/50 p-4 text-sm whitespace-pre-wrap text-muted-foreground">
-              {baseline}
+              {baseline.content}
             </blockquote>
           </div>
         ) : (
-          <>
-            <Label htmlFor="attempt-answer">
-              Tuliskan jawaban Anda sebelum membuka bantuan AI
-            </Label>
-            <Textarea
-              id="attempt-answer"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              rows={6}
-              placeholder="Uraikan penilaian Anda beserta bukti yang Anda gunakan…"
-            />
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                onClick={() => setBaseline(draft.trim())}
-                disabled={draft.trim().length === 0}
-              >
-                <Save aria-hidden="true" />
-                Simpan respons awal
-              </Button>
-              <span className="inline-flex items-center gap-1.5 font-mono text-xs text-subtle">
-                <CloudCheck aria-hidden="true" className="size-3.5" />
-                Autosave dibangun pada PHASE 8
-              </span>
-            </div>
-          </>
+          <AnswerEditor
+            activityId={activityId}
+            initialDraft={initialDraft}
+            initialSavedAt={initialSavedAt}
+            onSubmitted={() => router.refresh()}
+          />
         )}
       </section>
 

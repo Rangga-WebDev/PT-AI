@@ -32,19 +32,26 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 7)
+## 4. Status Saat Ini (PHASE 8)
 
-| Suite                                 | Jumlah  | Hasil terakhir |
-| ------------------------------------- | ------- | -------------- |
-| Unit dan component (Vitest, 13 file)  | 67 test | ✅ lulus       |
-| SQL/pgTAP `rls.test.sql`              | 18 test | ✅ lulus       |
-| SQL/pgTAP `academic-access.test.sql`  | 8 test  | ✅ lulus       |
-| SQL/pgTAP `content-access.test.sql`   | 10 test | ✅ lulus       |
-| E2E (guest, student, lecturer, admin) | 38 test | ✅ lulus       |
+| Suite                                  | Jumlah  | Hasil terakhir |
+| -------------------------------------- | ------- | -------------- |
+| Unit dan component (Vitest, 14 file)   | 73 test | ✅ lulus       |
+| SQL/pgTAP `rls.test.sql`               | 18 test | ✅ lulus       |
+| SQL/pgTAP `academic-access.test.sql`   | 8 test  | ✅ lulus       |
+| SQL/pgTAP `content-access.test.sql`    | 10 test | ✅ lulus       |
+| SQL/pgTAP `attempt-integrity.test.sql` | 10 test | ✅ lulus       |
+| E2E (guest, student, lecturer, admin)  | 45 test | ✅ lulus       |
 
-Total: 67 unit/component + 36 SQL + 38 E2E. Build menghasilkan 28 route.
+Total: 73 unit/component + 46 SQL + 45 E2E. Build menghasilkan 28 route.
 
-Berkas pengujian PHASE 7: `src/test/content-validation.test.ts`, `supabase/tests/content-access.test.sql`, `e2e/builder.spec.ts`.
+Berkas pengujian PHASE 8: `src/test/attempt-validation.test.ts`, `supabase/tests/attempt-integrity.test.sql`, `e2e/attempt.spec.ts`, `e2e/review.spec.ts`.
+
+### Menguji data yang tidak dapat dibatalkan
+
+`attempts` bersifat append-only dan trigger `prevent_mutation()` menolak UPDATE maupun DELETE dari koneksi mana pun, termasuk `service_role`. Karena itu pengujian tidak dapat membersihkan baseline setelah dijalankan.
+
+Solusinya: `e2e/fixtures/learning-content.ts` membuat **unit sekali pakai** pada setiap eksekusi, sehingga `attempt.spec.ts` selalu bermula dari keadaan kosong dan dapat dijalankan berulang. Spesifikasi lain dilarang mengirim baseline agar tidak merusak keadaan bersama.
 
 ### Catatan pengujian yang mudah menyesatkan
 

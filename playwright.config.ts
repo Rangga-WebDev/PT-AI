@@ -29,7 +29,11 @@ const authenticatedProjects = [
     ? [
         {
           name: "student",
-          testMatch: ["**/auth-session.spec.ts", "**/student.spec.ts"],
+          testMatch: [
+            "**/auth-session.spec.ts",
+            "**/student.spec.ts",
+            "**/attempt.spec.ts",
+          ],
           use: { ...devices["Desktop Chrome"], storageState: STUDENT_STATE },
           dependencies: ["setup"],
         },
@@ -39,7 +43,11 @@ const authenticatedProjects = [
     ? [
         {
           name: "lecturer",
-          testMatch: ["**/lecturer.spec.ts", "**/builder.spec.ts"],
+          testMatch: [
+            "**/lecturer.spec.ts",
+            "**/builder.spec.ts",
+            "**/review.spec.ts",
+          ],
           use: { ...devices["Desktop Chrome"], storageState: LECTURER_STATE },
           dependencies: ["setup"],
         },
