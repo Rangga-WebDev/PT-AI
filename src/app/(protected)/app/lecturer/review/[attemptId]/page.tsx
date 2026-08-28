@@ -7,12 +7,32 @@ import { AnalyticsCard } from "@/components/cards/insight-cards";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { EmptyState } from "@/components/shared/states/empty-state";
+import { LecturerFeedbackForm } from "@/features/assessment/components/lecturer-feedback-form";
 import { ScoringForm } from "@/features/assessment/components/scoring-form";
+import { RevisionHistory } from "@/features/learning-workspace/components/revision-history";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import {
   getAttemptReview,
   listErrorCategories,
 } from "@/server/repositories/mastery";
+import {
+  getReflectionByAttempt,
+  listLecturerFeedback,
+  listRevisions,
+} from "@/server/repositories/revisions";
+
+const REFLECTION_FIELDS = [
+  ["initialSummary", "Jawaban awal"],
+  ["feedbackSummary", "Umpan balik yang diterima"],
+  ["verifiedSourcesSummary", "Sumber yang diverifikasi"],
+  ["finalSummary", "Jawaban akhir"],
+  ["changeReason", "Alasan perubahan"],
+  ["aiAccepted", "Saran AI diterima"],
+  ["aiRejected", "Saran AI ditolak"],
+  ["biasFound", "Bias yang ditemukan"],
+  ["nextStrategy", "Strategi berikutnya"],
+] as const;
 
 const OUTCOME_LABEL: Record<string, string> = {
   not_met: "Belum memenuhi",
@@ -30,7 +50,13 @@ export default async function AttemptReviewPage({
 
   await requireLecturerOfClass(review.classId);
 
-  const errorCategories = await listErrorCategories();
+  const [errorCategories, revisions, reflection, lecturerFeedback] =
+    await Promise.all([
+      listErrorCategories(),
+      listRevisions(attemptId),
+      getReflectionByAttempt(attemptId),
+      listLecturerFeedback(attemptId),
+    ]);
 
   return (
     <PageContainer>
@@ -78,6 +104,7 @@ export default async function AttemptReviewPage({
               title="Keputusan ketuntasan terakhir"
               description="Riwayat keputusan tidak pernah dihapus."
             >
+              {" "}
               <div className="flex flex-wrap items-center gap-3">
                 <StatusBadge
                   status={
@@ -104,6 +131,80 @@ export default async function AttemptReviewPage({
               </div>
             </AnalyticsCard>
           ) : null}
+
+          <AnalyticsCard
+            title="Revisi mahasiswa"
+            description="Perubahan ditampilkan terhadap versi sebelumnya."
+          >
+            {revisions.length === 0 ? (
+              <EmptyState description="Mahasiswa belum mengirim revisi." />
+            ) : (
+              <div className="flex flex-col gap-4">
+                <RevisionHistory
+                  baseline={{
+                    content: review.content,
+                    submittedAt: review.submittedAt,
+                  }}
+                  revisions={revisions}
+                />
+
+                {revisions.map((revision) => {
+                  const notes = lecturerFeedback.filter(
+                    (item) => item.revisionId === revision.id,
+                  );
+
+                  return (
+                    <div
+                      key={revision.id}
+                      className="flex flex-col gap-2 rounded-xl border border-border p-4"
+                    >
+                      {notes.length > 0 ? (
+                        <ul className="flex flex-col gap-1">
+                          {notes.map((note) => (
+                            <li
+                              key={note.id}
+                              data-slot="lecturer-feedback-item"
+                              className="text-sm text-muted-foreground"
+                            >
+                              <span className="font-medium text-foreground">
+                                {note.authorName ?? "Dosen"}
+                              </span>{" "}
+                              — {note.content}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+
+                      <LecturerFeedbackForm
+                        revisionId={revision.id}
+                        revisionNumber={revision.revisionNumber}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </AnalyticsCard>
+
+          <AnalyticsCard
+            title="Refleksi mahasiswa"
+            description="Sembilan unsur wajib (LOCK-PED-011)."
+          >
+            {reflection === null ? (
+              <EmptyState description="Mahasiswa belum mengisi refleksi." />
+            ) : (
+              <dl data-slot="reflection-review" className="flex flex-col gap-3">
+                {REFLECTION_FIELDS.map(([key, label]) => (
+                  <div key={key} className="flex flex-col gap-0.5">
+                    <dt className="text-sm font-medium">{label}</dt>
+                    <dd className="text-sm whitespace-pre-wrap text-muted-foreground">
+                      {reflection[key]}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </AnalyticsCard>
         </div>
 
         <ScoringForm

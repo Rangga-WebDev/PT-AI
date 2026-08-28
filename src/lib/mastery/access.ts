@@ -123,6 +123,7 @@ export function evaluateProcessCriteria(input: {
   requiredSourceCount: number;
   verifiedSourceCount: number;
   pendingAiFeedbackCount: number;
+  hasReflection?: boolean;
 }): { criteria: ProcessCriterion[]; complete: boolean } {
   const criteria: ProcessCriterion[] = [
     {
@@ -141,6 +142,11 @@ export function evaluateProcessCriteria(input: {
       key: "ai_reviewed",
       label: "Tidak ada saran AI yang dibiarkan tanpa sikap",
       met: input.pendingAiFeedbackCount === 0,
+    },
+    {
+      key: "reflection",
+      label: "Refleksi sudah diisi",
+      met: input.hasReflection ?? false,
     },
   ];
 

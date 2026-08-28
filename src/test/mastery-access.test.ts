@@ -101,10 +101,11 @@ describe("Kriteria proses yang boleh dinilai sistem", () => {
       requiredSourceCount: 2,
       verifiedSourceCount: 2,
       pendingAiFeedbackCount: 0,
+      hasReflection: true,
     });
 
     expect(complete).toBe(true);
-    expect(criteria).toHaveLength(3);
+    expect(criteria).toHaveLength(4);
   });
 
   it("menolak selama respons awal belum dikirim", () => {
@@ -135,6 +136,7 @@ describe("Kriteria proses yang boleh dinilai sistem", () => {
       requiredSourceCount: 0,
       verifiedSourceCount: 0,
       pendingAiFeedbackCount: 0,
+      hasReflection: true,
     });
 
     expect(complete).toBe(true);

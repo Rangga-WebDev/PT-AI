@@ -32,23 +32,30 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 11)
+## 4. Status Saat Ini (PHASE 12)
 
-| Suite                                  | Jumlah   | Hasil terakhir |
-| -------------------------------------- | -------- | -------------- |
-| Unit dan component (Vitest, 17 file)   | 109 test | ✅ lulus       |
-| SQL/pgTAP `rls.test.sql`               | 18 test  | ✅ lulus       |
-| SQL/pgTAP `academic-access.test.sql`   | 8 test   | ✅ lulus       |
-| SQL/pgTAP `content-access.test.sql`    | 10 test  | ✅ lulus       |
-| SQL/pgTAP `attempt-integrity.test.sql` | 10 test  | ✅ lulus       |
-| SQL/pgTAP `source-access.test.sql`     | 11 test  | ✅ lulus       |
-| SQL/pgTAP `ai-policy.test.sql`         | 12 test  | ✅ lulus       |
-| SQL/pgTAP `mastery-branching.test.sql` | 12 test  | ✅ lulus       |
-| E2E (guest, student, lecturer, admin)  | 67 test  | ✅ lulus       |
+| Suite                                    | Jumlah   | Hasil terakhir |
+| ---------------------------------------- | -------- | -------------- |
+| Unit dan component (Vitest, 18 file)     | 122 test | ✅ lulus       |
+| SQL/pgTAP `rls.test.sql`                 | 18 test  | ✅ lulus       |
+| SQL/pgTAP `academic-access.test.sql`     | 8 test   | ✅ lulus       |
+| SQL/pgTAP `content-access.test.sql`      | 10 test  | ✅ lulus       |
+| SQL/pgTAP `attempt-integrity.test.sql`   | 10 test  | ✅ lulus       |
+| SQL/pgTAP `source-access.test.sql`       | 11 test  | ✅ lulus       |
+| SQL/pgTAP `ai-policy.test.sql`           | 12 test  | ✅ lulus       |
+| SQL/pgTAP `mastery-branching.test.sql`   | 12 test  | ✅ lulus       |
+| SQL/pgTAP `revision-reflection.test.sql` | 14 test  | ✅ lulus       |
+| E2E (guest, student, lecturer, admin)    | 74 test  | ✅ lulus       |
 
-Total: 109 unit/component + 81 SQL + 67 E2E. Build menghasilkan 33 route.
+Total: 122 unit/component + 95 SQL + 74 E2E. Build menghasilkan 33 route.
 
-Berkas pengujian PHASE 11: `src/test/mastery-access.test.ts`, `supabase/tests/mastery-branching.test.sql`, `e2e/mastery.spec.ts`.
+Berkas pengujian PHASE 12: `src/test/revision-reflection.test.ts`, `supabase/tests/revision-reflection.test.sql`, `e2e/revision.spec.ts`.
+
+### Append-only punya dua lapis, dan keduanya harus diuji
+
+Dari sesi mahasiswa, percobaan `update public.revisions` **tidak melempar error** — tidak ada policy UPDATE, sehingga RLS membuat perintah itu tidak mengenai baris mana pun. Trigger `prevent_mutation()` baru terlihat bekerja dari koneksi istimewa yang melewati RLS.
+
+Menguji satu lapis saja menyesatkan: `throws_ok` dari sesi mahasiswa akan gagal dan membuat orang mengira triggernya tidak terpasang. `revision-reflection.test.sql` karena itu menguji keduanya — RLS dengan memeriksa isi baris tidak berubah, trigger dengan `throws_ok` sebagai `service_role`.
 
 ### E2E berjalan di atas server produksi
 

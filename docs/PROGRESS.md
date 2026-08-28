@@ -19,13 +19,60 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 8    | Student Learning Workspace          | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
 | 9    | Source Verification                 | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
 | 10   | AI Coach and RAG                    | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 11   | Mastery and Branching               | ✅ SELESAI — menunggu persetujuan PHASE 12 | 2026-08-28 | 2026-08-28 |
-| 12   | Revision and Reflection             | ⬜ Belum dimulai                           | —          | —          |
+| 11   | Mastery and Branching               | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
+| 12   | Revision and Reflection             | ✅ SELESAI — menunggu persetujuan PHASE 13 | 2026-08-28 | 2026-08-28 |
 | 13   | Analytics                           | ⬜ Belum dimulai                           | —          | —          |
 | 14   | Research and Governance             | ⬜ Belum dimulai                           | —          | —          |
 | 15   | Production Hardening                | ⬜ Belum dimulai                           | —          | —          |
 
-⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 12 — Revision and Reflection.
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 13 — Analytics.
+
+## Log PHASE 12 — Revision and Reflection (2026-08-28)
+
+### Keputusan pedagogis fase ini
+
+**Refleksi bukan gerbang keras.** Refleksi yang belum diisi muncul sebagai kriteria proses yang belum lengkap dan terbaca dosen, tetapi tidak memblokir tahap berikutnya. Menjadikannya gerbang otomatis akan mengubah maknanya dari alat metakognisi menjadi formalitas yang dikejar demi membuka tahap — dan itu bertentangan dengan alasan refleksi diwajibkan (LOCK-PED-011).
+
+**Alasan revisi wajib.** Setiap revisi menuntut satu `revision_reasons` dengan detail minimal 10 karakter, ditegakkan constraint database. Bila alasannya menerima atau menolak saran AI, sarannya harus ditunjuk (`ai_feedback_id`) — inilah yang membuat LOCK-PED-006 terbukti, bukan sekadar dinyatakan.
+
+### Yang dikerjakan
+
+- **Revisi sebagai versi baru.** Respons awal tidak pernah ditimpa; setiap revisi menaikkan `revision_number` dan tersimpan permanen (LOCK-PED-004).
+- **Diff kata-per-kata** dihitung di `src/lib/revision/diff.ts` dengan LCS, tanpa dependency baru. Perubahan ditampilkan terhadap versi sebelumnya, bukan hanya terhadap respons awal, agar langkah perubahannya terlihat satu per satu.
+- **Refleksi sembilan unsur** sebagai field terpisah, bukan satu kotak teks. Satu refleksi per (aktivitas, mahasiswa, respons awal); yang kedua ditolak database.
+- **Umpan balik dosen per revisi** tersimpan di `feedback_records` dengan `source='lecturer'`; koreksi ditulis sebagai catatan baru karena tabel ini append-only.
+- Halaman penilaian dosen kini menampilkan riwayat revisi, diff, dan refleksi mahasiswa dalam satu layar.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                                                                      |
+| `npm run test`               | ✅ 18 file, **122 test** lulus                                                                                 |
+| `npm run test:db`            | ✅ **95/95** lulus (18 RLS + 8 akademik + 10 konten + 10 attempt + 11 sumber + 12 AI + 12 mastery + 14 revisi) |
+| `npm run test:e2e`           | ✅ **74/74** lulus; dijalankan dua kali berturut-turut dan tetap hijau                                         |
+| `npm run build`              | ✅ 33 route                                                                                                    |
+| `npm run check:secrets`      | ✅ nol kebocoran                                                                                               |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                                                                      |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Append-only ternyata punya dua lapis, dan uji pertama saya menguji lapis yang salah.** `throws_ok` atas `update public.revisions` dari sesi mahasiswa **gagal** — bukan karena trigger tidak terpasang, melainkan karena tidak ada policy UPDATE sehingga RLS membuat perintah itu tidak mengenai baris mana pun, tanpa error. Bila saya menyimpulkan dari kegagalan itu bahwa perlindungannya bocor, kesimpulannya salah. Pengujian diperbaiki menjadi dua skenario: RLS diuji dengan memeriksa isi baris tidak berubah, trigger diuji dengan `throws_ok` sebagai `service_role`.
+2. **Menambah kriteria proses memecahkan dua test lama** di `mastery-access.test.ts` yang mengasumsikan tepat tiga kriteria. Ekspektasinya diperbarui, bukan kriterianya yang dibatalkan.
+3. **Komponen klien baru menarik Server Action ke lingkungan uji.** `attempt-gate.test.tsx` gagal memuat sampai `@/actions/learning/revisions` ikut di-mock, karena modul itu mengimpor kode `server-only`.
+
+### Utang teknis yang dicatat
+
+- Base UI memperingatkan setiap `Button` yang dirender sebagai `Link`; perbaikan yang benar adalah `Link` + `buttonVariants` (PHASE 15).
+- Belum ada halaman dosen untuk `ai_incidents`.
+
+### Mock yang masih tersisa
+
+`src/mocks/{analytics,users}.ts` — dihapus pada PHASE 13.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 13 — Analytics.
 
 ## Log PHASE 11 — Mastery and Branching (2026-08-28)
 

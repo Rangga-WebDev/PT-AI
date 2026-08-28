@@ -4,17 +4,20 @@
 
 import { Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 import { StatusBadge } from "@/components/shared/status-badge";
 import { AiDisclosureForm } from "@/features/ai-coach/components/ai-disclosure-form";
 import { AIFeedbackPanel } from "@/features/ai-coach/components/ai-feedback-panel";
 import { AnswerEditor } from "@/features/learning-workspace/components/answer-editor";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { ReflectionForm } from "@/features/learning-workspace/components/reflection-form";
+import { RevisionForm } from "@/features/learning-workspace/components/revision-form";
+import { RevisionHistory } from "@/features/learning-workspace/components/revision-history";
 import type { AiFunction } from "@/lib/constants/stages";
 import type { StoredFeedback } from "@/server/repositories/ai";
+import type {
+  ReflectionView,
+  RevisionView,
+} from "@/server/repositories/revisions";
 
 interface AttemptGateProps {
   activityId: string;
@@ -27,6 +30,8 @@ interface AttemptGateProps {
   allowedFunctions: AiFunction[];
   feedbackItems: StoredFeedback[];
   disclosure: { statement: string; functionsUsed: string[] } | null;
+  revisions: RevisionView[];
+  reflection: ReflectionView | null;
 }
 
 function formatDateTime(iso: string): string {
@@ -52,9 +57,10 @@ export function AttemptGate({
   allowedFunctions,
   feedbackItems,
   disclosure,
+  revisions,
+  reflection,
 }: AttemptGateProps) {
   const router = useRouter();
-  const [revision, setRevision] = useState("");
 
   const hasAttempt = baseline !== null;
 
@@ -127,32 +133,30 @@ export function AttemptGate({
             existing={disclosure}
           />
 
-          <section
-            aria-labelledby="revision-heading"
-            className="flex flex-col gap-3"
-          >
-            <h3
-              id="revision-heading"
-              className="font-heading text-h4 font-semibold"
-            >
-              Revisi
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Revisi disimpan sebagai versi baru; respons awal Anda tetap utuh
-              agar perubahan berpikir dapat ditelusuri.
-            </p>
-            <Label htmlFor="revision-answer">Tulis revisi Anda</Label>
-            <Textarea
-              id="revision-answer"
-              value={revision}
-              onChange={(event) => setRevision(event.target.value)}
-              rows={5}
-              placeholder="Apa yang Anda ubah, dan bukti apa yang mendasarinya?"
+          <RevisionForm
+            attemptId={baseline.id}
+            aiSuggestions={feedbackItems.map((item) => ({
+              id: item.id,
+              title: item.title,
+            }))}
+          />
+
+          {revisions.length > 0 ? (
+            <RevisionHistory
+              baseline={{
+                content: baseline.content,
+                submittedAt: baseline.submittedAt,
+              }}
+              revisions={revisions}
             />
-            <Button variant="outline" disabled>
-              Simpan revisi (PHASE 12)
-            </Button>
-          </section>
+          ) : null}
+
+          <ReflectionForm
+            activityId={activityId}
+            attemptId={baseline.id}
+            latestRevisionId={revisions[revisions.length - 1]?.id ?? null}
+            existing={reflection}
+          />
         </>
       ) : (
         <section

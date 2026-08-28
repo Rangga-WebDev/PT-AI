@@ -19,6 +19,11 @@ vi.mock("@/actions/ai/coach", () => ({
   submitAiDisclosureAction: vi.fn(async () => ({ ok: true })),
 }));
 
+vi.mock("@/actions/learning/revisions", () => ({
+  submitRevisionAction: vi.fn(async () => ({ ok: true })),
+  submitReflectionAction: vi.fn(async () => ({ ok: true })),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
@@ -33,6 +38,8 @@ const BASE_PROPS = {
   allowedFunctions: ["guiding_questions" as const],
   feedbackItems: [],
   disclosure: null,
+  revisions: [],
+  reflection: null,
 };
 
 const BASELINE = {
@@ -113,7 +120,9 @@ describe("AttemptGate — attempt-first (LOCK-PED-004)", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /Petunjuk/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Petunjuk/i }),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /Pertanyaan penuntun/i }),
     ).not.toBeInTheDocument();

@@ -4,6 +4,27 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 12] — 2026-08-28 — Revision and Reflection
+
+### Ditambahkan
+
+- `src/lib/revision/diff.ts` — diff kata-per-kata berbasis LCS. Fungsi murni tanpa dependency baru; teks asli tidak pernah ditulis ulang.
+- `src/lib/validation/revision.ts` — skema revisi, alasan revisi, sembilan unsur refleksi, dan umpan balik dosen.
+- `src/server/repositories/revisions.ts`, `src/actions/learning/revisions.ts`, `src/actions/assessment/feedback.ts`.
+- `src/features/learning-workspace/components/{revision-form,revision-history,reflection-form}.tsx`.
+- `src/features/assessment/components/lecturer-feedback-form.tsx`.
+- Test: `revision-reflection.test.ts` (13), `revision-reflection.test.sql` (14), `revision.spec.ts` (7).
+
+### Diubah
+
+- `AttemptGate` menerima riwayat revisi dan refleksi; placeholder "Simpan revisi (PHASE 12)" diganti fungsi nyata.
+- `evaluateProcessCriteria()` menambahkan kriteria refleksi. Refleksi **tidak** menjadi gerbang keras — ketidaklengkapannya ditampilkan kepada dosen, keputusan tetap di tangan dosen.
+- Halaman `/app/lecturer/review/[attemptId]` menampilkan riwayat revisi, diff, refleksi sembilan unsur, dan formulir umpan balik per revisi.
+
+### Tidak diubah
+
+- Tidak ada migration baru. Tabel, constraint, dan trigger untuk revisi serta refleksi sudah ada sejak PHASE 4.
+
 ## [PHASE 11] — 2026-08-28 — Mastery and Branching
 
 ### Ditambahkan

@@ -24,6 +24,7 @@ import { getActivityWorkState } from "@/server/repositories/attempts";
 import { getDisclosure, listAttemptFeedback } from "@/server/repositories/ai";
 import { getStudentUnitWorkspace } from "@/server/repositories/content";
 import { getUnitMastery } from "@/server/repositories/mastery";
+import { getReflection, listRevisions } from "@/server/repositories/revisions";
 import {
   listCaseSources,
   listVerifiedSourceIds,
@@ -84,9 +85,13 @@ export default async function LearnStagePage({
   ]);
 
   const baselineId = workState?.baseline?.id ?? null;
-  const [feedbackItems, disclosure] = await Promise.all([
+  const [feedbackItems, disclosure, revisions, reflection] = await Promise.all([
     baselineId ? listAttemptFeedback(baselineId) : Promise.resolve([]),
     baselineId ? getDisclosure(baselineId, student.id) : Promise.resolve(null),
+    baselineId ? listRevisions(baselineId) : Promise.resolve([]),
+    baselineId && primaryActivity
+      ? getReflection(primaryActivity.id, student.id, baselineId)
+      : Promise.resolve(null),
   ]);
 
   const navStages: LearningStage[] = workspace.stages.map((item) => {
@@ -122,6 +127,7 @@ export default async function LearnStagePage({
     pendingAiFeedbackCount: feedbackItems.filter(
       (item) => item.studentAction === "pending",
     ).length,
+    hasReflection: reflection !== null,
   });
   const buildHref = (key: string) =>
     `/app/student/learn/${unitId}/stage/${key}`;
@@ -296,6 +302,8 @@ export default async function LearnStagePage({
                     }
                     feedbackItems={feedbackItems}
                     disclosure={disclosure}
+                    revisions={revisions}
+                    reflection={reflection}
                   />
                 ) : null}
 
