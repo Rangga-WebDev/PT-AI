@@ -61,6 +61,11 @@ export const STUDENT_NAV: NavSection[] = [
       { label: "Dashboard", href: "/app/student/dashboard", icon: "dashboard" },
       { label: "Kelas saya", href: "/app/student/classes", icon: "classes" },
       { label: "Progres", href: "/app/student/progress", icon: "analytics" },
+      {
+        label: "Persetujuan penelitian",
+        href: "/app/student/consent",
+        icon: "settings",
+      },
     ],
   },
 ];
@@ -93,6 +98,7 @@ export const ADMIN_NAV: NavSection[] = [
     items: [
       { label: "Dashboard", href: "/app/admin/dashboard", icon: "dashboard" },
       { label: "Pengguna", href: "/app/admin/users", icon: "users" },
+      { label: "Retensi data", href: "/app/admin/retention", icon: "settings" },
     ],
   },
   {

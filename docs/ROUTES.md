@@ -42,6 +42,10 @@
 | `/app/lecturer/review/[attemptId]`                       | `.../[attemptId]/page.tsx`        | Dynamic | Penilaian rubrik, keputusan jalur belajar, dan override dosen                  |
 | `/app/lecturer/incidents`                                | `.../lecturer/incidents/page.tsx` | Dynamic | Tinjauan laporan respons AI dari mahasiswa                                     |
 | `/app/lecturer/classes/[classId]/analytics`              | `.../analytics/page.tsx`          | Dynamic | Distribusi ketuntasan, peristiwa, pengamatan proses, keterlaksanaan            |
+| `/app/lecturer/classes/[classId]/instruments`            | `.../instruments/page.tsx`        | Dynamic | Instrumen pretest dan posttest beserta pengukurannya                           |
+| `/app/student/consent`                                   | `.../student/consent/page.tsx`    | Dynamic | Persetujuan keikutsertaan penelitian                                           |
+| `/app/admin/retention`                                   | `.../admin/retention/page.tsx`    | Dynamic | Aturan retensi data dan tautan ekspor penelitian                               |
+| `/api/research/export`                                   | `api/research/export/route.ts`    | Dynamic | Ekspor CSV berpseudonim, khusus admin, tercatat pada log audit                 |
 
 Boundary area: `(protected)/app/student/{loading,error}.tsx` dan `(protected)/app/lecturer/{loading,error}.tsx`.
 

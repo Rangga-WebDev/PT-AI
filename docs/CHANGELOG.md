@@ -4,6 +4,28 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 14] — 2026-08-29 — Research and Governance
+
+### Ditambahkan
+
+- `supabase/migrations/20260829100017_research_export.sql` — fungsi `security definer` pembungkus view `research.*`, hak eksekusinya **dicabut** dari `public`, `anon`, dan `authenticated`, lalu diberikan hanya kepada `service_role`.
+- `src/lib/research/{consent,export}.ts` — keadaan persetujuan, pseudonim acak, validasi retensi, dan serialisasi CSV yang menolak kolom beridentitas.
+- `src/server/research/participants.ts`, `src/actions/research/{consent,instruments,retention}.ts`.
+- `src/features/research/components/{consent-form,instrument-forms,retention-form}.tsx`.
+- Route `/app/student/consent`, `/app/lecturer/classes/[classId]/instruments`, `/app/admin/retention`, dan Route Handler `/api/research/export`.
+- `scripts/apply-retention.mjs` beserta `npm run data:retention` — **dry-run secara bawaan**.
+- Test: `research-governance.test.ts` (20), `research-governance.test.sql` (14), `consent.spec.ts` (8).
+
+### Diubah
+
+- Navigasi mahasiswa menambahkan "Persetujuan penelitian"; navigasi admin menambahkan "Retensi data"; detail kelas menambahkan tautan "Instrumen".
+- `src/lib/supabase/types.ts` menambahkan tipe untuk lima fungsi RPC baru.
+
+### Keputusan
+
+- Penghapusan data penelitian dilakukan dengan **memutus pemetaan identitas** (`research.participants`), bukan menghapus jejak belajar. Jejak itu append-only dan tidak dapat dihapus koneksi mana pun, termasuk `service_role` (LOCK-PED-012).
+- Ekspor penelitian **hanya untuk admin**; setiap akses tercatat di `audit_logs`.
+
 ## [PHASE 13] — 2026-08-28 — Analytics
 
 ### Ditambahkan

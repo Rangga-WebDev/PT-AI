@@ -62,6 +62,14 @@ export default async function LecturerClassDetailPage({
             <Button
               variant="outline"
               render={
+                <Link href={`/app/lecturer/classes/${classId}/instruments`} />
+              }
+            >
+              Instrumen
+            </Button>
+            <Button
+              variant="outline"
+              render={
                 <Link href={`/app/lecturer/classes/${classId}/analytics`} />
               }
             >

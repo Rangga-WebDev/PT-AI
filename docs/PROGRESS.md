@@ -21,11 +21,60 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 | 10   | AI Coach and RAG                    | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
 | 11   | Mastery and Branching               | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
 | 12   | Revision and Reflection             | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 13   | Analytics                           | ✅ SELESAI — menunggu persetujuan PHASE 14 | 2026-08-28 | 2026-08-28 |
-| 14   | Research and Governance             | ⬜ Belum dimulai                           | —          | —          |
+| 13   | Analytics                           | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
+| 14   | Research and Governance             | ✅ SELESAI — menunggu persetujuan PHASE 15 | 2026-08-29 | 2026-08-29 |
 | 15   | Production Hardening                | ⬜ Belum dimulai                           | —          | —          |
 
-⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 14 — Research and Governance.
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 15 — Production Hardening.
+
+## Log PHASE 14 — Research and Governance (2026-08-29)
+
+### Keputusan etis fase ini
+
+**Penghapusan data dilakukan dengan memutus tautan identitas, bukan menghapus jejak.** Trigger `prevent_mutation()` menolak DELETE dari koneksi mana pun, termasuk `service_role` — sudah terbukti pada uji PHASE 12. Artinya aturan retensi beraksi `delete` pada `attempts`, `learning_events`, `ai_interactions`, dan `audit_logs` **tidak mungkin** dijalankan. Membangun tombol "hapus data saya" di atas kenyataan itu akan menjadi janji palsu kepada partisipan.
+
+Yang dijalankan: menarik persetujuan menghapus baris `research.participants` — satu-satunya pemetaan identitas ke pseudonim. Sesudahnya jejak belajar tetap ada untuk keperluan akademik tetapi tidak dapat lagi dikaitkan kepada seseorang oleh siapa pun, termasuk admin. Konsekuensi ini dinyatakan apa adanya pada lembar persetujuan, bukan disamarkan.
+
+**Ekspor hanya untuk admin.** Ekspor melintasi kelas dan bukan bagian dari kewenangan mengajar, sehingga dosen tidak diberi akses.
+
+### Yang dikerjakan
+
+- **Persetujuan berdasarkan informasi** di `/app/student/consent`: lima keterangan wajib, tombol terkunci sampai mahasiswa mengakui telah membacanya, dan dapat diubah kapan saja. **Dosen tidak memiliki policy membaca `consent_records`** agar keikutsertaan tidak memengaruhi perlakuan akademik.
+- **Pseudonim acak**, bukan turunan NIM atau nama. Turunan identitas dapat dibalik dengan menebak, sehingga bukan anonimisasi.
+- **Pretest dan posttest** di `/app/lecturer/classes/[classId]/instruments`; skornya masuk `critical_thinking_scores` dengan `measurement_source` yang benar sehingga perbandingan sebelum dan sesudah perlakuan tetap sah.
+- **Ekspor anonim** lewat `/api/research/export`. Schema `research` tidak diekspos PostgREST dan `pg` hanya devDependency, sehingga jalurnya adalah fungsi `security definer` yang hak eksekusinya dicabut dari peran klien.
+- **Serialisasi CSV menolak bekerja** bila menemukan kolom beridentitas atau kehilangan kolom `pseudonym`. Gagal lebih baik daripada berkas ekspor yang membocorkan mahasiswa.
+- **Retensi data** di `/app/admin/retention` dan `npm run data:retention` yang **dry-run secara bawaan**; perubahan nyata menuntut `--apply`.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                              |
+| `npm run test`               | ✅ 20 file, **157 test** lulus                                         |
+| `npm run test:db`            | ✅ **121/121** lulus (+14 tata kelola penelitian)                      |
+| `npm run test:e2e`           | ✅ **88/88** lulus; dijalankan dua kali berturut-turut dan tetap hijau |
+| `npm run build`              | ✅ 39 route, exit 0                                                    |
+| `npm run data:retention`     | ✅ dry-run berjalan, nol baris diubah                                  |
+| `npm run check:secrets`      | ✅ nol kebocoran (47 bundel klien dipindai)                            |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                              |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **Fungsi `security definer` dapat dieksekusi siapa pun secara bawaan.** PostgreSQL memberi `EXECUTE` kepada `PUBLIC`; tanpa pencabutan eksplisit, mahasiswa mana pun dapat memanggil fungsi ekspor dan menembus batas schema `research` yang justru dibuat untuk memisahkannya. Pencabutan itu kini diuji langsung dengan `has_function_privilege`.
+2. **`npm run db:migrate` tanpa argumen mencoba menerapkan ulang migration pertama** dan gagal pada `type "role_key" already exists`, karena pencatatan `ops.applied_migrations` tidak memuat migration lama. Migration baru diterapkan dengan menyebut berkasnya secara eksplisit.
+3. **Tipe RPC Supabase tidak ikut terbarui otomatis**, sehingga `supabase.rpc()` untuk lima fungsi baru gagal typecheck sampai `src/lib/supabase/types.ts` dilengkapi.
+4. **`getByRole("alert")` cocok ke dua elemen** pada halaman retensi dan membuat Playwright menolak dalam strict mode. Asersi dipersempit ke formulir terkait, bukan dilonggarkan.
+
+### Utang teknis yang dicatat
+
+- Base UI memperingatkan setiap `Button` yang dirender sebagai `Link`; perbaikan yang benar adalah `Link` + `buttonVariants` (PHASE 15).
+- `nanoid` high-severity lewat `postcss` (transitif, build-time) — PHASE 15.
+- Aksi retensi `anonymize` pada domain append-only belum melakukan transformasi baris apa pun; saat ini anonimisasi hanya terjadi lewat pemutusan pemetaan peserta. Perlu ditinjau pada PHASE 15.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 15 — Production Hardening.
 
 ## Log PHASE 13 — Analytics (2026-08-28)
 

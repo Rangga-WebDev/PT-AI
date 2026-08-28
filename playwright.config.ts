@@ -37,6 +37,7 @@ const authenticatedProjects = [
             "**/ai-coach.spec.ts",
             "**/mastery.spec.ts",
             "**/revision.spec.ts",
+            "**/consent.spec.ts",
           ],
           use: { ...devices["Desktop Chrome"], storageState: STUDENT_STATE },
           dependencies: ["setup"],

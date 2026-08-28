@@ -32,11 +32,11 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 13)
+## 4. Status Saat Ini (PHASE 14)
 
 | Suite                                    | Jumlah   | Hasil terakhir |
 | ---------------------------------------- | -------- | -------------- |
-| Unit dan component (Vitest, 19 file)     | 137 test | ✅ lulus       |
+| Unit dan component (Vitest, 20 file)     | 157 test | ✅ lulus       |
 | SQL/pgTAP `rls.test.sql`                 | 18 test  | ✅ lulus       |
 | SQL/pgTAP `academic-access.test.sql`     | 8 test   | ✅ lulus       |
 | SQL/pgTAP `content-access.test.sql`      | 10 test  | ✅ lulus       |
@@ -46,9 +46,16 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 | SQL/pgTAP `mastery-branching.test.sql`   | 12 test  | ✅ lulus       |
 | SQL/pgTAP `revision-reflection.test.sql` | 14 test  | ✅ lulus       |
 | SQL/pgTAP `analytics-access.test.sql`    | 12 test  | ✅ lulus       |
-| E2E (guest, student, lecturer, admin)    | 80 test  | ✅ lulus       |
+| SQL/pgTAP `research-governance.test.sql` | 14 test  | ✅ lulus       |
+| E2E (guest, student, lecturer, admin)    | 88 test  | ✅ lulus       |
 
-Total: 137 unit/component + 107 SQL + 80 E2E. Build menghasilkan 35 route.
+Total: 157 unit/component + 121 SQL + 88 E2E. Build menghasilkan 39 route.
+
+Berkas pengujian PHASE 14: `src/test/research-governance.test.ts`, `supabase/tests/research-governance.test.sql`, `e2e/consent.spec.ts`.
+
+### Hak eksekusi fungsi ikut diuji, bukan hanya policy baris
+
+PostgreSQL memberikan `EXECUTE` kepada `PUBLIC` secara bawaan. Fungsi `security definer` yang membungkus schema `research` karena itu harus dicabut haknya secara eksplisit, dan pencabutan itu diuji langsung dengan `has_function_privilege('authenticated', ..., 'execute')`. Tanpa uji ini, batas schema yang dibangun untuk memisahkan data penelitian dapat ditembus tanpa ada policy yang dilanggar.
 
 Berkas pengujian PHASE 13: `src/test/analytics-aggregate.test.ts`, `supabase/tests/analytics-access.test.sql`, `e2e/analytics.spec.ts`.
 
