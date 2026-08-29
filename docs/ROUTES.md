@@ -8,15 +8,15 @@
 
 ### Publik
 
-| URL                  | File                                        | Jenis                              | Keterangan                                         |
-| -------------------- | ------------------------------------------- | ---------------------------------- | -------------------------------------------------- |
-| `/`                  | `src/app/page.tsx`                          | Server Component, dinamis          | Permukaan masuk; pengguna bersesi dialihkan ke `/app` |
+| URL                  | File                                        | Jenis                              | Keterangan                                                   |
+| -------------------- | ------------------------------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| `/`                  | `src/app/page.tsx`                          | Server Component, dinamis          | Permukaan masuk; pengguna bersesi dialihkan ke `/app`        |
 | `/login`             | `src/app/(public)/login/page.tsx`           | Server Component, dinamis          | Permukaan masuk yang sama, menerima `redirectTo` dan `error` |
-| `/forgot-password`   | `src/app/(public)/forgot-password/page.tsx` | Server Component, static           | Formulir visual; belum mengirim surel              |
-| `/design-system`     | `src/app/design-system/page.tsx`            | Server Component, static           | **Preview internal**; digate/dihapus pada PHASE 15 |
-| `*` (tidak cocok)    | `src/app/not-found.tsx`                     | Server Component                   | 404 Bahasa Indonesia                               |
-| — (error boundary)   | `src/app/error.tsx`                         | Client Component (kontrak Next.js) | Error umum tanpa stack trace                       |
-| — (loading boundary) | `src/app/loading.tsx`                       | Server Component                   | Indikator memuat                                   |
+| `/forgot-password`   | `src/app/(public)/forgot-password/page.tsx` | Server Component, static           | Formulir visual; belum mengirim surel                        |
+| `/design-system`     | `src/app/design-system/page.tsx`            | Server Component, static           | **Preview internal**; digate/dihapus pada PHASE 15           |
+| `*` (tidak cocok)    | `src/app/not-found.tsx`                     | Server Component                   | 404 Bahasa Indonesia                                         |
+| — (error boundary)   | `src/app/error.tsx`                         | Client Component (kontrak Next.js) | Error umum tanpa stack trace                                 |
+| — (loading boundary) | `src/app/loading.tsx`                       | Server Component                   | Indikator memuat                                             |
 
 ### Prototipe aplikasi (belum terproteksi)
 
