@@ -435,6 +435,7 @@ Rincian setiap fase, termasuk masalah yang ditemukan dan cara mengatasinya, terc
 
 | Dokumen                                               | Isi                                                  |
 | ----------------------------------------------------- | ---------------------------------------------------- |
+| [JUKNIS_KONTEN.md](docs/JUKNIS_KONTEN.md)             | Cara mengisi konten nyata dari nol sampai siap pakai |
 | [DECISIONS.md](docs/DECISIONS.md)                     | Keputusan LOCKED, OPEN, DEFERRED, dan Change Request |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md)               | Arsitektur target dan struktur folder                |
 | [DATABASE.md](docs/DATABASE.md)                       | Prinsip desain, ERD, fungsi, dan trigger             |
