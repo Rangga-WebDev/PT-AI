@@ -4,6 +4,18 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [Penyelarasan proposal] — 2026-08-29
+
+### Diubah
+
+- **Checklist keterlaksanaan diperluas dari 6 ke 10 komponen** mengikuti Lampiran 4 proposal. Butir baru: `claim_analysis`, `alternatives_tested`, `adaptive_branching`, `dose_ethics_incident`. Enam kunci lama dipertahankan agar catatan observasi yang sudah ada tetap terbaca; sebagian labelnya diperluas. `fidelityRate()` menghitung terhadap sepuluh butir, sehingga ambang §Y ("komponen inti terlaksana ≥ 80%") kini diukur atas basis yang dijanjikan proposal.
+- Formulir fidelity dikelompokkan menjadi Persiapan, Sintaks, dan Tata kelola. Sepuluh kotak berbingkai diganti tiga daftar bergaris agar penambahan butir tidak menambah kebisingan visual.
+- `activities.mastery_threshold` didokumentasikan sebagai **rujukan penilaian dosen, bukan gerbang otomatis**. Kolom ini memang tidak dibaca `computeStageAccess`; tanpa keterangan, perilaku itu terbaca sebagai fitur yang belum selesai.
+
+### Diperbaiki
+
+- Halaman depan kembali menyebut tujuan **kemampuan berpikir kritis**. Penulisan ulang halaman depan sebelumnya menghapus frasa itu dan memutus `home-page.test.tsx`; regresi ini tidak terdeteksi karena pengujian belum dijalankan ulang setelah commit tersebut.
+
 ## [PHASE 15] — 2026-08-29 — Production Hardening
 
 ### Ditambahkan

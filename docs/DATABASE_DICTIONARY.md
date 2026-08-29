@@ -224,7 +224,7 @@ Dibuat otomatis (6 baris) oleh trigger `seed_learning_stages()`. Tidak ada jalur
 | `prompt`                     | text                 | not null                                                                                  |
 | `activity_type`              | text                 | not null, check ∈ (`written_response`,`claim_mapping`,`source_verification`,`reflection`) |
 | `rubric_id`                  | uuid                 | FK → rubrics, nullable                                                                    |
-| `mastery_threshold`          | numeric(5,2)         | nullable, check 0–100                                                                     |
+| `mastery_threshold`          | numeric(5,2)         | nullable, check 0–100; rujukan penilaian dosen, tidak menjadi gerbang otomatis            |
 | `allows_ai`                  | boolean              | not null default false                                                                    |
 | `allowed_ai_functions`       | `ai_function[]`      | not null default `'{}'`                                                                   |
 | `requires_attempt_before_ai` | boolean              | not null default **true**                                                                 |

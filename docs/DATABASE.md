@@ -168,7 +168,7 @@ erDiagram
 
 - `learning_stages` dibuat **enam baris otomatis** saat `learning_units` dibuat, dengan `sequence` terkunci 1–6 sesuai LOCK-PED-002. Dosen boleh menonaktifkan (`is_enabled = false`), tetapi **tidak boleh mengubah urutan atau menambah tahap**.
 - `activities.allows_ai` dan `allowed_ai_functions` memberi dosen kendali penuh atas fungsi AI per aktivitas (LOCK-PED-010). Kolom ini diperiksa sebelum setiap panggilan AI.
-- `activities.mastery_threshold` menyimpan ambang kriteria kinerja — bukan jumlah klik atau durasi (LOCK-PED-008).
+- `activities.mastery_threshold` menyimpan ambang kriteria kinerja — bukan jumlah klik atau durasi (LOCK-PED-008). Nilai ini **tidak dibaca oleh `computeStageAccess`** dan tidak pernah membuka atau mengunci tahap secara otomatis; ia adalah rujukan yang ditampilkan kepada dosen saat menilai. Ketuntasan tetap ditetapkan manusia (`ck_mastery_results_evaluator`, `require_lecturer_scorer()`). Kolom kosong berarti dosen belum menetapkan rujukan, bukan berarti aktivitas tidak berambang.
 
 ### 5.4 Sources
 
