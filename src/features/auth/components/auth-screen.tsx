@@ -2,57 +2,43 @@
 
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
-const STAGES = [
-  "Interpretasi",
-  "Analisis",
-  "Evaluasi",
-  "Inferensi",
-  "Eksplanasi",
-  "Refleksi",
-];
-
+import Image from "next/image";
 interface AuthScreenProps {
   redirectTo?: string | undefined;
   errorMessage?: string | undefined;
 }
 
-/**
- * Dipakai `/` dan `/login` agar hanya ada satu permukaan masuk.
- * `/login` menerima `redirectTo` dan pesan galat dari proxy.
- */
 export function AuthScreen({ redirectTo, errorMessage }: AuthScreenProps) {
   return (
     <main
       data-slot="auth-screen"
       className="flex flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]"
     >
-      <section className="flex flex-col justify-between gap-12 bg-card px-6 py-8 lg:px-12 lg:py-16 lg:[clip-path:ellipse(100%_115%_at_0%_50%)]">
-        <div className="flex flex-col gap-4 lg:max-w-md">
-          <p className="font-mono text-xs tracking-widest text-subtle uppercase">
-            Pendidikan Kewarganegaraan
-          </p>
+      <section className="relative flex flex-col justify-between gap-12 bg-card px-6 py-8 lg:px-12 lg:py-16 lg:[clip-path:ellipse(100%_115%_at_0%_50%)]">
+        <div aria-hidden className="absolute inset-0">
+          <Image
+            src="/auth/auth.png"
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 1024px) 45vw, 100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-background/75" />
+        </div>
 
-          <h1 className="font-heading text-h3 font-semibold tracking-tight text-balance lg:text-h1">
-            PT-AI Learning Management System
+        <div className="relative flex flex-col gap-4 lg:max-w-md">
+          <h1 className="relative font-heading tracking-tight">
+            <span className="block text-h2 leading-none font-bold lg:text-display">
+              PT<span className="text-primary">-</span>AI
+            </span>{" "}
+            <span className="mt-2.5 block font-sans text-xs font-medium tracking-widest text-subtle uppercase lg:text-sm">
+              Learning Management System
+            </span>
           </h1>
-
           <p className="text-sm leading-relaxed text-muted-foreground lg:text-base">
             Pembelajaran terprogram berbantuan AI untuk melatih kemampuan
             berpikir kritis mahasiswa.
-          </p>
-
-          <p className="hidden text-sm leading-relaxed text-muted-foreground lg:block">
-            Bantuan AI terbuka setelah Anda mengirim jawaban sendiri, dan setiap
-            rujukannya dapat ditelusuri ke sumber yang dilampirkan dosen.
-          </p>
-        </div>
-
-        <div className="hidden flex-col gap-1.5 lg:flex">
-          <p className="font-mono text-xs tracking-widest text-subtle uppercase">
-            Enam tahap berurutan
-          </p>
-          <p className="font-mono text-xs text-muted-foreground">
-            {STAGES.join(" · ")}
           </p>
         </div>
       </section>
