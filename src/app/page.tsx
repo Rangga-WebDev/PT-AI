@@ -48,8 +48,9 @@ export default function HomePage() {
         </h1>
 
         <p className="max-w-xl text-center text-lg leading-relaxed text-muted-foreground">
-          Pembelajaran terprogram berbantuan AI yang menempatkan mahasiswa
-          sebagai pemikir dan AI sebagai objek yang harus diverifikasi.
+          Pembelajaran terprogram berbantuan AI untuk melatih kemampuan berpikir
+          kritis mahasiswa: mahasiswa sebagai pemikir, AI sebagai objek yang
+          harus diverifikasi.
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-3">
