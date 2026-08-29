@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { toCsv } from "@/lib/research/export";
 import {
   CONSENT_DOCUMENT_VERSION,
+  RETAINABLE_DOMAINS,
   RETENTION_DOMAINS,
   evaluateConsent,
   formatPseudonym,
@@ -65,9 +66,9 @@ describe("evaluateConsent", () => {
 
 describe("needsReconsent", () => {
   it("menuntut persetujuan ulang ketika versi dokumen berubah", () => {
-    expect(
-      needsReconsent({ status: "granted", documentVersion: "0.9" }),
-    ).toBe(true);
+    expect(needsReconsent({ status: "granted", documentVersion: "0.9" })).toBe(
+      true,
+    );
   });
 
   it("tidak menuntut apa pun ketika versinya sama", () => {
@@ -82,9 +83,7 @@ describe("needsReconsent", () => {
 
 describe("formatPseudonym", () => {
   it("tidak memuat karakter yang mudah tertukar", () => {
-    const pseudonym = formatPseudonym(
-      new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]),
-    );
+    const pseudonym = formatPseudonym(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]));
 
     expect(pseudonym.startsWith("P-")).toBe(true);
     expect(pseudonym.slice(2)).not.toMatch(/[IO01]/);
@@ -99,7 +98,7 @@ describe("formatPseudonym", () => {
 });
 
 describe("validateRetentionRule", () => {
-  it("menolak penghapusan pada domain append-only", () => {
+  it("menolak penghapusan pada jejak permanen", () => {
     const result = validateRetentionRule({
       domainKey: "attempts",
       retentionDays: 365,
@@ -108,10 +107,10 @@ describe("validateRetentionRule", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.error).toMatch(/append-only/i);
+    expect(result.error).toMatch(/jejak permanen/i);
   });
 
-  it("menerima anonimisasi pada domain append-only", () => {
+  it("menolak anonimisasi pada jejak permanen alih-alih menerimanya diam-diam", () => {
     const result = validateRetentionRule({
       domainKey: "attempts",
       retentionDays: 365,
@@ -119,7 +118,15 @@ describe("validateRetentionRule", () => {
       isActive: true,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/memutus pemetaan identitas/i);
+  });
+
+  it("tidak menawarkan jejak permanen sebagai domain yang dapat diretensi", () => {
+    expect(RETAINABLE_DOMAINS.map((item) => item.key)).not.toContain(
+      "attempts",
+    );
+    expect(RETAINABLE_DOMAINS.every((item) => !item.isAppendOnly)).toBe(true);
   });
 
   it("menerima penghapusan pada domain yang memang dapat dihapus", () => {
@@ -168,7 +175,11 @@ describe("selectExpired", () => {
 
   it("tidak memilih apa pun ketika belum ada yang melewati batas", () => {
     expect(
-      selectExpired([{ id: "baru", createdAt: "2026-08-28T00:00:00.000Z" }], 365, now),
+      selectExpired(
+        [{ id: "baru", createdAt: "2026-08-28T00:00:00.000Z" }],
+        365,
+        now,
+      ),
     ).toEqual([]);
   });
 });

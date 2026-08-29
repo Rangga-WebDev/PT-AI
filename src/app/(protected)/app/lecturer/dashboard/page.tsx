@@ -9,7 +9,7 @@ import { BentoGrid } from "@/components/layout/bento-grid";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { MasteryDistribution } from "@/features/analytics/components/analytics-cards";
 import { summarizeMasteryDistribution } from "@/lib/analytics/aggregate";
 import { requireLecturerAccess } from "@/lib/supabase/auth";
@@ -49,12 +49,12 @@ export default async function LecturerDashboardPage() {
         title="Ringkasan pengajaran"
         description="Pantau proses berpikir mahasiswa. Keputusan akademik final tetap berada pada Anda."
         actions={
-          <Button
-            variant="outline"
-            render={<Link href="/app/lecturer/review" />}
+          <Link
+            href="/app/lecturer/review"
+            className={buttonVariants({ variant: "outline" })}
           >
             Buka antrean review
-          </Button>
+          </Link>
         }
       />
 
@@ -109,15 +109,15 @@ export default async function LecturerDashboardPage() {
                         })}
                       </span>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      render={
-                        <Link href={`/app/lecturer/review/${item.attemptId}`} />
-                      }
+                    <Link
+                      href={`/app/lecturer/review/${item.attemptId}`}
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
                     >
                       Nilai
-                    </Button>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -153,13 +153,15 @@ export default async function LecturerDashboardPage() {
                   ))}
                 </ul>
                 <div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    render={<Link href="/app/lecturer/incidents" />}
+                  <Link
+                    href="/app/lecturer/incidents"
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                    })}
                   >
                     Tinjau seluruh laporan
-                  </Button>
+                  </Link>
                 </div>
               </div>
             )}

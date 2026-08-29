@@ -7,7 +7,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { CreateClassForm } from "@/features/administration/components/structure-forms";
 import { listAcademicPeriods } from "@/server/repositories/academic-periods";
 import { listClassesForAdmin } from "@/server/repositories/classes";
@@ -72,13 +72,15 @@ export default async function AdminClassesPage() {
                     >
                       {STATUS_LABEL[item.status]}
                     </StatusBadge>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      render={<Link href={`/app/admin/classes/${item.id}`} />}
+                    <Link
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
+                      href={`/app/admin/classes/${item.id}`}
                     >
                       Kelola
-                    </Button>
+                    </Link>
                   </div>
                 </li>
               ))}

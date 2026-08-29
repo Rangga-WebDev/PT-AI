@@ -4,7 +4,7 @@ import { ArrowRight, BookOpen, CalendarClock, Users } from "lucide-react";
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -77,10 +77,10 @@ export function HeroLearningCard({
         </div>
       </CardContent>
       <CardFooter>
-        <Button render={<Link href={href} />}>
+        <Link href={href} className={buttonVariants()}>
           Lanjutkan tahap
           <ArrowRight aria-hidden="true" />
-        </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
@@ -113,9 +113,12 @@ export function CourseCard({ item, href, className }: CourseCardProps) {
         </span>
       </CardContent>
       <CardFooter>
-        <Button variant="outline" size="sm" render={<Link href={href} />}>
+        <Link
+          href={href}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
           Buka kelas
-        </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

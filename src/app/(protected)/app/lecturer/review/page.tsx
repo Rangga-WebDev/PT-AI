@@ -8,7 +8,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { requireLecturerAccess } from "@/lib/supabase/auth";
 import { listReviewQueue } from "@/server/repositories/attempts";
 
@@ -53,17 +53,15 @@ export default async function LecturerReviewPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <StatusBadge status="verified">Baseline</StatusBadge>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        render={
-                          <Link
-                            href={`/app/lecturer/review/${item.attemptId}`}
-                          />
-                        }
+                      <Link
+                        href={`/app/lecturer/review/${item.attemptId}`}
+                        className={buttonVariants({
+                          variant: "outline",
+                          size: "sm",
+                        })}
                       >
                         Nilai
-                      </Button>
+                      </Link>
                     </div>
                   </div>
                   <p className="font-mono text-xs text-subtle">

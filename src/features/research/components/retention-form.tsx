@@ -9,7 +9,7 @@ import { saveRetentionRuleAction } from "@/actions/research/retention";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RETENTION_DOMAINS } from "@/lib/research/consent";
+import { RETAINABLE_DOMAINS, RETENTION_DOMAINS } from "@/lib/research/consent";
 
 const selectClass =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
@@ -20,13 +20,11 @@ export function RetentionRuleForm({
   organizationId: string;
 }) {
   const router = useRouter();
-  const [domainKey, setDomainKey] = useState(RETENTION_DOMAINS[0]!.key);
+  const [domainKey, setDomainKey] = useState(RETAINABLE_DOMAINS[0]!.key);
   const [retentionDays, setRetentionDays] = useState("365");
   const [action, setAction] = useState<"anonymize" | "delete">("anonymize");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-
-  const domain = RETENTION_DOMAINS.find((item) => item.key === domainKey);
 
   function submit() {
     setError(null);
@@ -59,7 +57,7 @@ export function RetentionRuleForm({
             value={domainKey}
             onChange={(event) => setDomainKey(event.target.value)}
           >
-            {RETENTION_DOMAINS.map((item) => (
+            {RETAINABLE_DOMAINS.map((item) => (
               <option key={item.key} value={item.key}>
                 {item.label}
               </option>
@@ -95,12 +93,14 @@ export function RetentionRuleForm({
         </div>
       </div>
 
-      {domain?.isAppendOnly ? (
-        <p role="status" className="text-sm text-muted-foreground">
-          {domain.label} bersifat append-only. Penghapusan ditolak database,
-          sehingga hanya anonimisasi yang dapat diberlakukan.
-        </p>
-      ) : null}
+      <p role="status" className="text-sm text-muted-foreground">
+        Jejak permanen —{" "}
+        {RETENTION_DOMAINS.filter((item) => item.isAppendOnly)
+          .map((item) => item.label.toLowerCase())
+          .join(", ")}{" "}
+        — tidak tunduk pada retensi (LOCK-PED-012). Penghapusan data penelitian
+        dilakukan dengan memutus pemetaan identitas peserta.
+      </p>
 
       {error ? (
         <p role="alert" className="text-sm text-destructive">

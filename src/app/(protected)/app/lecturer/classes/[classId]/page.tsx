@@ -8,7 +8,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import {
   getClassDetail,
@@ -59,38 +59,22 @@ export default async function LecturerClassDetailPage({
             >
               {STATUS_LABEL[classItem.status]}
             </StatusBadge>
-            <Button
-              variant="outline"
-              render={
-                <Link href={`/app/lecturer/classes/${classId}/instruments`} />
-              }
-            >
-              Instrumen
-            </Button>
-            <Button
-              variant="outline"
-              render={
-                <Link href={`/app/lecturer/classes/${classId}/analytics`} />
-              }
-            >
-              Analitik
-            </Button>
-            <Button
-              variant="outline"
-              render={
-                <Link href={`/app/lecturer/classes/${classId}/branching`} />
-              }
-            >
-              Percabangan
-            </Button>
-            <Button
-              variant="outline"
-              render={
-                <Link href={`/app/lecturer/classes/${classId}/builder`} />
-              }
-            >
-              Perancang materi
-            </Button>
+            {(
+              [
+                ["instruments", "Instrumen"],
+                ["analytics", "Analitik"],
+                ["branching", "Percabangan"],
+                ["builder", "Perancang materi"],
+              ] as const
+            ).map(([segment, label]) => (
+              <Link
+                key={segment}
+                href={`/app/lecturer/classes/${classId}/${segment}`}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         }
       />

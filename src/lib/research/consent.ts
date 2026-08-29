@@ -100,9 +100,14 @@ export interface RetentionDomain {
 }
 
 /**
- * Domain append-only tidak dapat dihapus: trigger `prevent_mutation()` menolak
- * DELETE dari koneksi mana pun, termasuk service_role. Aturan retensi pada
- * domain itu hanya sah bila aksinya anonimisasi.
+ * Domain append-only tidak tunduk pada retensi sama sekali:
+ * `prevent_mutation()` menolak DELETE **dan** UPDATE dari koneksi mana pun,
+ * termasuk service_role. Anonimisasi barisnya pun mustahil tanpa membuat jalan
+ * pintas yang justru merusak jaminan LOCK-PED-012.
+ *
+ * Karena itu domain tersebut ditandai dan aturan retensi atasnya ditolak,
+ * bukan diterima lalu diam-diam tidak berjalan. Penghapusan data penelitian
+ * tetap tersedia lewat pemutusan pemetaan peserta.
  */
 export const RETENTION_DOMAINS: RetentionDomain[] = [
   {
@@ -120,6 +125,11 @@ export const RETENTION_DOMAINS: RetentionDomain[] = [
   { key: "notifications", label: "Notifikasi", isAppendOnly: false },
   { key: "audit_logs", label: "Log audit", isAppendOnly: true },
 ];
+
+/** Domain yang benar-benar dapat diberlakukan aturan retensi. */
+export const RETAINABLE_DOMAINS = RETENTION_DOMAINS.filter(
+  (domain) => !domain.isAppendOnly,
+);
 
 export interface RetentionValidation {
   ok: boolean;
@@ -139,10 +149,10 @@ export function validateRetentionRule(
     return { ok: false, error: "Masa simpan minimal 1 hari." };
   }
 
-  if (domain.isAppendOnly && rule.action === "delete") {
+  if (domain.isAppendOnly) {
     return {
       ok: false,
-      error: `${domain.label} bersifat append-only dan tidak dapat dihapus. Pilih anonimisasi.`,
+      error: `${domain.label} adalah jejak permanen (LOCK-PED-012) dan tidak tunduk pada retensi. Penghapusan data penelitian dilakukan dengan memutus pemetaan identitas peserta.`,
     };
   }
 

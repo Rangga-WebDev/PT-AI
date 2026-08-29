@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { ForbiddenState } from "@/components/shared/states/forbidden-state";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = {
@@ -25,9 +25,12 @@ export default async function ForbiddenPage() {
               : "Anda tidak memiliki izin untuk membuka halaman ini."
           }
           action={
-            <Button variant="outline" render={<Link href="/app" />}>
+            <Link
+              href="/app"
+              className={buttonVariants({ variant: "outline" })}
+            >
               Kembali ke beranda aplikasi
-            </Button>
+            </Link>
           }
         />
       </div>

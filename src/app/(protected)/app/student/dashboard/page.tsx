@@ -15,7 +15,7 @@ import { BentoGrid } from "@/components/layout/bento-grid";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { summarizeDimensions } from "@/lib/analytics/aggregate";
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { listDimensionMeasurements } from "@/server/repositories/analytics";
@@ -45,12 +45,12 @@ export default async function StudentDashboardPage() {
         title={`Selamat datang, ${firstName}`}
         description="Lanjutkan proses berpikir Anda: baca kasus, susun argumen, periksa bukti, lalu revisi berdasarkan alasan."
         actions={
-          <Button
-            variant="outline"
-            render={<Link href="/app/student/classes" />}
+          <Link
+            href="/app/student/classes"
+            className={buttonVariants({ variant: "outline" })}
           >
             Lihat kelas
-          </Button>
+          </Link>
         }
       />
 

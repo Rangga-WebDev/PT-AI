@@ -96,7 +96,7 @@ test.describe("Persetujuan dan tata kelola penelitian (SEC-005)", () => {
     }
   });
 
-  test("halaman retensi menolak aksi hapus pada domain append-only", async ({
+  test("halaman retensi tidak menawarkan jejak permanen sebagai domain", async ({
     browser,
   }) => {
     const context = await browser.newContext({ storageState: ADMIN_STATE });
@@ -106,14 +106,39 @@ test.describe("Persetujuan dan tata kelola penelitian (SEC-005)", () => {
       await page.goto("/app/admin/retention");
 
       const form = page.locator('[data-slot="retention-form"]');
+      const options = form.getByLabel("Domain data").locator("option");
 
-      await form.getByLabel("Domain data").selectOption("learning_events");
-      await expect(form.getByRole("status")).toContainText(/append-only/i);
+      await expect(options).toHaveCount(2);
+      await expect(options).not.toContainText(["Peristiwa pembelajaran"]);
 
+      // Batasnya dinyatakan terbuka, bukan disembunyikan dari administrator.
+      await expect(form.getByRole("status")).toContainText(/jejak permanen/i);
+      await expect(form.getByRole("status")).toContainText(
+        /memutus pemetaan identitas/i,
+      );
+    } finally {
+      await context.close();
+    }
+  });
+
+  test("aturan retensi pada domain yang sah tersimpan", async ({ browser }) => {
+    const context = await browser.newContext({ storageState: ADMIN_STATE });
+    const page = await context.newPage();
+
+    try {
+      await page.goto("/app/admin/retention");
+
+      const form = page.locator('[data-slot="retention-form"]');
+      await form.getByLabel("Domain data").selectOption("notifications");
+      await form.getByLabel("Masa simpan (hari)").fill("90");
       await form.getByLabel("Aksi").selectOption("delete");
       await form.locator('[data-slot="submit-retention"]').click();
 
-      await expect(form.getByRole("alert")).toContainText(/append-only/i);
+      await expect(
+        page.locator('[data-slot="retention-rule"]').filter({
+          hasText: "Notifikasi",
+        }),
+      ).toBeVisible();
     } finally {
       await context.close();
     }

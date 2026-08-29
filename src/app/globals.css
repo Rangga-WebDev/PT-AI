@@ -147,7 +147,7 @@
   --evidence: #f4c95d; /* amber - bukti/sumber */
   --success: #45d6a8; /* mint - verified/completed */
   --info: #68a7ff; /* blue - informasi netral */
-  --subtle: #71809a; /* muted text */
+  --subtle: #94a1b8; /* muted text — dinaikkan pada PHASE 15 agar rasio kontras memenuhi WCAG AA di atas card dan surface-active */
 
   --reading-canvas: #f7f3e9;
   --reading-surface: #fffcf5;

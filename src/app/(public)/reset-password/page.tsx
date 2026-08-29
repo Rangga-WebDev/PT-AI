@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Kata sandi baru",
 };
 
+// Nonce CSP hanya dapat disisipkan saat render per permintaan.
+export const dynamic = "force-dynamic";
+
 export default function ResetPasswordPage() {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-12">

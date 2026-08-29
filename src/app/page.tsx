@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 
+// Nonce CSP hanya dapat disisipkan saat render per permintaan.
+export const dynamic = "force-dynamic";
+
 export default function HomePage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-24">

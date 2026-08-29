@@ -32,11 +32,11 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 14)
+## 4. Status Saat Ini (PHASE 15)
 
 | Suite                                    | Jumlah   | Hasil terakhir |
 | ---------------------------------------- | -------- | -------------- |
-| Unit dan component (Vitest, 20 file)     | 157 test | ✅ lulus       |
+| Unit dan component (Vitest, 21 file)     | 165 test | ✅ lulus       |
 | SQL/pgTAP `rls.test.sql`                 | 18 test  | ✅ lulus       |
 | SQL/pgTAP `academic-access.test.sql`     | 8 test   | ✅ lulus       |
 | SQL/pgTAP `content-access.test.sql`      | 10 test  | ✅ lulus       |
@@ -47,9 +47,21 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 | SQL/pgTAP `revision-reflection.test.sql` | 14 test  | ✅ lulus       |
 | SQL/pgTAP `analytics-access.test.sql`    | 12 test  | ✅ lulus       |
 | SQL/pgTAP `research-governance.test.sql` | 14 test  | ✅ lulus       |
-| E2E (guest, student, lecturer, admin)    | 88 test  | ✅ lulus       |
+| E2E (guest, student, lecturer, admin)    | 97 test  | ✅ lulus       |
 
-Total: 157 unit/component + 121 SQL + 88 E2E. Build menghasilkan 39 route.
+Total: 165 unit/component + 121 SQL + 97 E2E. Build menghasilkan 39 route.
+
+Berkas pengujian PHASE 15: `src/test/ai-quota.test.ts`, `e2e/accessibility.spec.ts`.
+
+### Aksesibilitas diuji mesin, bukan diasumsikan
+
+`e2e/accessibility.spec.ts` menjalankan `@axe-core/playwright` pada delapan halaman kunci dan **menggagalkan pengujian** pada pelanggaran serious atau critical. Audit pertamanya menemukan kegagalan kontras nyata pada token `text-subtle` di seluruh halaman — token itu yang diperbaiki, bukan ambang pengujiannya yang diturunkan.
+
+Pemeriksaan yang tidak dapat dilakukan mesin (urutan fokus yang masuk akal, kejelasan pesan galat, nama accessible yang bermakna) tetap menjadi tanggung jawab peninjau manusia. Nol pelanggaran axe **bukan** berarti aplikasi pasti dapat diakses.
+
+### Header keamanan diverifikasi pada server yang berjalan
+
+`npm run check:headers` memeriksa enam header pada halaman publik, halaman masuk, dan halaman terproteksi. Nilai CSP tidak dapat diperiksa dari konfigurasi saja karena nonce-nya dibuat per permintaan.
 
 Berkas pengujian PHASE 14: `src/test/research-governance.test.ts`, `supabase/tests/research-governance.test.sql`, `e2e/consent.spec.ts`.
 

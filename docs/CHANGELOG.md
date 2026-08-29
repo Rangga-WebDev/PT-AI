@@ -4,6 +4,25 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [PHASE 15] — 2026-08-29 — Production Hardening
+
+### Ditambahkan
+
+- **Header keamanan** di `src/proxy.ts`: CSP dengan nonce per permintaan, HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, dan `Permissions-Policy`.
+- **Kuota bantuan AI** (`src/lib/ai/quota.ts`): 20 permintaan per jam dan 80 per hari per mahasiswa, diperiksa **sebelum** penyedia dipanggil.
+- **Audit aksesibilitas** `e2e/accessibility.spec.ts` memakai `@axe-core/playwright` pada delapan halaman kunci; pelanggaran serious/critical menggagalkan pengujian.
+- `scripts/check-security-headers.mjs` beserta `npm run check:headers`.
+- `docs/DEPLOYMENT.md` — prasyarat, urutan rilis, prosedur rollback, dan pencabutan kunci.
+- Test: `ai-quota.test.ts` (7), `accessibility.spec.ts` (8).
+
+### Diubah
+
+- Seluruh `Button` yang dirender sebagai `Link` diganti `Link` bergaya `buttonVariants`. Peringatan Base UI hilang dan tautan navigasi kembali diumumkan sebagai tautan, bukan tombol.
+- Halaman publik (`/`, `/design-system`, `/forgot-password`, `/reset-password`) dipaksa dinamis; halaman statis tidak dapat membawa nonce CSP sehingga skrip hidrasinya diblokir.
+- Token warna `text-subtle` dinaikkan kontrasnya agar memenuhi WCAG AA.
+- **Retensi pada domain append-only kini ditolak sepenuhnya**, bukan diterima lalu diam-diam tidak berjalan. Formulir hanya menawarkan domain yang benar-benar tunduk retensi dan menyatakan batas itu secara terbuka.
+- `nanoid` dipaksa ke `^3.3.18` lewat `overrides`; `npm audit --omit=dev` melaporkan 0 kerentanan.
+
 ## [PHASE 14] — 2026-08-29 — Research and Governance
 
 ### Ditambahkan

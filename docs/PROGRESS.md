@@ -6,26 +6,71 @@ Dokumen ini mencatat kemajuan setiap fase. Diperbarui pada akhir setiap fase ata
 
 ## Status Fase
 
-| Fase | Nama                                | Status                                     | Mulai      | Selesai    |
-| ---- | ----------------------------------- | ------------------------------------------ | ---------- | ---------- |
-| 0    | Repository Audit and Planning       | ✅ SELESAI — disetujui                     | 2026-08-05 | 2026-08-05 |
-| 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                     | 2026-08-05 | 2026-08-05 |
-| 2    | Design System and Application Shell | ✅ SELESAI — disetujui                     | 2026-08-05 | 2026-08-05 |
-| 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4  | 2026-08-11 | 2026-08-11 |
-| 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5  | 2026-08-11 | 2026-08-12 |
-| 5    | Supabase SSR Authentication         | ✅ SELESAI — menunggu persetujuan PHASE 6  | 2026-08-12 | 2026-08-12 |
-| 6    | Academic Structure                  | ✅ SELESAI — disetujui                     | 2026-08-12 | 2026-08-12 |
-| 7    | Course Builder                      | ✅ SELESAI — disetujui                     | 2026-08-12 | 2026-08-12 |
-| 8    | Student Learning Workspace          | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 9    | Source Verification                 | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 10   | AI Coach and RAG                    | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 11   | Mastery and Branching               | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 12   | Revision and Reflection             | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 13   | Analytics                           | ✅ SELESAI — disetujui                     | 2026-08-28 | 2026-08-28 |
-| 14   | Research and Governance             | ✅ SELESAI — menunggu persetujuan PHASE 15 | 2026-08-29 | 2026-08-29 |
-| 15   | Production Hardening                | ⬜ Belum dimulai                           | —          | —          |
+| Fase | Nama                                | Status                                    | Mulai      | Selesai    |
+| ---- | ----------------------------------- | ----------------------------------------- | ---------- | ---------- |
+| 0    | Repository Audit and Planning       | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
+| 1    | Next.js Foundation                  | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
+| 2    | Design System and Application Shell | ✅ SELESAI — disetujui                    | 2026-08-05 | 2026-08-05 |
+| 3    | Visual Prototype                    | ✅ SELESAI — menunggu persetujuan PHASE 4 | 2026-08-11 | 2026-08-11 |
+| 4    | Database Architecture               | ✅ SELESAI — menunggu persetujuan PHASE 5 | 2026-08-11 | 2026-08-12 |
+| 5    | Supabase SSR Authentication         | ✅ SELESAI — menunggu persetujuan PHASE 6 | 2026-08-12 | 2026-08-12 |
+| 6    | Academic Structure                  | ✅ SELESAI — disetujui                    | 2026-08-12 | 2026-08-12 |
+| 7    | Course Builder                      | ✅ SELESAI — disetujui                    | 2026-08-12 | 2026-08-12 |
+| 8    | Student Learning Workspace          | ✅ SELESAI — disetujui                    | 2026-08-28 | 2026-08-28 |
+| 9    | Source Verification                 | ✅ SELESAI — disetujui                    | 2026-08-28 | 2026-08-28 |
+| 10   | AI Coach and RAG                    | ✅ SELESAI — disetujui                    | 2026-08-28 | 2026-08-28 |
+| 11   | Mastery and Branching               | ✅ SELESAI — disetujui                    | 2026-08-28 | 2026-08-28 |
+| 12   | Revision and Reflection             | ✅ SELESAI — disetujui                    | 2026-08-28 | 2026-08-28 |
+| 13   | Analytics                           | ✅ SELESAI — disetujui                    | 2026-08-28 | 2026-08-28 |
+| 14   | Research and Governance             | ✅ SELESAI — disetujui                    | 2026-08-29 | 2026-08-29 |
+| 15   | Production Hardening                | ✅ SELESAI — menunggu persetujuan akhir   | 2026-08-29 | 2026-08-29 |
 
-⛔ **BERHENTI.** Menunggu persetujuan pengguna untuk masuk PHASE 15 — Production Hardening.
+⛔ **BERHENTI.** Seluruh 16 fase selesai. Menunggu persetujuan akhir pengguna.
+
+## Log PHASE 15 — Production Hardening (2026-08-29)
+
+### Celah yang ditemukan saat memeriksa, bukan saat direncanakan
+
+**Aplikasi berjalan tanpa satu pun header keamanan.** `next.config.ts` masih kosong sejak PHASE 1. Aplikasi ini menampilkan jawaban mahasiswa dan keluaran AI — keduanya konten yang tidak boleh dapat disisipi skrip.
+
+**Bantuan AI tidak berbatas.** Tidak ada kuota di mana pun. Satu akun dapat menghabiskan kuota tier gratis Gemini dan mematikan bantuan AI bagi seluruh kelas. Ini risiko biaya sekaligus penolakan layanan, dan tidak pernah tercatat sebagai utang di fase mana pun — saya menemukannya baru saat memeriksa untuk fase ini.
+
+### Yang dikerjakan
+
+- **CSP dengan nonce per permintaan** beserta HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, dan `Permissions-Policy`. `script-src` tidak dilonggarkan sama sekali.
+- **Kuota AI** 20 per jam dan 80 per hari per mahasiswa, dihitung dari `ai_interactions` yang append-only sehingga pemakaian tidak dapat dihapus untuk mengelabui perhitungan. Pemeriksaan dilakukan **sebelum** penyedia dipanggil.
+- **Audit aksesibilitas** dengan `@axe-core/playwright` pada delapan halaman; pelanggaran serious/critical menggagalkan pengujian.
+- **Seluruh utang PHASE 11–14 dilunasi**: `Button` sebagai `Link` diganti, `nanoid` ditutup, dan retensi pada jejak permanen diputuskan.
+- `docs/DEPLOYMENT.md` beserta prosedur rollback dan pencabutan kunci.
+
+### Hasil verifikasi (dijalankan nyata)
+
+| Perintah                     | Hasil                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------- |
+| `npm run lint` / `typecheck` | ✅ exit 0                                                              |
+| `npm run test`               | ✅ 21 file, **165 test** lulus                                         |
+| `npm run test:db`            | ✅ **121/121** lulus                                                   |
+| `npm run test:e2e`           | ✅ **97/97** lulus; dijalankan dua kali berturut-turut dan tetap hijau |
+| `npm run build`              | ✅ 39 route, exit 0                                                    |
+| `npm run check:headers`      | ✅ enam header terpasang pada tiga jenis halaman                       |
+| `npm audit --omit=dev`       | ✅ **0 kerentanan**                                                    |
+| `npm run check:secrets`      | ✅ nol kebocoran (47 bundel klien dipindai)                            |
+| `npm run check:sql`          | ✅ 7/7 pemeriksaan bersih                                              |
+
+### Masalah yang ditemukan dan diperbaiki
+
+1. **CSP ketat memutus hidrasi halaman statis.** Dua uji design-system gagal karena nonce hanya dapat disisipkan saat render per permintaan. Halaman publik dipaksa dinamis — **bukan** CSP-nya yang dilonggarkan. Saya sudah memperingatkan risiko ini di rencana, dan penanganannya dilaporkan apa adanya.
+2. **Audit axe menemukan pelanggaran kontras nyata** pada token `text-subtle` di delapan halaman. Tokennya dinaikkan agar memenuhi WCAG AA, bukan pengujiannya yang dilonggarkan.
+3. **`style-src-attr` harus dilonggarkan** karena bar progres memakai atribut `style` sebaris. Atribut style tidak dapat mengeksekusi skrip, jadi risikonya terbatas pada penyuntikan CSS — dan pelonggaran ini dicatat terbuka di `docs/DEPLOYMENT.md`, tidak disembunyikan.
+4. **Aksi retensi `anonymize` pada jejak permanen tidak pernah berjalan.** Sebelumnya validasi menerimanya, sehingga administrator dapat menyimpan aturan yang tampak berlaku padahal tidak. Kini ditolak dan domainnya tidak lagi ditawarkan.
+
+### Utang yang tersisa
+
+Tidak ada utang teknis yang tercatat pada akhir fase ini.
+
+### Checkpoint
+
+⛔ **BERHENTI.** Seluruh fase selesai. Menunggu persetujuan akhir pengguna.
 
 ## Log PHASE 14 — Research and Governance (2026-08-29)
 

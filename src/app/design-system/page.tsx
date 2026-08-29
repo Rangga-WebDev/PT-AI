@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: "Design System",
 };
 
+// Nonce CSP hanya dapat disisipkan saat render per permintaan.
+export const dynamic = "force-dynamic";
+
 // [PREVIEW INTERNAL] Galeri design system "Civic Intelligence".
 // Halaman ini bukan fitur produk: navigasi di bawah hanyalah contoh untuk
 // mendemonstrasikan AppShell, dan halaman akan digate/dihapus sebelum

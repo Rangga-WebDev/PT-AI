@@ -38,6 +38,7 @@ const authenticatedProjects = [
             "**/mastery.spec.ts",
             "**/revision.spec.ts",
             "**/consent.spec.ts",
+            "**/accessibility.spec.ts",
           ],
           use: { ...devices["Desktop Chrome"], storageState: STUDENT_STATE },
           dependencies: ["setup"],

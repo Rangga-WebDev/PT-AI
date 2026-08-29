@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   title: "Lupa kata sandi",
 };
 
+// Nonce CSP hanya dapat disisipkan saat render per permintaan; halaman statis
+// akan kehilangan nonce dan skrip hidrasinya diblokir browser.
+export const dynamic = "force-dynamic";
+
 export default function ForgotPasswordPage() {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-12">

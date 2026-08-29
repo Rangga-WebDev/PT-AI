@@ -7,7 +7,7 @@ import { InsightCard } from "@/components/cards/insight-cards";
 import { BentoGrid } from "@/components/layout/bento-grid";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { listAcademicPeriods } from "@/server/repositories/academic-periods";
 import { listClassesForAdmin } from "@/server/repositories/classes";
 import { listCourses } from "@/server/repositories/courses";
@@ -40,9 +40,12 @@ export default async function AdminDashboardPage() {
         title="Ringkasan struktur akademik"
         description="Kelola akun, struktur akademik, dan kelas. Administrator tidak memiliki akses ke nilai maupun jawaban mahasiswa."
         actions={
-          <Button variant="outline" render={<Link href="/app/admin/users" />}>
+          <Link
+            href="/app/admin/users"
+            className={buttonVariants({ variant: "outline" })}
+          >
             Kelola pengguna
-          </Button>
+          </Link>
         }
       />
 

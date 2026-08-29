@@ -4,6 +4,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
+import { evaluateAiQuota } from "@/lib/ai/quota";
 import type { AiFunction } from "@/lib/constants/stages";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -177,6 +178,32 @@ export async function requestCoachFeedback(
   }
 
   const supabase = await createClient();
+
+  // Kuota diperiksa sebelum penyedia dipanggil, bukan sesudahnya: permintaan
+  // yang melewati batas tidak boleh menghabiskan kuota tier gratis lebih dulu.
+  const now = Date.now();
+  const [hourly, daily] = await Promise.all([
+    supabase
+      .from("ai_interactions")
+      .select("id", { count: "exact", head: true })
+      .eq("student_id", request.studentId)
+      .gte("created_at", new Date(now - 60 * 60 * 1000).toISOString()),
+    supabase
+      .from("ai_interactions")
+      .select("id", { count: "exact", head: true })
+      .eq("student_id", request.studentId)
+      .gte("created_at", new Date(now - 24 * 60 * 60 * 1000).toISOString()),
+  ]);
+
+  const quota = evaluateAiQuota({
+    lastHourCount: hourly.count ?? 0,
+    lastDayCount: daily.count ?? 0,
+  });
+
+  if (!quota.allowed) {
+    return { ok: false, error: quota.reason ?? "Batas bantuan AI tercapai." };
+  }
+
   const { data: attempt } = await supabase
     .from("attempts")
     .select("content")

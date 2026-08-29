@@ -4,7 +4,7 @@ import { ExternalLink, ShieldCheck, ShieldQuestion } from "lucide-react";
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -63,10 +63,13 @@ export function EvidenceCard({ item, href, className }: EvidenceCardProps) {
         </StatusBadge>
       </CardContent>
       <CardFooter>
-        <Button variant="outline" size="sm" render={<Link href={href} />}>
+        <Link
+          href={href}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
           Periksa sumber
           <ExternalLink aria-hidden="true" />
-        </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
