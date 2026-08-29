@@ -434,9 +434,8 @@ Rincian setiap fase, termasuk masalah yang ditemukan dan cara mengatasinya, terc
 ## Dokumentasi
 
 | Dokumen                                               | Isi                                                  |
-| ----------------------------------------------------- | ---------------------------------------------------- |
-| [JUKNIS_KONTEN.md](docs/JUKNIS_KONTEN.md)             | Cara mengisi konten nyata dari nol sampai siap pakai |
-| [DECISIONS.md](docs/DECISIONS.md)                     | Keputusan LOCKED, OPEN, DEFERRED, dan Change Request |
+| ----------------------------------------------------- | ---------------------------------------------------- | --- | ------------------------------------------- | ---------------------------------------------------- | --- | --------------------------------- | ---------------------------------------------------- |
+| [JUKNIS_KONTEN.md](docs/JUKNIS_KONTEN.md)             | Cara mengisi konten nyata dari nol sampai siap pakai |     | [TUTORIAL_KELAS.md](docs/TUTORIAL_KELAS.md) | Pemakaian satu semester: admin, dosen, dan mahasiswa |     | [DECISIONS.md](docs/DECISIONS.md) | Keputusan LOCKED, OPEN, DEFERRED, dan Change Request |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md)               | Arsitektur target dan struktur folder                |
 | [DATABASE.md](docs/DATABASE.md)                       | Prinsip desain, ERD, fungsi, dan trigger             |
 | [DATABASE_DICTIONARY.md](docs/DATABASE_DICTIONARY.md) | Kamus data seluruh tabel                             |
