@@ -13,6 +13,9 @@ Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 - `AUTH_ROUTES` di `src/proxy.ts` menyertakan `/` agar pengguna yang sudah bersesi tidak mendarat di formulir masuk. Ini satu-satunya perubahan perilaku proxy; logika sesi, peran, dan pengalihan lain tidak disentuh.
 - Tata letak ponsel dirancang ulang, bukan ditumpuk: blok identitas dipangkas menjadi tiga elemen, panel masuk mengisi sisa ruang, dan seluruh formulir termasuk tautan lupa kata sandi muat tanpa menggulir pada viewport 390×844.
 - Autentikasi tidak berubah: `SignInForm`, Server Action `signIn`, dan skema validasi tetap apa adanya. Tidak ada SSO atau "ingat saya" yang ditambahkan karena keduanya memang tidak didukung.
+- Panel kiri memakai permukaan `bg-card` dengan tepi kanan melengkung (`clip-path` elips, hanya pada `lg`), meniru komposisi referensi tanpa memakai foto stok.
+- Kolom surel dan kata sandi memakai ikon pendahulu dan tinggi 44px agar seimbang dengan tombol utama; kata sandi memperoleh tombol perlihatkan/sembunyikan. Nama aksesibel tombol itu sengaja tidak memuat frasa "kata sandi" supaya pencarian berbasis label tidak cocok ke dua elemen.
+- Tautan lupa kata sandi pindah ke dalam formulir, rata kanan tepat di atas tombol.
 
 ## [Penyelarasan proposal] — 2026-08-29
 

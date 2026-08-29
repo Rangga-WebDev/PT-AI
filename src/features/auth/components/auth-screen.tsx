@@ -1,7 +1,5 @@
 /** @format */
 
-import Link from "next/link";
-
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
 const STAGES = [
@@ -28,7 +26,7 @@ export function AuthScreen({ redirectTo, errorMessage }: AuthScreenProps) {
       data-slot="auth-screen"
       className="flex flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]"
     >
-      <section className="flex flex-col justify-between gap-12 px-6 py-8 lg:px-12 lg:py-16">
+      <section className="flex flex-col justify-between gap-12 bg-card px-6 py-8 lg:px-12 lg:py-16 lg:[clip-path:ellipse(100%_115%_at_0%_50%)]">
         <div className="flex flex-col gap-4 lg:max-w-md">
           <p className="font-mono text-xs tracking-widest text-subtle uppercase">
             Pendidikan Kewarganegaraan
@@ -59,17 +57,11 @@ export function AuthScreen({ redirectTo, errorMessage }: AuthScreenProps) {
         </div>
       </section>
 
-      <section className="flex flex-1 items-start justify-center border-t border-border bg-card px-6 py-10 lg:items-center lg:border-t-0 lg:border-l lg:px-12">
-        <div className="flex w-full max-w-sm flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <h2 className="font-heading text-h3 font-semibold">
-              Masuk ke akun Anda
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Akun dibuat oleh administrator institusi. Hubungi administrator
-              bila Anda belum memiliki akses.
-            </p>
-          </div>
+      <section className="flex flex-1 items-start justify-center px-6 py-10 lg:items-center lg:px-12">
+        <div className="flex w-full max-w-sm flex-col gap-7">
+          <h2 className="text-center font-heading text-h3 font-semibold">
+            Masuk ke akun Anda
+          </h2>
 
           {errorMessage ? (
             <p
@@ -82,12 +74,10 @@ export function AuthScreen({ redirectTo, errorMessage }: AuthScreenProps) {
 
           <SignInForm redirectTo={redirectTo} />
 
-          <Link
-            href="/forgot-password"
-            className="text-sm text-primary underline-offset-4 hover:underline"
-          >
-            Lupa kata sandi?
-          </Link>
+          <p className="text-center text-sm text-muted-foreground">
+            Akun dibuat oleh administrator institusi. Hubungi administrator bila
+            Anda belum memiliki akses.
+          </p>
         </div>
       </section>
     </main>
