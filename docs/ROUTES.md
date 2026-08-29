@@ -10,8 +10,8 @@
 
 | URL                  | File                                        | Jenis                              | Keterangan                                         |
 | -------------------- | ------------------------------------------- | ---------------------------------- | -------------------------------------------------- |
-| `/`                  | `src/app/page.tsx`                          | Server Component, static           | Beranda + tautan ke prototipe                      |
-| `/login`             | `src/app/(public)/login/page.tsx`           | Server Component, static           | Formulir visual; input & tombol dinonaktifkan      |
+| `/`                  | `src/app/page.tsx`                          | Server Component, dinamis          | Permukaan masuk; pengguna bersesi dialihkan ke `/app` |
+| `/login`             | `src/app/(public)/login/page.tsx`           | Server Component, dinamis          | Permukaan masuk yang sama, menerima `redirectTo` dan `error` |
 | `/forgot-password`   | `src/app/(public)/forgot-password/page.tsx` | Server Component, static           | Formulir visual; belum mengirim surel              |
 | `/design-system`     | `src/app/design-system/page.tsx`            | Server Component, static           | **Preview internal**; digate/dihapus pada PHASE 15 |
 | `*` (tidak cocok)    | `src/app/not-found.tsx`                     | Server Component                   | 404 Bahasa Indonesia                               |

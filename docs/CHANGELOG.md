@@ -4,6 +4,16 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [Halaman masuk] — 2026-08-29
+
+### Diubah
+
+- **`/` menjadi permukaan masuk**, bukan halaman pemasaran. Komposisi terbagi 45/55: kolom kiri memuat identitas sistem, kolom kanan memuat formulir masuk. Kartu prinsip, deretan tahap berbingkai, dan tautan dokumentasi dihapus karena tidak melayani tujuan halaman.
+- `/` dan `/login` kini merender komponen yang sama (`src/features/auth/components/auth-screen.tsx`). `/login` tetap menerima `redirectTo` dan `error` dari proxy, sehingga alur pengalihan tidak berubah.
+- `AUTH_ROUTES` di `src/proxy.ts` menyertakan `/` agar pengguna yang sudah bersesi tidak mendarat di formulir masuk. Ini satu-satunya perubahan perilaku proxy; logika sesi, peran, dan pengalihan lain tidak disentuh.
+- Tata letak ponsel dirancang ulang, bukan ditumpuk: blok identitas dipangkas menjadi tiga elemen, panel masuk mengisi sisa ruang, dan seluruh formulir termasuk tautan lupa kata sandi muat tanpa menggulir pada viewport 390×844.
+- Autentikasi tidak berubah: `SignInForm`, Server Action `signIn`, dan skema validasi tetap apa adanya. Tidak ada SSO atau "ingat saya" yang ditambahkan karena keduanya memang tidak didukung.
+
 ## [Penyelarasan proposal] — 2026-08-29
 
 ### Diubah

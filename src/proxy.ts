@@ -10,7 +10,9 @@ import { NextResponse, type NextRequest } from "next/server";
 // Route Handler, dan RLS.
 
 const PROTECTED_PREFIX = "/app";
-const AUTH_ROUTES = ["/login", "/forgot-password"];
+// `/` adalah permukaan masuk yang sama dengan `/login`, jadi pengguna yang
+// sudah bersesi tidak boleh mendarat di formulir masuk.
+const AUTH_ROUTES = ["/", "/login", "/forgot-password"];
 
 /**
  * Header keamanan disusun di sini, bukan di next.config.ts, karena CSP memakai
