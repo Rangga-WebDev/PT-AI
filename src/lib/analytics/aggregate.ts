@@ -190,21 +190,72 @@ export function deriveObservations(rows: ObservationInput[]): Observation[] {
   return observations;
 }
 
+export type FidelityGroup = "Persiapan" | "Sintaks" | "Tata kelola";
+
 export interface FidelityItem {
   key: string;
   label: string;
+  group: FidelityGroup;
 }
 
-/** Checklist keterlaksanaan model; dipakai untuk kebutuhan penelitian. */
+export const FIDELITY_GROUPS: FidelityGroup[] = [
+  "Persiapan",
+  "Sintaks",
+  "Tata kelola",
+];
+
+/** Checklist keterlaksanaan model; sepuluh komponen mengikuti Lampiran 4 proposal. */
 export const FIDELITY_CHECKLIST: FidelityItem[] = [
-  { key: "attempt_first", label: "Respons awal ditulis sebelum bantuan AI" },
-  { key: "source_pack", label: "Kasus dilengkapi source pack terkurasi" },
-  { key: "verification", label: "Verifikasi sumber dijalankan mahasiswa" },
-  { key: "revision", label: "Revisi dilakukan dengan alasan tercatat" },
-  { key: "reflection", label: "Refleksi terstruktur diisi" },
+  {
+    key: "source_pack",
+    label: "Source pack terkurasi tersedia dan aturan penggunaan AI dijelaskan",
+    group: "Persiapan",
+  },
+  {
+    key: "attempt_first",
+    label: "Respons awal ditulis sebelum bantuan AI",
+    group: "Sintaks",
+  },
+  {
+    key: "claim_analysis",
+    label: "Klaim, alasan, asumsi, dan bias diidentifikasi mahasiswa",
+    group: "Sintaks",
+  },
+  {
+    key: "verification",
+    label: "Verifikasi sumber dijalankan dan keluaran AI dibandingkan",
+    group: "Sintaks",
+  },
+  {
+    key: "alternatives_tested",
+    label: "Kontraargumen, alternatif, dan batas kesimpulan diuji",
+    group: "Sintaks",
+  },
+  {
+    key: "revision",
+    label: "Justifikasi berbasis bukti direvisi setelah umpan balik",
+    group: "Sintaks",
+  },
+  {
+    key: "reflection",
+    label: "Refleksi terstruktur diisi termasuk pengungkapan penggunaan AI",
+    group: "Sintaks",
+  },
   {
     key: "lecturer_decision",
-    label: "Ketuntasan diputuskan dosen, bukan sistem",
+    label: "Dosen memoderasi umpan balik AI dan memutuskan ketuntasan",
+    group: "Tata kelola",
+  },
+  {
+    key: "adaptive_branching",
+    label: "Remedial atau pengayaan diberikan atas kriteria yang dijelaskan",
+    group: "Tata kelola",
+  },
+  {
+    key: "dose_ethics_incident",
+    label:
+      "Target unit tercapai, deviasi dicatat, keluaran bermasalah dilaporkan",
+    group: "Tata kelola",
   },
 ];
 

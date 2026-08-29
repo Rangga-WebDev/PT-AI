@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_MASTERY_TARGET,
   FIDELITY_CHECKLIST,
+  FIDELITY_GROUPS,
   deriveObservations,
   fidelityRate,
   summarizeDimensions,
@@ -169,5 +170,24 @@ describe("fidelityRate", () => {
     expect(
       fidelityRate([{ checklistKey: "butir_asing", isImplemented: true }]),
     ).toBe(0);
+  });
+
+  it("memuat sepuluh komponen Lampiran 4 dengan kunci unik", () => {
+    const keys = FIDELITY_CHECKLIST.map((item) => item.key);
+
+    expect(keys).toHaveLength(10);
+    expect(new Set(keys).size).toBe(10);
+  });
+
+  it("menempatkan setiap butir pada kelompok yang dikenal", () => {
+    for (const group of FIDELITY_GROUPS) {
+      expect(FIDELITY_CHECKLIST.some((item) => item.group === group)).toBe(
+        true,
+      );
+    }
+
+    for (const item of FIDELITY_CHECKLIST) {
+      expect(FIDELITY_GROUPS).toContain(item.group);
+    }
   });
 });
