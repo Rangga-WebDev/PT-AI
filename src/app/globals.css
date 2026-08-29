@@ -204,6 +204,16 @@
   ::selection {
     background-color: color-mix(in oklab, var(--primary) 30%, transparent);
   }
+  /*
+   * Daftar pilihan <select> digambar sistem operasi di atas permukaan terang
+   * dan tidak mewarisi tema gelap, sedangkan warna teksnya tetap mewarisi
+   * --foreground yang nyaris putih. Akibatnya teks tidak terbaca sampai
+   * disorot. Warna dipatok eksplisit memakai token kanvas baca.
+   */
+  select option {
+    background-color: var(--reading-surface);
+    color: var(--reading-foreground);
+  }
 }
 
 /* Lebar dan kerapatan baris untuk teks pembelajaran panjang (DSN-004). */
