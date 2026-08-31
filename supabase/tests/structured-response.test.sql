@@ -227,11 +227,14 @@ select 'b0000000-0000-0000-0000-000000000050', 'b0000000-0000-0000-0000-00000000
        'b3333333-3333-3333-3333-333333333333'
 from (select public.build_unit_snapshot('b0000000-0000-0000-0000-000000000011') as snapshot) s;
 
+-- 11. Snapshot baru memakai versi skema terkini.
+--     Angka ini sengaja ditulis literal: setiap perubahan bentuk snapshot
+--     harus menjadi keputusan sadar, bukan lolos diam-diam.
 select is(
   (select schema_version from public.learning_unit_versions
     where id = 'b0000000-0000-0000-0000-000000000050'),
-  2,
-  'Snapshot baru dicatat sebagai schema_version 2'
+  3,
+  'Snapshot baru dicatat sebagai schema_version 3'
 );
 
 select * from finish();
