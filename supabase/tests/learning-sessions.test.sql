@@ -191,6 +191,11 @@ select throws_ok(
 );
 
 -- 8. Sesi terbengkalai ditutup fungsi terjadwal.
+--    Sesi lama dari lingkungan pengembangan dikuras dahulu agar hitungannya
+--    hanya mencerminkan fixture ini. Seluruh berkas berjalan dalam transaksi
+--    yang di-rollback, sehingga data nyata tidak tersentuh.
+select public.close_stale_learning_sessions(5, 4);
+
 insert into public.learning_sessions (
   id, student_id, activity_id, started_at, last_heartbeat_at, estimated_active_seconds
 ) values (

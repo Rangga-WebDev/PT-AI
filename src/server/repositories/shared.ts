@@ -2,7 +2,7 @@
 
 import "server-only";
 
-import { DatabaseError } from "@/lib/errors";
+import { DatabaseError, toDatabaseError } from "@/lib/errors";
 
 // Query Supabase mengembalikan { data, error }; helper ini menyatukan
 // penanganannya agar pesan mentah database tidak pernah bocor ke pengguna.
@@ -11,20 +11,32 @@ export function unwrap<T>(
   context: string,
 ): T {
   if (result.error) {
-    console.error(`[db:${context}]`, result.error);
-    throw new DatabaseError(undefined, result.error.message);
+    throw toDatabaseError(result.error, context);
   }
   if (result.data === null) {
-    throw new DatabaseError(undefined, `${context}: data kosong`);
+    throw new DatabaseError({
+      message: `${context}: data kosong`,
+      operation: context,
+    });
   }
   return result.data;
 }
 
-export function unwrapMaybe<T>(result: {
-  data: T | null;
-  error: { message: string; code?: string } | null;
-}): T | null {
-  if (result.error) return null;
+/**
+ * Dipakai saat baris kosong adalah keadaan yang sah. Galat basis data tetap
+ * dicatat: sebelumnya kegagalan teknis tidak dapat dibedakan dari "tidak ada".
+ */
+export function unwrapMaybe<T>(
+  result: {
+    data: T | null;
+    error: { message: string; code?: string } | null;
+  },
+  context?: string,
+): T | null {
+  if (result.error) {
+    toDatabaseError(result.error, context);
+    return null;
+  }
   return result.data;
 }
 
