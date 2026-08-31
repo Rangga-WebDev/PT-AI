@@ -9,7 +9,7 @@
 | Unit test                                      | Vitest 4                                                                           | `vitest.config.mts`    |
 | Component test                                 | React Testing Library + jest-dom + user-event                                      | `src/test/setup.ts`    |
 | End-to-end                                     | Playwright — project `setup`, `guest`, `student`, `lecturer` dengan `storageState` | `playwright.config.ts` |
-| Database/RLS test                              | pgTAP via driver `pg` — `npm run test:db` (**18/18 lulus**)                        | `supabase/tests/`      |
+| Database/RLS test                              | pgTAP via driver `pg` — `npm run test:db` (**247/247 lulus**)                      | `supabase/tests/`      |
 | Business logic Server Actions / Route Handlers | Vitest — skema Zod & guard peran (PHASE 5)                                         | Vitest                 |
 
 ## 2. Perintah
@@ -32,26 +32,32 @@ Prasyarat E2E sekali saja: `npx playwright install chromium`.
 6. Setiap fase wajib menjalankan test nyata sebelum klaim selesai (Definition of Done butir 20).
 7. Query RTL memprioritaskan role/label yang accessible (`getByRole`) — sekaligus menjaga aksesibilitas markup.
 
-## 4. Status Saat Ini (PHASE 15)
+## 4. Status Saat Ini (migrasi 0027)
 
-| Suite                                    | Jumlah   | Hasil terakhir |
-| ---------------------------------------- | -------- | -------------- |
-| Unit dan component (Vitest, 21 file)     | 165 test | ✅ lulus       |
-| SQL/pgTAP `rls.test.sql`                 | 18 test  | ✅ lulus       |
-| SQL/pgTAP `academic-access.test.sql`     | 8 test   | ✅ lulus       |
-| SQL/pgTAP `content-access.test.sql`      | 10 test  | ✅ lulus       |
-| SQL/pgTAP `attempt-integrity.test.sql`   | 10 test  | ✅ lulus       |
-| SQL/pgTAP `source-access.test.sql`       | 11 test  | ✅ lulus       |
-| SQL/pgTAP `ai-policy.test.sql`           | 12 test  | ✅ lulus       |
-| SQL/pgTAP `mastery-branching.test.sql`   | 12 test  | ✅ lulus       |
-| SQL/pgTAP `revision-reflection.test.sql` | 14 test  | ✅ lulus       |
-| SQL/pgTAP `analytics-access.test.sql`    | 12 test  | ✅ lulus       |
-| SQL/pgTAP `research-governance.test.sql` | 14 test  | ✅ lulus       |
-| E2E (guest, student, lecturer, admin)    | 97 test  | ✅ lulus       |
+| Suite                                 | Jumlah   | Hasil terakhir     |
+| ------------------------------------- | -------- | ------------------ |
+| Unit dan component (Vitest)           | 229 test | ✅ lulus           |
+| SQL/pgTAP (18 berkas)                 | 247 test | ✅ lulus           |
+| E2E (guest, student, lecturer, admin) | 99 test  | ⚠️ lihat butir 4.1 |
 
-Total: 165 unit/component + 121 SQL + 97 E2E. Build menghasilkan 39 route.
+Angka pgTAP terbaru: `unit-versioning` 21, `learning-materials` 17, `learning-sessions` 14, `announcements` 13, `soft-delete-visibility` 16, `ai-material-drafts` 16, `storage-security` 18, `structured-response` 11.
 
-Berkas pengujian PHASE 15: `src/test/ai-quota.test.ts`, `e2e/accessibility.spec.ts`.
+### 4.1 E2E terhambat cold-route loading, bukan regresi aplikasi
+
+Pada mesin pengembangan dengan RAM bebas terbatas (**443 MB dari 7.896 MB** saat pengukuran), sebagian spec gagal dengan `page.goto: Timeout 30000ms`. Penyebabnya bukan aplikasi maupun basis data:
+
+| Pengukuran                                | Hasil      |
+| ----------------------------------------- | ---------- |
+| Supabase `/auth/v1/health`                | 105–955 ms |
+| `/login` permintaan pertama (cold)        | 19.810 ms  |
+| `/login` permintaan berikutnya (warm)     | 55 ms      |
+| `/app/student/dashboard` (redirect proxy) | 32 ms      |
+
+`next start` memuat bundel rute pada akses pertama. Di bawah tekanan memori, pemuatan itu melampaui `navigationTimeout` 30 detik pada rute berat. Kegagalannya deterministik — `--workers=1` menghasilkan **id test yang sama persis** dengan eksekusi 4 worker — karena yang menentukan adalah spec mana yang pertama menyentuh tiap rute, bukan keacakan penjadwalan.
+
+Bukti bahwa kode aplikasi tidak terlibat: `git diff HEAD -- src/` kosong sejak eksekusi 99/99 terakhir, dan `/login` ikut gagal padahal halaman itu tidak menyentuh satu pun objek basis data yang berubah.
+
+`navigationTimeout` **sengaja tidak dinaikkan**. Menaikkannya menyembunyikan gejala tanpa memperbaiki apa pun dan menghapus sinyal performa yang berguna. Jalankan E2E pada mesin dengan memori bebas memadai.
 
 ### Aksesibilitas diuji mesin, bukan diasumsikan
 

@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(22);
 
 create or replace function pg_temp.make_user(p_id uuid, p_email text)
 returns void
@@ -390,5 +390,16 @@ select is(
 );
 
 select pg_temp.act_as_service();
+
+-- 22. Resolver versi berjalan security definer sehingga melewati RLS. Ia hanya
+--     dipakai trigger dan jalur server; klien tidak boleh dapat memanggilnya
+--     dengan pasangan (unit, mahasiswa) sembarang.
+select is(
+  (select bool_or(has_function_privilege(r, 'public.resolve_unit_version(uuid, uuid)', 'execute'))
+    from unnest(array['anon', 'authenticated']) as r),
+  false,
+  'Resolver versi tidak dapat dipanggil langsung oleh klien'
+);
+
 select * from finish();
 rollback;
