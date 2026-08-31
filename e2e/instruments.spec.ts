@@ -57,6 +57,31 @@ test.describe("Instrumen pretest dan posttest", () => {
     classId = enrollment.class_id;
   });
 
+  // Skor dimensi bersifat tahan lama dan dibaca spec analitik. Tanpa
+  // pembersihan, spec ini menambah dimensi terukur bagi mahasiswa seed.
+  test.afterAll(async () => {
+    const supabase = admin();
+
+    const { data: created } = await supabase
+      .from("assessments")
+      .select("id")
+      .eq("class_id", classId)
+      .eq("title", title)
+      .maybeSingle();
+
+    if (!created) return;
+
+    await supabase
+      .from("critical_thinking_scores")
+      .delete()
+      .eq("assessment_id", created.id);
+    await supabase
+      .from("assessment_scores")
+      .delete()
+      .eq("assessment_id", created.id);
+    await supabase.from("assessments").delete().eq("id", created.id);
+  });
+
   /**
    * Regresi: daftar mahasiswa sempat mengirim id pendaftaran, bukan id profil,
    * sehingga setiap penyimpanan melanggar foreign key dan hanya memunculkan

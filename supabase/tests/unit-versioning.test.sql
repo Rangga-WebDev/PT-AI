@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(18);
+select plan(21);
 
 create or replace function pg_temp.make_user(p_id uuid, p_email text)
 returns void
@@ -126,14 +126,17 @@ from (select public.build_unit_snapshot('f0000000-0000-0000-0000-000000000011') 
 
 select pg_temp.act_as_service();
 
--- 1. Backfill migration memberi versi kepada seluruh unit yang sudah terbit.
+-- 1. Sebuah unit tidak boleh punya lebih dari satu versi berstatus published.
 select is(
-  (select count(*)::int
-     from public.learning_units u
-     left join public.learning_unit_versions v on v.learning_unit_id = u.id
-    where u.status = 'published' and u.deleted_at is null and v.id is null),
+  (select count(*)::int from (
+     select learning_unit_id
+     from public.learning_unit_versions
+     where status = 'published'
+     group by learning_unit_id
+     having count(*) > 1
+   ) as ganda),
   0,
-  'Setiap unit terbit memiliki sekurang-kurangnya satu versi'
+  'Tidak ada unit dengan lebih dari satu versi terbit'
 );
 
 -- 2. Unit draf tidak diberi versi oleh backfill.
@@ -352,6 +355,38 @@ select is(
     where learning_unit_id = 'f0000000-0000-0000-0000-000000000011'),
   0,
   'Dosen lain tidak melihat versi unit kelas orang lain'
+);
+
+-- === Penerbitan versi oleh dosen pengampu ===================================
+
+select pg_temp.act_as('f3333333-3333-3333-3333-333333333333');
+
+-- 19. Penerbitan ulang tanpa perubahan isi tidak membuat versi baru.
+select is(
+  public.publish_unit_version('f0000000-0000-0000-0000-000000000011'),
+  'f0000000-0000-0000-0000-000000000033'::uuid,
+  'Penerbitan tanpa perubahan isi memakai versi yang sama'
+);
+
+-- 20. Perubahan isi menghasilkan versi berikutnya.
+update public.cases
+set body = 'Isi kasus versi keempat.'
+where learning_unit_id = 'f0000000-0000-0000-0000-000000000011';
+
+select isnt(
+  public.publish_unit_version('f0000000-0000-0000-0000-000000000011'),
+  'f0000000-0000-0000-0000-000000000033'::uuid,
+  'Perubahan isi menghasilkan versi baru'
+);
+
+-- 21. Hanya satu versi terbit tersisa setelah penerbitan berikutnya.
+select pg_temp.act_as_service();
+select is(
+  (select count(*)::int from public.learning_unit_versions
+    where learning_unit_id = 'f0000000-0000-0000-0000-000000000011'
+      and status = 'published'),
+  1,
+  'Versi lama diarsipkan otomatis saat versi baru terbit'
 );
 
 select pg_temp.act_as_service();

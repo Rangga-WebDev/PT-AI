@@ -10,9 +10,9 @@ export default async function LearnUnitPage({
 }: PageProps<"/app/student/learn/[unitId]">) {
   const { unitId } = await params;
 
-  await requireStudentAccess();
+  const student = await requireStudentAccess();
 
-  const workspace = await getStudentUnitWorkspace(unitId);
+  const workspace = await getStudentUnitWorkspace(unitId, student.id);
   if (!workspace) notFound();
 
   const firstStage = workspace.stages.find((stage) => stage.isEnabled);

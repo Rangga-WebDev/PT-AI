@@ -4,6 +4,11 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import type { StageKey } from "@/lib/constants/stages";
+import {
+  snapshotToWorkspace,
+  type SnapshotSource,
+  type UnitSnapshot,
+} from "@/lib/content/snapshot";
 
 import { unwrap } from "./shared";
 
@@ -261,6 +266,7 @@ export interface StudentActivityView {
   title: string;
   prompt: string;
   activityType: string;
+  responseSchema: string;
   allowsAi: boolean;
   allowedAiFunctions: string[];
   requiresAttemptBeforeAi: boolean;
@@ -289,9 +295,90 @@ export interface StudentUnitWorkspace {
   };
   caseDetail: CaseView | null;
   stages: StudentStageView[];
+  unitVersionId: string | null;
+  sourcePack: SnapshotSource[];
+}
+
+/**
+ * Versi yang berlaku bagi seorang mahasiswa: versi yang sudah terikat pada
+ * attempt paling awalnya di unit ini, atau versi terbit terkini bila ia belum
+ * pernah memulai. Aturannya sama dengan trigger `set_attempt_unit_version()`;
+ * di sini hanya dibaca, keputusan pengikatan tetap milik basis data.
+ */
+async function resolveStudentUnitVersion(
+  unitId: string,
+  studentId: string,
+): Promise<string | null> {
+  const supabase = await createClient();
+
+  const { data: pinned } = await supabase
+    .from("attempts")
+    .select(
+      "unit_version_id, activities!inner(learning_stages!inner(learning_unit_id))",
+    )
+    .eq("student_id", studentId)
+    .eq("activities.learning_stages.learning_unit_id", unitId)
+    .not("unit_version_id", "is", null)
+    .order("submitted_at")
+    .limit(1)
+    .maybeSingle();
+
+  if (pinned?.unit_version_id) return pinned.unit_version_id;
+
+  const { data: current } = await supabase
+    .from("learning_unit_versions")
+    .select("id")
+    .eq("learning_unit_id", unitId)
+    .eq("status", "published")
+    .maybeSingle();
+
+  return current?.id ?? null;
 }
 
 export async function getStudentUnitWorkspace(
+  unitId: string,
+  studentId: string,
+): Promise<StudentUnitWorkspace | null> {
+  const supabase = await createClient();
+
+  const { data: location } = await supabase
+    .from("learning_units")
+    .select("id, modules(title, class_id)")
+    .eq("id", unitId)
+    .eq("status", "published")
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (!location) return null;
+
+  const versionId = await resolveStudentUnitVersion(unitId, studentId);
+
+  if (versionId) {
+    const { data: version } = await supabase
+      .from("learning_unit_versions")
+      .select("id, snapshot_jsonb")
+      .eq("id", versionId)
+      .maybeSingle();
+
+    if (version) {
+      return snapshotToWorkspace(
+        version.snapshot_jsonb as unknown as UnitSnapshot,
+        {
+          unitId,
+          moduleTitle: location.modules.title,
+          classId: location.modules.class_id,
+        },
+        version.id,
+      );
+    }
+  }
+
+  // Unit yang belum pernah diterbitkan sebagai versi tetap terbaca dari baris
+  // hidup, sehingga konten lama tidak hilang sebelum penerbitan pertama.
+  return getLiveStudentUnitWorkspace(unitId);
+}
+
+async function getLiveStudentUnitWorkspace(
   unitId: string,
 ): Promise<StudentUnitWorkspace | null> {
   const supabase = await createClient();
@@ -307,8 +394,8 @@ export async function getStudentUnitWorkspace(
        learning_stages(
          id, stage_key, sequence, title, focus, is_enabled,
          activities(
-           id, title, prompt, activity_type, sequence, status, allows_ai,
-           allowed_ai_functions, requires_attempt_before_ai, due_at,
+           id, title, prompt, activity_type, response_schema, sequence, status,
+           allows_ai, allowed_ai_functions, requires_attempt_before_ai, due_at,
            activity_instructions(content, audience, sequence)
          )
        )`,
@@ -356,6 +443,7 @@ export async function getStudentUnitWorkspace(
             title: activity.title,
             prompt: activity.prompt,
             activityType: activity.activity_type,
+            responseSchema: activity.response_schema ?? "free_text",
             allowsAi: activity.allows_ai,
             allowedAiFunctions: activity.allowed_ai_functions ?? [],
             requiresAttemptBeforeAi: activity.requires_attempt_before_ai,
@@ -366,5 +454,7 @@ export async function getStudentUnitWorkspace(
               .map((item) => item.content),
           })),
       })),
+    unitVersionId: null,
+    sourcePack: [],
   };
 }

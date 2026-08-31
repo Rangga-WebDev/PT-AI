@@ -46,7 +46,7 @@ export default async function LearnStagePage({
 
   const student = await requireStudentAccess();
 
-  const workspace = await getStudentUnitWorkspace(unitId);
+  const workspace = await getStudentUnitWorkspace(unitId, student.id);
   if (!workspace) notFound();
 
   const stage = workspace.stages.find((item) => item.stageKey === stageKey);
@@ -77,12 +77,31 @@ export default async function LearnStagePage({
       : null;
 
   const caseId = workspace.caseDetail?.id ?? null;
-  const [casePack, verifiedIds] = await Promise.all([
+  const [livePack, verifiedIds] = await Promise.all([
     isOpen && caseId ? listCaseSources(caseId) : Promise.resolve([]),
     isOpen && primaryActivity
       ? listVerifiedSourceIds(primaryActivity.id, student.id)
       : Promise.resolve(new Set<string>()),
   ]);
+
+  // Keanggotaan source pack mengikuti versi yang terikat pada mahasiswa;
+  // metadata sumber tetap dibaca hidup karena `sources` punya versinya sendiri.
+  const casePack = workspace.unitVersionId
+    ? workspace.sourcePack.flatMap((pinned) => {
+        const live = livePack.find(
+          (item) => item.sourceId === pinned.source_id,
+        );
+        return live
+          ? [
+              {
+                ...live,
+                isRequired: pinned.is_required,
+                sequence: pinned.sequence,
+              },
+            ]
+          : [];
+      })
+    : livePack;
 
   const baselineId = workState?.baseline?.id ?? null;
   const [feedbackItems, disclosure, revisions, reflection] = await Promise.all([

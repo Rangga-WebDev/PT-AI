@@ -114,6 +114,7 @@ export type Database = {
           mastery_threshold: number | null;
           prompt: string;
           requires_attempt_before_ai: boolean;
+          response_schema: string;
           rubric_id: string | null;
           sequence: number;
           status: Database["public"]["Enums"]["publication_status"];
@@ -133,6 +134,7 @@ export type Database = {
           mastery_threshold?: number | null;
           prompt: string;
           requires_attempt_before_ai?: boolean;
+          response_schema?: string;
           rubric_id?: string | null;
           sequence: number;
           status?: Database["public"]["Enums"]["publication_status"];
@@ -152,6 +154,7 @@ export type Database = {
           mastery_threshold?: number | null;
           prompt?: string;
           requires_attempt_before_ai?: boolean;
+          response_schema?: string;
           rubric_id?: string | null;
           sequence?: number;
           status?: Database["public"]["Enums"]["publication_status"];
@@ -835,6 +838,7 @@ export type Database = {
           is_baseline: boolean;
           student_id: string;
           submitted_at: string;
+          unit_version_id: string | null;
         };
         Insert: {
           activity_id: string;
@@ -847,6 +851,7 @@ export type Database = {
           is_baseline?: boolean;
           student_id: string;
           submitted_at?: string;
+          unit_version_id?: string | null;
         };
         Update: {
           activity_id?: string;
@@ -859,6 +864,7 @@ export type Database = {
           is_baseline?: boolean;
           student_id?: string;
           submitted_at?: string;
+          unit_version_id?: string | null;
         };
         Relationships: [
           {
@@ -870,6 +876,130 @@ export type Database = {
           },
           {
             foreignKeyName: "attempts_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "attempts_unit_version_id_fkey";
+            columns: ["unit_version_id"];
+            isOneToOne: false;
+            referencedRelation: "learning_unit_versions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      learning_unit_versions: {
+        Row: {
+          archived_at: string | null;
+          content_hash: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          learning_unit_id: string;
+          published_at: string | null;
+          schema_version: number;
+          snapshot_jsonb: Json;
+          status: Database["public"]["Enums"]["publication_status"];
+          updated_at: string;
+          version_number: number;
+        };
+        Insert: {
+          archived_at?: string | null;
+          content_hash: string;
+          created_at?: string;
+          created_by: string;
+          id?: string;
+          learning_unit_id: string;
+          published_at?: string | null;
+          schema_version?: number;
+          snapshot_jsonb: Json;
+          status?: Database["public"]["Enums"]["publication_status"];
+          updated_at?: string;
+          version_number: number;
+        };
+        Update: {
+          archived_at?: string | null;
+          content_hash?: string;
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          learning_unit_id?: string;
+          published_at?: string | null;
+          schema_version?: number;
+          snapshot_jsonb?: Json;
+          status?: Database["public"]["Enums"]["publication_status"];
+          updated_at?: string;
+          version_number?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "learning_unit_versions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learning_unit_versions_learning_unit_id_fkey";
+            columns: ["learning_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "learning_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      learning_sessions: {
+        Row: {
+          activity_id: string;
+          created_at: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          estimated_active_seconds: number;
+          heartbeat_count: number;
+          id: string;
+          last_heartbeat_at: string;
+          started_at: string;
+          student_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          activity_id: string;
+          created_at?: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          estimated_active_seconds?: number;
+          heartbeat_count?: number;
+          id?: string;
+          last_heartbeat_at?: string;
+          started_at?: string;
+          student_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          activity_id?: string;
+          created_at?: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          estimated_active_seconds?: number;
+          heartbeat_count?: number;
+          id?: string;
+          last_heartbeat_at?: string;
+          started_at?: string;
+          student_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "learning_sessions_activity_id_fkey";
+            columns: ["activity_id"];
+            isOneToOne: false;
+            referencedRelation: "activities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learning_sessions_student_id_fkey";
             columns: ["student_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
@@ -3277,6 +3407,17 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      build_unit_snapshot: { Args: { p_unit_id: string }; Returns: Json };
+      unit_snapshot_hash: { Args: { p_snapshot: Json }; Returns: string };
+      publish_unit_version: { Args: { p_unit_id: string }; Returns: string };
+      resolve_unit_version: {
+        Args: { p_unit_id: string; p_student_id: string };
+        Returns: string;
+      };
+      close_stale_learning_sessions: {
+        Args: { p_idle_minutes?: number; p_max_hours?: number };
+        Returns: number;
+      };
       can_access_activity: {
         Args: { p_activity_id: string };
         Returns: boolean;

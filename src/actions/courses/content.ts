@@ -407,6 +407,16 @@ export async function publishUnitAction(
 
     if (error) return fail(error);
 
+    // Penerbitan membekukan snapshot versi. Tanpa langkah ini, mahasiswa
+    // membaca konten hidup dan artefaknya tidak dapat direkonstruksi.
+    if (parsed.data.status === "published") {
+      const { error: versionError } = await supabase.rpc(
+        "publish_unit_version",
+        { p_unit_id: parsed.data.id },
+      );
+      if (versionError) return fail(versionError);
+    }
+
     revalidatePath(`/app/lecturer/classes/${classId}/builder`, "layout");
     return {
       ok: true,
