@@ -32,6 +32,7 @@ const BASE_PROPS = {
   activityId: "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
   classId: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
   prompt: "Pertanyaan kasus",
+  responseSchema: "free_text",
   initialDraft: "",
   initialSavedAt: null,
   allowsAi: true,

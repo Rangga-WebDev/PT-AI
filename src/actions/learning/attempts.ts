@@ -10,6 +10,11 @@ import { toActionError } from "@/lib/errors";
 import { requireStudentAccess } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { draftSchema, submitAttemptSchema } from "@/lib/validation/attempts";
+import {
+  CER_ELEMENTS,
+  composeCerNarrative,
+  submitCerSchema,
+} from "@/lib/validation/cer";
 import { recordLearningEvent } from "@/server/analytics/events";
 import { isUniqueViolation } from "@/server/repositories/shared";
 
@@ -18,6 +23,11 @@ export interface AttemptActionResult {
   error?: string;
   savedAt?: string;
   baselineId?: string;
+}
+
+function fail(error: unknown): AttemptActionResult {
+  const result = toActionError(error);
+  return result.ok ? {} : { error: result.error };
 }
 
 /** Aktivitas harus benar-benar terbaca mahasiswa; RLS tetap pertahanan terakhir. */
@@ -186,5 +196,57 @@ export async function submitAttemptAction(
   } catch (error) {
     const result = toActionError(error);
     return result.ok ? {} : { error: result.error };
+  }
+}
+
+/**
+ * Aktivitas argumentatif: unsur CER disimpan terpisah di `attempt_answers`,
+ * sementara narasi gabungannya tetap menjadi isi kanonik `attempts.content`.
+ * Komposisi dilakukan di server agar teks tersimpan selalu cocok dengan
+ * unsur-unsurnya.
+ */
+export async function submitCerAttemptAction(
+  input: unknown,
+): Promise<AttemptActionResult> {
+  try {
+    await requireStudentAccess();
+
+    const parsed = submitCerSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        error: parsed.error.issues[0]?.message ?? "Argumen tidak valid.",
+      };
+    }
+
+    const { activityId, clientSubmissionId, elements } = parsed.data;
+    const narrative = composeCerNarrative(elements);
+
+    const attempt = await submitAttemptAction(
+      activityId,
+      narrative,
+      clientSubmissionId,
+    );
+
+    if (!attempt.ok || !attempt.baselineId) return attempt;
+
+    const supabase = await createClient();
+    const rows = CER_ELEMENTS.map((key, index) => ({ key, index }))
+      .filter(({ key }) => elements[key].trim().length > 0)
+      .map(({ key, index }) => ({
+        attempt_id: attempt.baselineId!,
+        question_key: key,
+        content: elements[key].trim(),
+        sequence: index + 1,
+      }));
+
+    const { error } = await supabase.from("attempt_answers").insert(rows);
+
+    // Baseline sudah tersimpan dan tidak dapat ditarik kembali. Kegagalan
+    // dekomposisi dilaporkan apa adanya, bukan disembunyikan.
+    if (error && !isUniqueViolation(error)) return fail(error);
+
+    return attempt;
+  } catch (error) {
+    return fail(error);
   }
 }

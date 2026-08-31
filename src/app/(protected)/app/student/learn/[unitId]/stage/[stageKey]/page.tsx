@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
 import { LockedState } from "@/components/shared/states/locked-state";
 import { AttemptGate } from "@/features/learning-workspace/components/attempt-gate";
+import { ActivitySessionTracker } from "@/features/learning-workspace/components/activity-session-tracker";
 import { CaseReader } from "@/features/learning-workspace/components/case-reader";
 import { MasteryStatus } from "@/features/learning-workspace/components/mastery-status";
 import {
@@ -153,6 +154,10 @@ export default async function LearnStagePage({
 
   return (
     <PageContainer>
+      {isOpen && primaryActivity ? (
+        <ActivitySessionTracker activityId={primaryActivity.id} />
+      ) : null}
+
       <PageHeader
         eyebrow={`${workspace.unit.moduleTitle} · ${workspace.unit.title}`}
         title={`${stage.sequence}. ${stage.title}`}
@@ -304,6 +309,7 @@ export default async function LearnStagePage({
                     activityId={primaryActivity.id}
                     classId={workspace.unit.classId}
                     prompt={primaryActivity.prompt}
+                    responseSchema={primaryActivity.responseSchema}
                     initialDraft={workState.draft}
                     initialSavedAt={workState.draftUpdatedAt}
                     baseline={

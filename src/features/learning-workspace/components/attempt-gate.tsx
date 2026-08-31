@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { AiDisclosureForm } from "@/features/ai-coach/components/ai-disclosure-form";
 import { AIFeedbackPanel } from "@/features/ai-coach/components/ai-feedback-panel";
 import { AnswerEditor } from "@/features/learning-workspace/components/answer-editor";
+import { CerAttemptForm } from "@/features/learning-workspace/components/cer-attempt-form";
 import { ReflectionForm } from "@/features/learning-workspace/components/reflection-form";
 import { RevisionForm } from "@/features/learning-workspace/components/revision-form";
 import { RevisionHistory } from "@/features/learning-workspace/components/revision-history";
@@ -23,6 +24,7 @@ interface AttemptGateProps {
   activityId: string;
   classId: string;
   prompt: string;
+  responseSchema: string;
   initialDraft: string;
   initialSavedAt: string | null;
   baseline: { id: string; content: string; submittedAt: string } | null;
@@ -50,6 +52,7 @@ export function AttemptGate({
   activityId,
   classId,
   prompt,
+  responseSchema,
   initialDraft,
   initialSavedAt,
   baseline,
@@ -93,6 +96,11 @@ export function AttemptGate({
               {baseline.content}
             </blockquote>
           </div>
+        ) : responseSchema === "cer" ? (
+          <CerAttemptForm
+            activityId={activityId}
+            onSubmitted={() => router.refresh()}
+          />
         ) : (
           <AnswerEditor
             activityId={activityId}
