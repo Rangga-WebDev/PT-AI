@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(18);
 
 create or replace function pg_temp.make_user(p_id uuid, p_email text)
 returns void
@@ -309,7 +309,43 @@ select is(
 
 -- === RLS ====================================================================
 
--- 16. Dosen lain tidak dapat membaca versi unit kelas yang tidak diampunya.
+-- 16. Draf versi berikutnya dapat diterbitkan setelah versi lama diarsipkan.
+insert into public.learning_unit_versions (
+  id, learning_unit_id, version_number, schema_version, snapshot_jsonb,
+  content_hash, status, created_by
+)
+select
+  'f0000000-0000-0000-0000-000000000033',
+  'f0000000-0000-0000-0000-000000000011',
+  3, 1, s.snapshot, public.unit_snapshot_hash(s.snapshot),
+  'draft', 'f3333333-3333-3333-3333-333333333333'
+from (select public.build_unit_snapshot('f0000000-0000-0000-0000-000000000011') as snapshot) s;
+
+update public.learning_unit_versions
+set status = 'published'
+where id = 'f0000000-0000-0000-0000-000000000033';
+
+select ok(
+  (select status = 'published' and published_at is not null
+     from public.learning_unit_versions
+    where id = 'f0000000-0000-0000-0000-000000000033'),
+  'Transisi draft ke published berjalan dan mengisi published_at'
+);
+
+-- 17. Mahasiswa tidak dapat menulis versi unit.
+select pg_temp.act_as('f1111111-1111-1111-1111-111111111111');
+select throws_ok(
+  $$insert into public.learning_unit_versions (
+      learning_unit_id, version_number, snapshot_jsonb, content_hash, created_by
+    ) values (
+      'f0000000-0000-0000-0000-000000000011', 90, '{}'::jsonb, 'palsu',
+      'f1111111-1111-1111-1111-111111111111')$$,
+  '42501',
+  null,
+  'Mahasiswa tidak dapat membuat versi unit'
+);
+
+-- 18. Dosen lain tidak dapat membaca versi unit kelas yang tidak diampunya.
 select pg_temp.act_as('f4444444-4444-4444-4444-444444444444');
 select is(
   (select count(*)::int from public.learning_unit_versions
