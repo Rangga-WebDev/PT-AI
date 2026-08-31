@@ -46,8 +46,9 @@ export default async function ClassInstrumentsPage({
   if (!classItem) notFound();
 
   const rows = instruments.data ?? [];
+  // `ClassMemberView.id` adalah id pendaftaran, bukan profil; skor merujuk profil.
   const students = members.students.map((student) => ({
-    id: student.id,
+    id: student.profileId,
     name: student.fullName,
   }));
 

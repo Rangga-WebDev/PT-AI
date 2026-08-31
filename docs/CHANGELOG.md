@@ -4,6 +4,17 @@
 
 Mencatat perubahan arsitektur dan perubahan signifikan per fase.
 
+## [Perbaikan] — 2026-08-31
+
+### Diperbaiki
+
+- **Pencatatan skor pretest/posttest selalu gagal.** Halaman instrumen mengirim `ClassMemberView.id` — id pendaftaran — sebagai `studentId`, sedangkan `assessment_scores.student_id` ber-_foreign key_ ke `profiles`. Nilainya UUID sah sehingga lolos validasi Zod, lalu ditolak PostgreSQL. Diperbaiki menjadi `profileId`.
+- `e2e/instruments.spec.ts` ditambahkan; halaman ini sebelumnya tidak memiliki uji apa pun, dan itu sebabnya cacat tersebut lolos.
+
+### Diketahui
+
+- Seluruh galat basis data pada Server Action runtuh menjadi satu pesan "Terjadi kesalahan yang tidak terduga", karena `toActionError()` hanya mengenali `AppError`. Galat sesungguhnya hanya muncul di log server. Ini yang membuat cacat di atas sulit didiagnosis.
+
 ## [Halaman masuk] — 2026-08-29
 
 ### Diubah

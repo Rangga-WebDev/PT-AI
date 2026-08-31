@@ -55,6 +55,7 @@ const authenticatedProjects = [
             "**/review.spec.ts",
             "**/curation.spec.ts",
             "**/analytics.spec.ts",
+            "**/instruments.spec.ts",
           ],
           use: { ...devices["Desktop Chrome"], storageState: LECTURER_STATE },
           dependencies: ["setup"],
