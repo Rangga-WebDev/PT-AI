@@ -9,7 +9,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(17);
 
 create or replace function pg_temp.make_user(p_id uuid, p_email text)
 returns void
@@ -275,6 +275,21 @@ select is(
   (select count(*)::int from public.learning_resources),
   0,
   'Dosen lain tidak melihat bahan kelas orang lain'
+);
+
+-- 15. Bahan yang dicabut tidak terlihat dosen pengampu sekalipun. Policy tulis
+--     dipisahkan dari policy baca supaya tidak membatalkan penyaring ini.
+select pg_temp.act_as_service();
+update public.learning_resources
+set deleted_at = now()
+where id = 'c0000000-0000-0000-0000-000000000020';
+
+select pg_temp.act_as('c3333333-3333-3333-3333-333333333333');
+select is(
+  (select count(*)::int from public.learning_resources
+    where deleted_at is not null),
+  0,
+  'Bahan yang dicabut tidak terlihat dosen mana pun'
 );
 
 -- === Snapshot ===============================================================
