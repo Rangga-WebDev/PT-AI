@@ -61,6 +61,7 @@ export default async function LecturerClassDetailPage({
             </StatusBadge>
             {(
               [
+                ["materials", "Materi"],
                 ["instruments", "Instrumen"],
                 ["analytics", "Analitik"],
                 ["branching", "Percabangan"],

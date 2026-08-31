@@ -2098,42 +2098,84 @@ export type Database = {
       learning_resources: {
         Row: {
           activity_id: string | null;
+          checksum: string | null;
+          class_id: string | null;
           created_at: string;
           created_by: string;
           deleted_at: string | null;
+          description: string | null;
+          extracted_at: string | null;
+          extracted_text: string | null;
+          extraction_status: string;
           id: string;
           learning_unit_id: string | null;
+          material_kind: string | null;
+          mime_type: string | null;
+          module_id: string | null;
+          original_filename: string | null;
           resource_type: string;
+          sequence: number | null;
+          size_bytes: number | null;
+          status: Database["public"]["Enums"]["publication_status"];
           storage_path: string | null;
           title: string;
           updated_at: string;
           url: string | null;
+          visibility: string;
         };
         Insert: {
           activity_id?: string | null;
+          checksum?: string | null;
+          class_id?: string | null;
           created_at?: string;
           created_by: string;
           deleted_at?: string | null;
+          description?: string | null;
+          extracted_at?: string | null;
+          extracted_text?: string | null;
+          extraction_status?: string;
           id?: string;
           learning_unit_id?: string | null;
+          material_kind?: string | null;
+          mime_type?: string | null;
+          module_id?: string | null;
+          original_filename?: string | null;
           resource_type: string;
+          sequence?: number | null;
+          size_bytes?: number | null;
+          status?: Database["public"]["Enums"]["publication_status"];
           storage_path?: string | null;
           title: string;
           updated_at?: string;
           url?: string | null;
+          visibility?: string;
         };
         Update: {
           activity_id?: string | null;
+          checksum?: string | null;
+          class_id?: string | null;
           created_at?: string;
           created_by?: string;
           deleted_at?: string | null;
+          description?: string | null;
+          extracted_at?: string | null;
+          extracted_text?: string | null;
+          extraction_status?: string;
           id?: string;
           learning_unit_id?: string | null;
+          material_kind?: string | null;
+          mime_type?: string | null;
+          module_id?: string | null;
+          original_filename?: string | null;
           resource_type?: string;
+          sequence?: number | null;
+          size_bytes?: number | null;
+          status?: Database["public"]["Enums"]["publication_status"];
           storage_path?: string | null;
           title?: string;
           updated_at?: string;
           url?: string | null;
+          visibility?: string;
         };
         Relationships: [
           {
@@ -2141,6 +2183,13 @@ export type Database = {
             columns: ["activity_id"];
             isOneToOne: false;
             referencedRelation: "activities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learning_resources_class_id_fkey";
+            columns: ["class_id"];
+            isOneToOne: false;
+            referencedRelation: "classes";
             referencedColumns: ["id"];
           },
           {
@@ -2155,6 +2204,13 @@ export type Database = {
             columns: ["learning_unit_id"];
             isOneToOne: false;
             referencedRelation: "learning_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learning_resources_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
             referencedColumns: ["id"];
           },
         ];

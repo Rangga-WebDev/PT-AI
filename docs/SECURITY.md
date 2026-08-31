@@ -43,6 +43,20 @@ Referensi keputusan: SEC-001 s.d. SEC-005 di [DECISIONS.md](DECISIONS.md). Selur
 | Kerentanan dependency produksi                                                                       | ✅ `npm audit --omit=dev` 0 kerentanan      | PHASE 15      |
 | Security review menyeluruh + prosedur rollback                                                       | ✅ `docs/DEPLOYMENT.md`                     | PHASE 15      |
 
+### Utang keamanan terbuka — PENGHALANG PRA-PRODUKSI
+
+**Isolasi tenant tidak berlaku bagi peran admin pada sebelas tabel migrasi 0014.**
+
+Tabel terdampak: `organizations`, `faculties`, `study_programs`, `profiles`, `role_assignments`, `academic_periods`, `class_lecturers`, `enrollments`, `error_categories`, `ai_prompt_templates`, `data_retention_rules`.
+
+Semuanya berpola `for all to authenticated using (public.is_admin())`. Di PostgreSQL `for all` ikut berlaku pada SELECT dan policy permissive di-OR-kan, sehingga predikat tanpa penyaring organisasi itu membatalkan `current_organization_id()` pada policy bacanya. Seorang admin karena itu dapat membaca dan menulis baris milik organisasi lain.
+
+Kelas defect yang sama sudah diperbaiki pada sumbu soft delete (0024–0025) dan sumbu organisasi untuk sumber (0028). Sebelas policy ini adalah sisanya.
+
+Ditunda dengan sengaja, bukan diterima: tidak dapat dieksploitasi selama hanya ada satu organisasi terdaftar, dan menyentuh RLS identitas berisiko lebih tinggi daripada pekerjaan yang sedang berjalan. **Sistem ini tidak dinyatakan single-tenant permanen.** Perbaikan wajib selesai sebelum organisasi kedua dibuat atau sebelum rilis produksi, mana pun yang lebih dahulu.
+
+Pola perbaikannya sudah terbukti pada 0024, 0025, dan 0028: pecah `for all` menjadi INSERT/UPDATE/DELETE terpisah sehingga SELECT sepenuhnya diatur policy bacanya.
+
 ### Pelonggaran yang disengaja dan alasannya
 
 - **`style-src-attr 'unsafe-inline'`** diizinkan karena bar progres dan diagram memakai atribut `style` sebaris. Atribut style tidak dapat mengeksekusi skrip, sehingga risikonya terbatas pada penyuntikan CSS. `script-src` tetap tanpa `unsafe-inline`.

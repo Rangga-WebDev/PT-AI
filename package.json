@@ -21,7 +21,8 @@
     "ai:check": "node --env-file-if-exists=.env.local scripts/check-ai-pipeline.mjs",
     "check:sql": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-sql-consistency.ps1",
     "check:secrets": "node --env-file-if-exists=.env.local scripts/check-client-secrets.mjs",
-    "check:headers": "node scripts/check-security-headers.mjs"
+    "check:headers": "node scripts/check-security-headers.mjs",
+    "check:storage": "node --env-file-if-exists=.env.local scripts/verify-material-storage.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
