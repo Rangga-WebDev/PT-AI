@@ -11,10 +11,18 @@ import { Button } from "@/components/ui/button";
 
 type FormAction = (state: FormState, formData: FormData) => Promise<FormState>;
 
-function SubmitButton({ label }: { label: string }) {
+type SubmitVariant = "primary" | "ai" | "outline";
+
+function SubmitButton({
+  label,
+  variant,
+}: {
+  label: string;
+  variant: SubmitVariant;
+}) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" size="sm" disabled={pending}>
+    <Button type="submit" size="sm" variant={variant} disabled={pending}>
       {pending ? "Menyimpan…" : label}
     </Button>
   );
@@ -23,6 +31,7 @@ function SubmitButton({ label }: { label: string }) {
 interface ActionFormProps {
   action: FormAction;
   submitLabel: string;
+  submitVariant?: SubmitVariant | undefined;
   children: (state: FormState) => React.ReactNode;
   className?: string | undefined;
 }
@@ -31,6 +40,7 @@ interface ActionFormProps {
 export function ActionForm({
   action,
   submitLabel,
+  submitVariant = "primary",
   children,
   className,
 }: ActionFormProps) {
@@ -54,7 +64,7 @@ export function ActionForm({
         {children(state)}
 
         <div>
-          <SubmitButton label={submitLabel} />
+          <SubmitButton label={submitLabel} variant={submitVariant} />
         </div>
       </div>
     </form>

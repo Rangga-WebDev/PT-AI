@@ -421,14 +421,15 @@ describe("dokumen awal dan CTA AI", () => {
     ).toBeInTheDocument();
   });
 
-  // CTA AI pada fase ini hanya menjelaskan; tidak ada panggilan penyedia.
-  it("CTA AI tidak memanggil jaringan sama sekali", async () => {
-    const user = userEvent.setup();
+  // CTA AI mengantar ke Quick Setup; tidak ada penyedia yang dipanggil di sini.
+  it("CTA AI hanya menautkan ke Quick Setup", async () => {
     render(<MaterialsWorkspace classId={CLASS_ID} materials={[]} />);
 
-    await user.click(screen.getByRole("button", { name: /Buat dengan AI/ }));
-
-    expect(screen.getByText("Segera tersedia.")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /Buat dengan AI/ });
+    expect(link).toHaveAttribute(
+      "href",
+      `/app/lecturer/classes/${CLASS_ID}/quick-setup`,
+    );
     expect(fetch).not.toHaveBeenCalled();
     expect(createNoteMaterialAction).not.toHaveBeenCalled();
   });

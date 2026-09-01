@@ -288,6 +288,75 @@ export type Database = {
           },
         ];
       };
+      ai_material_drafts: {
+        Row: {
+          approved_at: string | null;
+          approved_by: string | null;
+          class_id: string;
+          created_at: string;
+          grounding: string;
+          id: string;
+          instruction: Json;
+          model: string;
+          output: string;
+          prompt_version: number;
+          published_resource_id: string | null;
+          requested_by: string;
+          source_resource_id: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          class_id: string;
+          created_at?: string;
+          grounding?: string;
+          id?: string;
+          instruction?: Json;
+          model: string;
+          output: string;
+          prompt_version: number;
+          published_resource_id?: string | null;
+          requested_by: string;
+          source_resource_id?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          class_id?: string;
+          created_at?: string;
+          grounding?: string;
+          id?: string;
+          instruction?: Json;
+          model?: string;
+          output?: string;
+          prompt_version?: number;
+          published_resource_id?: string | null;
+          requested_by?: string;
+          source_resource_id?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_material_drafts_class_id_fkey";
+            columns: ["class_id"];
+            isOneToOne: false;
+            referencedRelation: "classes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_material_drafts_source_resource_id_fkey";
+            columns: ["source_resource_id"];
+            isOneToOne: false;
+            referencedRelation: "learning_resources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       ai_disclosures: {
         Row: {
           activity_id: string;

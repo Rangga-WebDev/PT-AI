@@ -4,10 +4,11 @@
 
 import { Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { EmptyState } from "@/components/shared/states/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { MaterialView } from "@/lib/materials/types";
 
 import { CourseDocumentPanel } from "./course-document-panel";
@@ -26,7 +27,6 @@ type Panel =
   | { kind: "link" }
   | { kind: "note" }
   | { kind: "document" }
-  | { kind: "ai" }
   | { kind: "edit"; material: MaterialView };
 
 const PANEL_TITLE: Record<Exclude<Panel["kind"], "none" | "edit">, string> = {
@@ -35,7 +35,6 @@ const PANEL_TITLE: Record<Exclude<Panel["kind"], "none" | "edit">, string> = {
   link: "Tambah tautan",
   note: "Tulis materi",
   document: "Unggah RPS / CPMK",
-  ai: "Buat dengan AI",
 };
 
 const ADD_OPTIONS = [
@@ -107,14 +106,13 @@ export function MaterialsWorkspace({
         >
           Unggah RPS / CPMK
         </Button>
-        <Button
-          type="button"
-          variant="ai"
-          onClick={() => setPanel({ kind: "ai" })}
+        <Link
+          href={`/app/lecturer/classes/${classId}/quick-setup`}
+          className={buttonVariants({ variant: "ai" })}
         >
           <Sparkles aria-hidden="true" />
           Buat dengan AI
-        </Button>
+        </Link>
       </div>
 
       {panel.kind !== "none" ? (
@@ -181,17 +179,6 @@ export function MaterialsWorkspace({
 
           {panel.kind === "edit" ? (
             <EditMaterialForm material={panel.material} />
-          ) : null}
-
-          {panel.kind === "ai" ? (
-            <div className="flex max-w-prose flex-col gap-3">
-              <p className="text-sm text-foreground">Segera tersedia.</p>
-              <p className="text-sm text-muted-foreground">
-                AI akan membantu menyusun draf pembelajaran dari RPS, CPMK, atau
-                bahan ajar yang Anda unggah. Sampai saat itu, unggah dokumennya
-                lebih dahulu supaya teksnya sudah terbaca ketika fiturnya aktif.
-              </p>
-            </div>
           ) : null}
         </section>
       ) : null}
