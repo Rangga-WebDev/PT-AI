@@ -100,6 +100,49 @@ export async function getMaterial(
   return data ? toMaterialView(data) : null;
 }
 
+export interface ReadableMaterial {
+  id: string;
+  classId: string | null;
+  title: string;
+  description: string | null;
+  resourceType: string;
+  text: string | null;
+  createdAt: string;
+}
+
+/**
+ * Isi materi tulisan dibaca dari `extracted_text`, bukan dari objeknya di
+ * Storage: teksnya sudah tersimpan sebagai teks biasa sehingga dapat
+ * ditampilkan tanpa tautan bertanda tangan dan tanpa menyentuh HTML.
+ * Visibilitasnya tetap diputuskan RLS.
+ */
+export async function getReadableMaterial(
+  materialId: string,
+): Promise<ReadableMaterial | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("learning_resources")
+    .select(
+      "id, class_id, title, description, resource_type, extracted_text, extraction_status, created_at",
+    )
+    .eq("id", materialId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    classId: data.class_id,
+    title: data.title,
+    description: data.description,
+    resourceType: data.resource_type,
+    text: data.extraction_status === "succeeded" ? data.extracted_text : null,
+    createdAt: data.created_at,
+  };
+}
+
 /** Nomor urut berikutnya dihitung dari data agar tidak bentrok antar dosen. */
 export async function nextMaterialSequence(classId: string): Promise<number> {
   const supabase = await createClient();

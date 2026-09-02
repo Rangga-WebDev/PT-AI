@@ -2,7 +2,8 @@
 
 "use client";
 
-import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import type * as React from "react";
 
@@ -45,6 +46,11 @@ export function ActionForm({
   className,
 }: ActionFormProps) {
   const [state, formAction] = useActionState<FormState, FormData>(action, {});
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state.ok && state.redirectTo) router.push(state.redirectTo);
+  }, [state, router]);
 
   return (
     <form action={formAction} className={className} noValidate>

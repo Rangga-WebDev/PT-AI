@@ -3,6 +3,7 @@
 import "server-only";
 
 import type { StageKey } from "@/lib/constants/stages";
+import type { CtDimension } from "@/lib/constants/stages";
 import type {
   EvaluatorKind,
   MasteryOutcome,
@@ -34,8 +35,9 @@ export interface AttemptReview {
       id: string;
       code: string;
       description: string;
-      dimension: string;
+      dimension: CtDimension;
       weight: number;
+      levels: { label: string; descriptor: string; score: number }[];
     }[];
   } | null;
   existingMastery: {
@@ -59,7 +61,13 @@ export async function getAttemptReview(
        profiles!student_id(full_name, identifier),
        activities!inner(
          id, title, prompt,
-         rubrics(id, title, rubric_criteria(id, code, description, dimension, weight)),
+         rubrics(
+           id, title,
+           rubric_criteria(
+             id, code, description, dimension, weight, sequence,
+             rubric_levels(label, descriptor, score, level_order)
+           )
+         ),
          learning_stages!inner(
            title, sequence,
            learning_units!inner(title, modules!inner(class_id, classes!inner(name)))
@@ -102,15 +110,24 @@ export async function getAttemptReview(
       ? {
           id: data.activities.rubrics.id,
           title: data.activities.rubrics.title,
-          criteria: data.activities.rubrics.rubric_criteria.map(
-            (criterion) => ({
+          criteria: data.activities.rubrics.rubric_criteria
+            .slice()
+            .sort((a, b) => a.sequence - b.sequence)
+            .map((criterion) => ({
               id: criterion.id,
               code: criterion.code,
               description: criterion.description,
               dimension: criterion.dimension,
               weight: criterion.weight,
-            }),
-          ),
+              levels: criterion.rubric_levels
+                .slice()
+                .sort((a, b) => a.level_order - b.level_order)
+                .map((level) => ({
+                  label: level.label,
+                  descriptor: level.descriptor,
+                  score: Number(level.score),
+                })),
+            })),
         }
       : null,
     existingMastery: mastery

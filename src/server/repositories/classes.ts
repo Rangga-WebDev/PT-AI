@@ -132,6 +132,34 @@ export interface ClassMemberView {
   roleInClass?: string | undefined;
 }
 
+/**
+ * Keanggotaan diperiksa terhadap kelas yang sedang dibuka, bukan disimpulkan
+ * dari id yang dikirim. Mahasiswa yang tidak terdaftar mengembalikan null,
+ * sehingga pemanggilnya tidak punya jalan untuk melanjutkan.
+ */
+export async function getEnrolledStudent(
+  classId: string,
+  studentId: string,
+): Promise<{ profileId: string; fullName: string; identifier: string } | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("enrollments")
+    .select("profiles!student_id(id, full_name, identifier)")
+    .eq("class_id", classId)
+    .eq("student_id", studentId)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (!data?.profiles) return null;
+
+  return {
+    profileId: data.profiles.id,
+    fullName: data.profiles.full_name,
+    identifier: data.profiles.identifier,
+  };
+}
+
 export async function listClassMembers(classId: string): Promise<{
   lecturers: ClassMemberView[];
   students: ClassMemberView[];

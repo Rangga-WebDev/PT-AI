@@ -8,6 +8,7 @@ import {
   GraduationCap,
   Landmark,
   LayoutDashboard,
+  LifeBuoy,
   Library,
   Settings,
   ShieldAlert,
@@ -28,6 +29,7 @@ export type NavIconKey =
   | "incidents"
   | "users"
   | "organization"
+  | "guide"
   | "settings";
 
 export const navIcons: Record<NavIconKey, LucideIcon> = {
@@ -40,6 +42,7 @@ export const navIcons: Record<NavIconKey, LucideIcon> = {
   incidents: ShieldAlert,
   users: Users,
   organization: Landmark,
+  guide: LifeBuoy,
   settings: Settings,
 };
 
@@ -66,6 +69,7 @@ export const STUDENT_NAV: NavSection[] = [
         href: "/app/student/consent",
         icon: "settings",
       },
+      { label: "Panduan", href: "/app/student/guide", icon: "guide" },
     ],
   },
 ];
@@ -88,6 +92,7 @@ export const LECTURER_NAV: NavSection[] = [
         href: "/app/lecturer/incidents",
         icon: "incidents",
       },
+      { label: "Panduan", href: "/app/lecturer/guide", icon: "guide" },
     ],
   },
 ];

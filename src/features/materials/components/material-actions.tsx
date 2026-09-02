@@ -2,11 +2,13 @@
 
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   deleteMaterialAction,
+  extractMaterialAction,
   requestMaterialDownloadAction,
   setMaterialPublicationAction,
 } from "@/actions/courses/materials";
@@ -105,6 +107,43 @@ function ViewButton({
   );
 }
 
+/**
+ * Ekstraksi ditawarkan hanya ketika ada yang bisa dikerjakan: berkas yang
+ * teksnya sudah terbaca tidak perlu dibaca ulang.
+ */
+function ExtractButton({
+  material,
+  onError,
+}: {
+  material: MaterialView;
+  onError: (message: string) => void;
+}) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+
+  if (!material.hasFile) return null;
+  if (material.extractionStatus === "succeeded") return null;
+  if (material.extractionStatus === "unsupported") return null;
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="ghost"
+      disabled={pending}
+      onClick={async () => {
+        setPending(true);
+        const result = await extractMaterialAction(material.id);
+        setPending(false);
+        if (!result.ok) onError(result.error);
+        router.refresh();
+      }}
+    >
+      {pending ? "Membaca…" : "Baca teks"}
+    </Button>
+  );
+}
+
 export function MaterialActions({
   material,
   onEdit,
@@ -117,6 +156,7 @@ export function MaterialActions({
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <ViewButton material={material} onError={onError} />
+      <ExtractButton material={material} onError={onError} />
       <Button
         type="button"
         size="sm"

@@ -256,41 +256,26 @@ describe("konsistensi baris dan objek", () => {
   });
 });
 
-describe("provenans ekstraksi", () => {
-  it("membiarkan berkas biner berstatus pending", async () => {
-    const result = await upload();
+describe("pemisahan daur hidup pembacaan", () => {
+  // Unggahan dan pembacaan teks adalah dua daur hidup terpisah. Menitipkan
+  // pembacaan pada unggahan membuatnya bergantung pada permintaan yang bisa
+  // saja sudah selesai sebelum pekerjaannya rampung.
+  it("selalu meninggalkan status pending, apa pun tipenya", async () => {
+    const binary = await upload();
+    const markdown = await upload({
+      name: "rps.md",
+      type: "text/markdown",
+      bytes: MARKDOWN,
+    });
 
-    expect(result).toMatchObject({ extractionStatus: "pending" });
+    expect(binary).toMatchObject({ extractionStatus: "pending" });
+    expect(markdown).toMatchObject({ extractionStatus: "pending" });
+  });
+
+  it("tidak pernah menulis hasil ekstraksi dari jalur unggah", async () => {
+    await upload({ name: "rps.md", type: "text/markdown", bytes: MARKDOWN });
+
     expect(recordExtractionOutcome).not.toHaveBeenCalled();
-  });
-
-  it("membaca teks Markdown pada saat unggah", async () => {
-    const result = await upload({
-      name: "rps.md",
-      type: "text/markdown",
-      bytes: MARKDOWN,
-    });
-
-    expect(result).toMatchObject({ extractionStatus: "succeeded" });
-    expect(recordExtractionOutcome).toHaveBeenCalledWith(expect.any(String), {
-      status: "succeeded",
-      text: "# RPS\n\nBab satu.",
-    });
-  });
-
-  // Unggahan yang sudah berhasil tidak boleh dibatalkan oleh kegagalan
-  // ekstraksi; berkasnya tetap ada dan tetap dapat diunduh.
-  it("tetap berhasil meski pencatatan ekstraksi gagal", async () => {
-    recordExtractionOutcome.mockRejectedValue(new Error("db down"));
-
-    const result = await upload({
-      name: "rps.md",
-      type: "text/markdown",
-      bytes: MARKDOWN,
-    });
-
-    expect(result).toMatchObject({ ok: true, extractionStatus: "pending" });
-    expect(deleteEq).not.toHaveBeenCalled();
   });
 });
 

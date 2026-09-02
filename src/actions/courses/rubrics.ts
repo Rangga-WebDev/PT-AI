@@ -13,6 +13,7 @@ import {
   rubricSchema,
 } from "@/lib/validation/content";
 import { isUniqueViolation } from "@/server/repositories/shared";
+import { createStandardRubric } from "@/server/services/rubric-template";
 
 import type { FormState } from "@/actions/administration/accounts";
 
@@ -139,6 +140,34 @@ export async function createLevelAction(
 
     revalidatePath("/app/lecturer/rubrics");
     return { ok: true, message: "Level ditambahkan." };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+/** Rubrik standar dibuat utuh atau tidak sama sekali, tidak pernah separuh. */
+export async function createStandardRubricAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const lecturer = await requireRoleOrThrow("lecturer");
+
+    const title = String(formData.get("title") ?? "").trim();
+    const result = await createStandardRubric({
+      organizationId: lecturer.organizationId,
+      createdBy: lecturer.id,
+      ...(title ? { title } : {}),
+    });
+
+    if (!result.ok) return { error: result.message };
+
+    revalidatePath("/app/lecturer/rubrics");
+    return {
+      ok: true,
+      message:
+        "Rubrik standar PT-AI dibuat dengan enam kriteria dan level 0\u20134.",
+    };
   } catch (error) {
     return fail(error);
   }

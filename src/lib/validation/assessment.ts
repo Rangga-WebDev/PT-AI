@@ -4,12 +4,14 @@ import { z } from "zod";
 
 const uuid = (label: string) => z.string().uuid(`${label} tidak valid.`);
 
+// Yang dikirim adalah level rubrik, bukan persentase; batas di sini hanya
+// penjaga bentuk. Keabsahan sesungguhnya diuji terhadap level rubriknya.
 export const criterionScoreSchema = z.object({
   criterionId: uuid("Kriteria"),
   score: z.coerce
     .number()
-    .min(0, "Skor minimal 0.")
-    .max(100, "Skor maksimal 100."),
+    .min(0, "Skor kriteria minimal 0.")
+    .max(999.99, "Skor kriteria di luar batas yang wajar."),
 });
 
 export const masteryAssessmentSchema = z.object({

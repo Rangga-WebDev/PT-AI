@@ -2,6 +2,12 @@
 
 # TUTORIAL PENGGUNAAN DI KELAS
 
+> **Cakupan berkas ini: irama pengajaran satu semester**, bukan langkah demi langkah
+> pemakaian antarmuka. Untuk langkah pemakaian, baca
+> [docs/guides/JUKNIS_DOSEN.md](guides/JUKNIS_DOSEN.md) dan
+> [docs/guides/JUKNIS_MAHASISWA.md](guides/JUKNIS_MAHASISWA.md), atau buka menu **Panduan**
+> di dalam aplikasi. Bila keduanya berbeda, panduan di aplikasi yang berlaku.
+
 Panduan operasional satu semester: apa yang dilakukan administrator, dosen, dan mahasiswa,
 pada saat apa, dan apa yang harus diperhatikan.
 
@@ -12,11 +18,11 @@ Dokumen ini mengasumsikan konten sudah diisi. Bila belum, kerjakan
 
 ## Peta tanggung jawab
 
-| Peran         | Sebelum semester                              | Selama semester                                 | Akhir semester             |
-| ------------- | --------------------------------------------- | ----------------------------------------------- | -------------------------- |
-| Administrator | Struktur akademik, akun, pendaftaran kelas    | Menambah mahasiswa susulan                      | Ekspor penelitian, retensi |
-| Dosen         | Modul, unit, kasus, sumber, rubrik, aktivitas | Menilai, memutuskan jalur, menangani laporan AI | Posttest, analitik         |
-| Mahasiswa     | —                                             | Menulis, memverifikasi, merevisi, merefleksi    | —                          |
+| Peran         | Sebelum semester                                                            | Selama semester                                 | Akhir semester             |
+| ------------- | --------------------------------------------------------------------------- | ----------------------------------------------- | -------------------------- |
+| Administrator | Struktur akademik, akun                                                     | Menambah akun susulan                           | Ekspor penelitian, retensi |
+| Dosen         | Kelas, pendaftaran mahasiswa, modul, unit, kasus, sumber, rubrik, aktivitas | Menilai, memutuskan jalur, menangani laporan AI | Posttest, analitik         |
+| Mahasiswa     | —                                                                           | Menulis, memverifikasi, merevisi, merefleksi    | —                          |
 
 Satu hal yang tidak dapat didelegasikan: **keputusan ketuntasan adalah wewenang dosen.**
 Sistem hanya mengusulkan, tidak pernah memutuskan.
@@ -27,9 +33,8 @@ Sistem hanya mengusulkan, tidak pernah memutuskan.
 
 ### 1.1 Administrator
 
-- [ ] Kelas berstatus **terbit**
-- [ ] Seluruh dosen pengampu ditugaskan di `/app/admin/classes/[classId]`
-- [ ] Seluruh mahasiswa didaftarkan
+- [ ] Mata kuliah dan periode akademik tersedia
+- [ ] Akun dosen dan mahasiswa dibuat
 - [ ] Kata sandi awal sudah disampaikan lewat jalur aman
 
 > Kata sandi awal hanya ditampilkan **satu kali** setelah akun dibuat. Bila terlewat,
@@ -37,6 +42,9 @@ Sistem hanya mengusulkan, tidak pernah memutuskan.
 
 ### 1.2 Dosen
 
+- [ ] Kelas dibuat dari menu Kelas → **+ Buat kelas**
+- [ ] Mahasiswa didaftarkan dari Kelas → Mahasiswa → **+ Tambah mahasiswa**
+- [ ] Kelas **diterbitkan** dari Ringkasan → **Terbitkan kelas**
 - [ ] Unit pertama terbit beserta kasus dan aktivitasnya
 - [ ] Source pack terisi; sumber wajib sudah ditandai
 - [ ] `npm run ai:index` sudah dijalankan setelah perubahan sumber terakhir

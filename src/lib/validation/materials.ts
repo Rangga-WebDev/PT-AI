@@ -73,31 +73,6 @@ export function isAllowedMaterialMime(value: string): value is MaterialMime {
 }
 
 /**
- * Hanya tipe teks yang dapat dibaca tanpa pustaka tambahan. PDF dan berkas
- * OOXML tetap `pending`, bukan `unsupported`: keduanya memang akan diekstraksi,
- * hanya belum pada subfase ini. Menandainya `unsupported` akan berbohong
- * kepada pekerja ekstraksi yang menyusul.
- */
-export function isInlineExtractable(mime: string): boolean {
-  return mime === "text/plain" || mime === "text/markdown";
-}
-
-/**
- * Isi berkas teks sudah terbukti UTF-8 pada tahap pemeriksaan tanda tangan,
- * tetapi keputusan itu diambil dari potongan awal saja. Di sini seluruh isinya
- * diuraikan, dan kegagalan dilaporkan sebagai nilai, bukan lemparan.
- */
-export function decodeUtf8Text(bytes: Uint8Array): string | null {
-  try {
-    const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    const trimmed = text.trim();
-    return trimmed.length > 0 ? trimmed : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Bentuk kunci objek harus sama persis dengan yang ditegakkan trigger
  * `enforce_material_storage_key()`. Nama berkas pengguna tidak pernah masuk ke
  * sini; ia hanya disimpan sebagai metadata tampilan.

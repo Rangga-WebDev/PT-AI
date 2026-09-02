@@ -21,6 +21,8 @@ export interface FormState {
   message?: string;
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  /** Diisi hanya oleh aksi yang memang harus memindahkan halaman. */
+  redirectTo?: string;
 }
 
 export async function createAccountAction(

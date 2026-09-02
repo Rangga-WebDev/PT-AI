@@ -75,6 +75,54 @@ describe("summarizeDimensions", () => {
 
     expect(rows[0]?.target).toBe(DEFAULT_MASTERY_TARGET);
   });
+
+  it("tidak membandingkan penilaian rubrik dengan instrumen penelitian", () => {
+    const rows = summarizeDimensions([
+      {
+        dimension: "analysis",
+        score: 85,
+        measuredAt: "2026-08-01T00:00:00.000Z",
+        measurementSource: "posttest",
+      },
+      {
+        dimension: "analysis",
+        score: 50,
+        measuredAt: "2026-08-10T00:00:00.000Z",
+        measurementSource: "rubric",
+      },
+    ]);
+
+    expect(rows[0]?.score).toBe(50);
+    expect(rows[0]?.measurementSource).toBe("rubric");
+    expect(rows[0]?.previousScore).toBeNull();
+    expect(rows[0]?.measurementCount).toBe(1);
+  });
+
+  it("membandingkan pengukuran dengan sumber yang sama saja", () => {
+    const rows = summarizeDimensions([
+      {
+        dimension: "analysis",
+        score: 40,
+        measuredAt: "2026-08-01T00:00:00.000Z",
+        measurementSource: "rubric",
+      },
+      {
+        dimension: "analysis",
+        score: 90,
+        measuredAt: "2026-08-05T00:00:00.000Z",
+        measurementSource: "pretest",
+      },
+      {
+        dimension: "analysis",
+        score: 60,
+        measuredAt: "2026-08-10T00:00:00.000Z",
+        measurementSource: "rubric",
+      },
+    ]);
+
+    expect(rows[0]?.previousScore).toBe(40);
+    expect(rows[0]?.measurementCount).toBe(2);
+  });
 });
 
 describe("summarizeMasteryDistribution", () => {
@@ -141,6 +189,32 @@ describe("deriveObservations", () => {
     ]);
 
     expect(observations[0]?.description).toContain("turun dari 80 ke 65");
+  });
+
+  it("tidak melaporkan penurunan palsu antar-sumber pengukuran", () => {
+    const observations = deriveObservations([
+      {
+        ...base,
+        dimensions: summarizeDimensions([
+          {
+            dimension: "analysis",
+            score: 85,
+            measuredAt: "2026-08-01T00:00:00.000Z",
+            measurementSource: "posttest",
+          },
+          {
+            dimension: "analysis",
+            score: 50,
+            measuredAt: "2026-08-10T00:00:00.000Z",
+            measurementSource: "rubric",
+          },
+        ]),
+      },
+    ]);
+
+    expect(
+      observations.some((item) => item.key.startsWith("score_down_")),
+    ).toBe(false);
   });
 
   it("tidak melaporkan revisi kosong sebelum respons awal ada", () => {

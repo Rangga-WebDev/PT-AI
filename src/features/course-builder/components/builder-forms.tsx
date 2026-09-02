@@ -7,13 +7,16 @@ import {
   createInstructionAction,
   createLearningUnitAction,
   createModuleAction,
+  setActivityRubricAction,
   updateStageAction,
   upsertCaseAction,
 } from "@/actions/courses/content";
+import { useActionState } from "react";
 import {
   ActionForm,
   FieldError,
 } from "@/features/administration/components/action-form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +29,49 @@ import {
 
 const selectClass =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+
+/** Rubrik aktivitas dapat diganti kapan saja, bukan hanya saat pembuatan. */
+export function ActivityRubricForm({
+  activityId,
+  currentRubricId,
+  rubrics,
+}: {
+  activityId: string;
+  currentRubricId: string | null;
+  rubrics: { id: string; label: string }[];
+}) {
+  const [state, formAction] = useActionState(setActivityRubricAction, {});
+
+  return (
+    <form action={formAction} className="flex flex-col gap-1">
+      <input type="hidden" name="activityId" value={activityId} />
+      <div className="flex items-center gap-2">
+        <label htmlFor={`rubric-${activityId}`} className="sr-only">
+          Rubrik aktivitas
+        </label>
+        <select
+          id={`rubric-${activityId}`}
+          name="rubricId"
+          defaultValue={currentRubricId ?? ""}
+          className={`${selectClass} max-w-56`}
+        >
+          <option value="">Tanpa rubrik</option>
+          {rubrics.map((rubric) => (
+            <option key={rubric.id} value={rubric.id}>
+              {rubric.label}
+            </option>
+          ))}
+        </select>
+        <Button type="submit" size="sm" variant="outline">
+          Simpan rubrik
+        </Button>
+      </div>
+      {state.error ? (
+        <span className="text-xs text-destructive">{state.error}</span>
+      ) : null}
+    </form>
+  );
+}
 
 export function CreateModuleForm({ classId }: { classId: string }) {
   return (

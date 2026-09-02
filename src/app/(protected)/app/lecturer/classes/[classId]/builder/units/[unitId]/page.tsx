@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/shared/states/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { InlineAction } from "@/features/administration/components/action-form";
 import {
+  ActivityRubricForm,
   CaseForm,
   CreateActivityForm,
   CreateInstructionForm,
@@ -20,6 +21,7 @@ import {
   CreateCaseClaimForm,
 } from "@/features/verification/components/case-source-forms";
 import { publishActivityAction } from "@/actions/courses/content";
+import { isRubricComplete } from "@/lib/assessment/rubric-scoring";
 import {
   ACTIVITY_TYPE_LABEL,
   AI_FUNCTION_LABEL,
@@ -74,6 +76,12 @@ export default async function BuilderUnitPage({
       label: `${STAGE_LABEL[stage.stageKey]} — ${activity.title}`,
     })),
   );
+  const rubricOptions = rubrics.map((rubric) => ({
+    id: rubric.id,
+    label: isRubricComplete(rubric.criteria)
+      ? rubric.title
+      : `${rubric.title} (belum lengkap)`,
+  }));
 
   return (
     <PageContainer>
@@ -213,20 +221,27 @@ export default async function BuilderUnitPage({
                         key={activity.id}
                         className="flex flex-wrap items-start justify-between gap-2 rounded-lg border border-border px-3 py-2"
                       >
-                        <div className="flex min-w-0 flex-col">
-                          <span className="text-sm text-foreground">
-                            {activity.title}
-                          </span>
-                          <span className="text-xs text-subtle">
-                            {ACTIVITY_TYPE_LABEL[activity.activityType] ??
-                              activity.activityType}{" "}
-                            ·{" "}
-                            {activity.allowsAi
-                              ? `AI aktif (${activity.allowedAiFunctions
-                                  .map((fn) => AI_FUNCTION_LABEL[fn] ?? fn)
-                                  .join(", ")})`
-                              : "AI nonaktif"}
-                          </span>
+                        <div className="flex min-w-0 flex-col gap-2">
+                          <div className="flex min-w-0 flex-col">
+                            <span className="text-sm text-foreground">
+                              {activity.title}
+                            </span>
+                            <span className="text-xs text-subtle">
+                              {ACTIVITY_TYPE_LABEL[activity.activityType] ??
+                                activity.activityType}{" "}
+                              ·{" "}
+                              {activity.allowsAi
+                                ? `AI aktif (${activity.allowedAiFunctions
+                                    .map((fn) => AI_FUNCTION_LABEL[fn] ?? fn)
+                                    .join(", ")})`
+                                : "AI nonaktif"}
+                            </span>
+                          </div>
+                          <ActivityRubricForm
+                            activityId={activity.id}
+                            currentRubricId={activity.rubricId}
+                            rubrics={rubricOptions}
+                          />
                         </div>
                         <div className="flex items-center gap-2">
                           <StatusBadge

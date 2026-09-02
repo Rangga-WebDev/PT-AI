@@ -55,6 +55,41 @@ function quickSetupSample() {
 }
 
 /**
+ * Usulan penilaian yang mengutip artefak nyata dari prompt. Id diambil dari
+ * paket bukti, bukan dikarang, supaya validasi kutipan ikut teruji.
+ */
+function reviewSample(prompt: string) {
+  const criterionId = /criterionId: ([0-9a-f-]{36})/.exec(prompt)?.[1] ?? "";
+  const artifactId = /artifactId: ([0-9a-f-]{36})/.exec(prompt)?.[1] ?? "";
+  const firstScore = /skor (\d+(?:\.\d+)?) \(/.exec(prompt)?.[1];
+
+  return {
+    criteria: [
+      {
+        criterionId,
+        suggestedScore: firstScore === undefined ? null : Number(firstScore),
+        confidence: "medium",
+        evidence: artifactId
+          ? [
+              {
+                artifactId,
+                excerpt: "Kutipan uji dari karya mahasiswa.",
+              },
+            ]
+          : [],
+        rationale:
+          "Usulan uji yang bersandar pada bukti yang tercantum di paket.",
+        insufficientEvidence: firstScore === undefined,
+      },
+    ],
+    overallObservations: ["Pengamatan uji atas proses mahasiswa."],
+    suggestedFeedback:
+      "Kekuatan utamanya ada pada penyusunan klaim. Bagian yang perlu diperbaiki adalah penelusuran bukti.",
+    limitations: ["Usulan ini dihasilkan penyedia uji, bukan model sungguhan."],
+  };
+}
+
+/**
  * Provider deterministik untuk pengujian ujung-ke-ujung. Dipakai hanya ketika
  * AI_PROVIDER_MODE=fake agar E2E tidak memanggil penyedia sungguhan, tidak
  * menghabiskan kuota, dan hasilnya dapat diprediksi.
@@ -63,6 +98,14 @@ function quickSetupSample() {
  */
 export const fakeProvider: AiProvider = {
   async generateStructured({ prompt }) {
+    if (prompt.includes("=== KARYA MAHASISWA ===")) {
+      return {
+        text: JSON.stringify(reviewSample(prompt)),
+        inputTokens: 300,
+        outputTokens: 150,
+        latencyMs: 1,
+      };
+    }
     if (prompt.includes("=== ISI DOKUMEN ===")) {
       return {
         text: JSON.stringify(quickSetupSample()),

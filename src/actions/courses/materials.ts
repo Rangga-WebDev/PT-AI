@@ -19,6 +19,10 @@ import {
 } from "@/lib/validation/materials";
 import { nextMaterialSequence } from "@/server/repositories/materials";
 import {
+  extractMaterial,
+  EXTRACTION_MESSAGE,
+} from "@/server/services/material-extraction";
+import {
   createMaterialDownloadUrl,
   type SignedMaterialDownload,
 } from "@/server/services/material-storage";
@@ -139,6 +143,10 @@ export async function createNoteMaterialAction(
       return { error: NOTE_REJECTION[outcome.reason] ?? outcome.error };
     }
 
+    // Materi tulisan isinya sudah pasti terbaca, tetapi tetap melewati
+    // ekstraktor yang sama agar tidak ada jalur pembacaan kedua.
+    await extractMaterial(outcome.resourceId);
+
     revalidateMaterials(parsed.data.classId);
     return { ok: true, message: "Materi tulisan berhasil disimpan." };
   } catch (error) {
@@ -255,6 +263,49 @@ export async function deleteMaterialAction(
 export type DownloadState =
   | { ok: true; download: SignedMaterialDownload }
   | { ok: false; error: string };
+
+export type ExtractionState =
+  | { ok: true; message: string }
+  | { ok: false; error: string };
+
+/**
+ * Ekstraksi berdiri sendiri dari unggahan: berkas yang gagal dibaca tetap
+ * tersimpan, dan pembacaannya dapat diulang tanpa mengunggah ulang. Menjalankan
+ * ulang atas bahan yang sama hanya memperbarui hasilnya — tidak ada baris atau
+ * objek baru yang lahir.
+ */
+export async function extractMaterialAction(
+  materialId: string,
+): Promise<ExtractionState> {
+  try {
+    await requireUserOrThrow();
+
+    const parsed = materialIdSchema.safeParse({ id: materialId });
+    if (!parsed.success) {
+      return { ok: false, error: "Bahan tidak valid." };
+    }
+
+    const result = await extractMaterial(parsed.data.id);
+
+    if (!result.ok) {
+      return { ok: false, error: EXTRACTION_MESSAGE[result.reason] };
+    }
+
+    revalidatePath("/app/lecturer/classes", "layout");
+    return {
+      ok: true,
+      message: result.truncated
+        ? "Teks dokumen terbaca, tetapi dipotong karena sangat panjang."
+        : "Teks dokumen berhasil dibaca.",
+    };
+  } catch (error) {
+    const mapped = toActionError(error);
+    return {
+      ok: false,
+      error: mapped.ok ? "Dokumen gagal dibaca." : mapped.error,
+    };
+  }
+}
 
 /**
  * Mahasiswa juga memakai aksi ini. Tidak ada pemeriksaan peran di sini karena

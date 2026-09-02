@@ -59,6 +59,11 @@ export const activitySchema = z.object({
   dueAt: z.string().optional(),
 });
 
+export const activityRubricSchema = z.object({
+  activityId: uuid("Aktivitas"),
+  rubricId: z.string().uuid().optional().or(z.literal("")),
+});
+
 export const activityInstructionSchema = z.object({
   activityId: uuid("Aktivitas"),
   audience: z.enum(["student", "lecturer"], {

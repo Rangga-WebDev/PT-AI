@@ -5,7 +5,11 @@
 import { revalidatePath } from "next/cache";
 
 import { toActionError } from "@/lib/errors";
-import { weightedRubricScore } from "@/lib/mastery/access";
+import {
+  RUBRIC_SCORING_MESSAGE,
+  scoreRubric,
+  type RubricScore,
+} from "@/lib/assessment/rubric-scoring";
 import { requireRoleOrThrow } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -49,7 +53,7 @@ export async function submitMasteryAssessmentAction(
         `activity_id, student_id,
          activities!inner(
            rubric_id,
-           rubrics(rubric_criteria(id, weight, dimension)),
+           rubrics(rubric_criteria(id, weight, dimension, rubric_levels(score))),
            learning_stages!inner(learning_units!inner(modules!inner(class_id)))
          )`,
       )
@@ -58,26 +62,43 @@ export async function submitMasteryAssessmentAction(
 
     if (!attempt) return { error: "Respons awal tidak ditemukan." };
 
-    const criteria = attempt.activities.rubrics?.rubric_criteria ?? [];
-    const criteriaById = new Map(criteria.map((item) => [item.id, item]));
-
-    const scored = parsed.data.criteriaScores.filter((entry) =>
-      criteriaById.has(entry.criterionId),
+    const criteria = (attempt.activities.rubrics?.rubric_criteria ?? []).map(
+      (item) => ({
+        id: item.id,
+        dimension: item.dimension,
+        weight: item.weight,
+        levels: item.rubric_levels.map((level) => ({
+          score: Number(level.score),
+        })),
+      }),
     );
 
-    const score =
-      scored.length > 0
-        ? weightedRubricScore(
-            scored.map((entry) => ({
-              weight: criteriaById.get(entry.criterionId)?.weight ?? 0,
-              score: entry.score,
-              maxScore: 100,
-            })),
-          )
-        : null;
+    // Level mentah pilihan dosen; nilai akhir dihitung, tidak pernah dikirim
+    // klien.
+    const selections = Object.fromEntries(
+      parsed.data.criteriaScores.map((entry) => [
+        entry.criterionId,
+        entry.score,
+      ]),
+    );
+
+    let score: number | null = null;
+    let dimensions: RubricScore["dimensions"] = [];
+
+    if (criteria.length > 0) {
+      const computed = scoreRubric(criteria, selections);
+      if (!computed.ok) {
+        return { error: RUBRIC_SCORING_MESSAGE[computed.reason] };
+      }
+      score = computed.data.score;
+      dimensions = computed.data.dimensions;
+    }
 
     const criteriaScores = Object.fromEntries(
-      scored.map((entry) => [entry.criterionId, entry.score]),
+      criteria.map((criterion) => [
+        criterion.id,
+        selections[criterion.id] as number,
+      ]),
     );
 
     const { error: masteryError } = await supabase
@@ -97,22 +118,18 @@ export async function submitMasteryAssessmentAction(
     if (masteryError) return fail(masteryError);
 
     // Skor per kriteria mengalir ke profil enam dimensi, selalu terikat waktu.
+    // Yang disimpan adalah persentase, bukan level mentah, agar sebanding
+    // dengan pengukuran lain pada skala yang sama.
     const classId =
       attempt.activities.learning_stages.learning_units.modules.class_id;
 
-    const dimensionRows = scored
-      .map((entry) => {
-        const criterion = criteriaById.get(entry.criterionId);
-        if (!criterion) return null;
-        return {
-          student_id: attempt.student_id,
-          class_id: classId,
-          dimension: criterion.dimension,
-          score: entry.score,
-          measurement_source: "rubric" as const,
-        };
-      })
-      .filter((row): row is NonNullable<typeof row> => row !== null);
+    const dimensionRows = dimensions.map((entry) => ({
+      student_id: attempt.student_id,
+      class_id: classId,
+      dimension: entry.dimension,
+      score: entry.score,
+      measurement_source: "rubric" as const,
+    }));
 
     if (dimensionRows.length > 0) {
       await supabase.from("critical_thinking_scores").insert(dimensionRows);

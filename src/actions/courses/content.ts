@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import {
   activityInstructionSchema,
+  activityRubricSchema,
   activitySchema,
   caseSchema,
   learningUnitSchema,
@@ -498,6 +499,56 @@ export async function publishActivityAction(
 
     revalidatePath("/app/lecturer/classes", "layout");
     return { ok: true, message: "Status aktivitas diperbarui." };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+/**
+ * Rubrik dapat dipasang setelah aktivitas dibuat; tanpa ini aktivitas lama
+ * tidak akan pernah bisa dinilai berbasis rubrik.
+ */
+export async function setActivityRubricAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const parsed = activityRubricSchema.safeParse({
+      activityId: formData.get("activityId"),
+      rubricId: formData.get("rubricId") ?? "",
+    });
+
+    if (!parsed.success) {
+      return { fieldErrors: parsed.error.flatten().fieldErrors };
+    }
+
+    const supabase = await createClient();
+    const { data: activity } = await supabase
+      .from("activities")
+      .select("learning_stages(learning_units(modules(class_id)))")
+      .eq("id", parsed.data.activityId)
+      .maybeSingle();
+
+    const classId =
+      activity?.learning_stages.learning_units.modules.class_id ?? null;
+    if (!classId) return { error: "Aktivitas tidak ditemukan." };
+
+    await requireLecturerOfClass(classId);
+
+    const { error } = await supabase
+      .from("activities")
+      .update({ rubric_id: parsed.data.rubricId || null })
+      .eq("id", parsed.data.activityId);
+
+    if (error) return fail(error);
+
+    revalidatePath("/app/lecturer/classes", "layout");
+    return {
+      ok: true,
+      message: parsed.data.rubricId
+        ? "Rubrik dipasang pada aktivitas."
+        : "Rubrik dilepas dari aktivitas.",
+    };
   } catch (error) {
     return fail(error);
   }

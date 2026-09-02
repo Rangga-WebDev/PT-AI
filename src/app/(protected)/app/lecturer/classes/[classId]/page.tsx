@@ -1,20 +1,20 @@
 /** @format */
 
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-import { AnalyticsCard, InsightCard } from "@/components/cards/insight-cards";
-import { PageContainer } from "@/components/layout/page-container";
-import { PageHeader } from "@/components/layout/page-header";
-import { EmptyState } from "@/components/shared/states/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { buttonVariants } from "@/components/ui/button";
+import { ClassShell } from "@/features/classes/components/class-shell";
+import { PublishClassControl } from "@/features/classes/components/publish-class-control";
+import { lecturerClassNav } from "@/lib/classes/navigation";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import {
   getClassDetail,
   listClassMembers,
 } from "@/server/repositories/classes";
 import { listModulesWithUnits } from "@/server/repositories/content";
+import { listClassMaterials } from "@/server/repositories/materials";
 
 const STATUS_LABEL = {
   draft: "Draf",
@@ -30,149 +30,133 @@ export default async function LecturerClassDetailPage({
   // Dosen hanya boleh membuka kelas yang ditugaskan kepadanya.
   await requireLecturerOfClass(classId);
 
-  const [classItem, members, modules] = await Promise.all([
+  const [classItem, members, modules, materials] = await Promise.all([
     getClassDetail(classId),
     listClassMembers(classId),
     listModulesWithUnits(classId),
+    listClassMaterials(classId),
   ]);
 
   if (!classItem) {
     notFound();
   }
 
+  const base = `/app/lecturer/classes/${classId}`;
   const publishedUnits = modules.reduce(
     (total, module) =>
       total + module.units.filter((unit) => unit.status === "published").length,
     0,
   );
 
+  const entries = [
+    {
+      href: `${base}/materials`,
+      label: "Materi",
+      count: `${materials.length} bahan`,
+      description: "Bahan ajar yang Anda kelola untuk kelas ini.",
+    },
+    {
+      href: `${base}/meetings`,
+      label: "Pertemuan",
+      count: `${modules.length} pertemuan`,
+      description: "Susunan pertemuan beserta tujuannya.",
+    },
+    {
+      href: `${base}/builder`,
+      label: "PT-AI",
+      count: `${publishedUnits} unit terbit`,
+      description: "Unit berpikir kritis, kasus, dan aktivitasnya.",
+    },
+    {
+      href: `${base}/students`,
+      label: "Mahasiswa",
+      count: `${members.students.length} terdaftar`,
+      description: "Peserta kelas dan dosen pengampu.",
+    },
+  ];
+
+  // Perkakas pedagogis dan penelitian tidak masuk bilah utama supaya
+  // navigasinya tetap terasa seperti LMS, tetapi tetap terjangkau dari sini.
+  const secondary = [
+    { href: `${base}/quick-setup`, label: "Quick Setup AI" },
+    { href: `${base}/instruments`, label: "Instrumen" },
+    { href: `${base}/branching`, label: "Percabangan" },
+  ];
+
   return (
-    <PageContainer>
-      <PageHeader
-        eyebrow={`${classItem.code} · ${classItem.academicPeriod}`}
-        title={classItem.name}
-        description={classItem.courseName}
-        actions={
-          <div className="flex items-center gap-2">
-            <StatusBadge
-              status={classItem.status === "published" ? "published" : "draft"}
-            >
-              {STATUS_LABEL[classItem.status]}
-            </StatusBadge>
-            {(
-              [
-                ["materials", "Materi"],
-                ["instruments", "Instrumen"],
-                ["analytics", "Analitik"],
-                ["branching", "Percabangan"],
-                ["builder", "Perancang materi"],
-              ] as const
-            ).map(([segment, label]) => (
-              <Link
-                key={segment}
-                href={`/app/lecturer/classes/${classId}/${segment}`}
-                className={buttonVariants({ variant: "outline" })}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-        }
-      />
-
-      <div className="flex flex-col gap-5">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <InsightCard
-            label="Mahasiswa"
-            value={String(members.students.length)}
-            tone="info"
-          />
-          <InsightCard
-            label="Dosen pengampu"
-            value={String(members.lecturers.length)}
-            tone="primary"
-          />
-          <InsightCard
-            label="Unit terbit"
-            value={String(publishedUnits)}
-            tone={publishedUnits > 0 ? "success" : "evidence"}
-          />
-        </div>
-
-        <AnalyticsCard
-          title="Mahasiswa terdaftar"
-          description="Daftar peserta kelas ini."
+    <ClassShell
+      classItem={classItem}
+      items={lecturerClassNav(classId)}
+      overviewHref={base}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <StatusBadge
+          status={classItem.status === "published" ? "published" : "draft"}
         >
-          {members.students.length === 0 ? (
-            <EmptyState description="Belum ada mahasiswa terdaftar pada kelas ini." />
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {members.students.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm"
-                >
-                  <span>{item.fullName}</span>
-                  <span className="font-mono text-xs text-subtle">
-                    {item.identifier}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </AnalyticsCard>
-
-        <AnalyticsCard
-          title="Struktur materi"
-          description="Modul dan unit pada kelas ini beserta status penerbitannya."
-        >
-          {modules.length === 0 ? (
-            <EmptyState description="Belum ada modul. Buka perancang materi untuk menyusunnya." />
-          ) : (
-            <ol className="flex flex-col gap-3">
-              {modules.map((module) => (
-                <li
-                  key={module.id}
-                  className="flex flex-col gap-2 rounded-lg border border-border p-3"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-sm text-foreground">
-                      {module.sequence}. {module.title}
-                    </span>
-                    <StatusBadge
-                      status={
-                        module.status === "published" ? "published" : "draft"
-                      }
-                    >
-                      {STATUS_LABEL[module.status]}
-                    </StatusBadge>
-                  </div>
-                  {module.units.length === 0 ? (
-                    <p className="text-xs text-subtle">Belum ada unit.</p>
-                  ) : (
-                    <ul className="flex flex-col gap-1">
-                      {module.units.map((unit) => (
-                        <li
-                          key={unit.id}
-                          className="flex flex-wrap items-center justify-between gap-2 text-sm"
-                        >
-                          <span>
-                            {unit.sequence}. {unit.title}
-                          </span>
-                          <span className="font-mono text-xs text-subtle">
-                            {STATUS_LABEL[unit.status]} · {unit.activityCount}{" "}
-                            aktivitas
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ol>
-          )}
-        </AnalyticsCard>
+          {STATUS_LABEL[classItem.status]}
+        </StatusBadge>
+        <PublishClassControl classId={classId} status={classItem.status} />
       </div>
-    </PageContainer>
+
+      {materials.length === 0 && modules.length === 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
+          <p className="text-sm text-muted-foreground">
+            Kelas ini masih kosong. Mulai dari bahan ajar atau dari RPS.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`${base}/materials`}
+              className={buttonVariants({ variant: "primary", size: "sm" })}
+            >
+              Tambah materi
+            </Link>
+            <Link
+              href={`${base}/quick-setup`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Siapkan dari RPS
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
+      <ul className="flex flex-col">
+        {entries.map((entry) => (
+          <li
+            key={entry.href}
+            className="border-b border-border last:border-b-0"
+          >
+            <Link
+              href={entry.href}
+              className="flex items-center justify-between gap-4 py-4 transition-colors hover:bg-surface-active focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+            >
+              <span className="flex flex-col gap-0.5">
+                <span className="font-medium text-foreground">
+                  {entry.label}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {entry.description}
+                </span>
+              </span>
+              <span className="shrink-0 font-mono text-xs text-subtle">
+                {entry.count}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-5">
+        {secondary.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+    </ClassShell>
   );
 }

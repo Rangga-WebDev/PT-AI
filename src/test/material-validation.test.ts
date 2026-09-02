@@ -8,9 +8,7 @@ import { describe, expect, it } from "vitest";
 import {
   checkUpload,
   createLinkMaterialSchema,
-  decodeUtf8Text,
   detectSignature,
-  isInlineExtractable,
   materialParentSchema,
   materialStorageKey,
   MATERIAL_MAX_BYTES,
@@ -219,38 +217,6 @@ describe("skema bahan ajar", () => {
     });
 
     expect(result.success).toBe(false);
-  });
-});
-
-describe("kelayakan ekstraksi", () => {
-  it("hanya tipe teks yang diekstraksi sebaris", () => {
-    expect(isInlineExtractable("text/plain")).toBe(true);
-    expect(isInlineExtractable("text/markdown")).toBe(true);
-  });
-
-  // Keduanya akan diekstraksi pekerja berikutnya. Menandainya di luar jangkauan
-  // sekarang akan membuat status `unsupported` yang tidak benar.
-  it("berkas biner dibiarkan untuk pekerja ekstraksi berikutnya", () => {
-    expect(isInlineExtractable("application/pdf")).toBe(false);
-    expect(isInlineExtractable(DOCX)).toBe(false);
-  });
-});
-
-describe("pembacaan teks", () => {
-  it("mengembalikan isi yang sudah dirapikan", () => {
-    expect(decodeUtf8Text(new TextEncoder().encode("  Bab satu.  "))).toBe(
-      "Bab satu.",
-    );
-  });
-
-  it("menolak byte yang bukan UTF-8", () => {
-    expect(decodeUtf8Text(new Uint8Array([0xff, 0xfe, 0xfd]))).toBeNull();
-  });
-
-  // Teks kosong tidak boleh menghasilkan `succeeded`: constraint basis data
-  // menuntut extracted_text tidak null ketika statusnya succeeded.
-  it("menganggap berkas berisi spasi saja sebagai gagal", () => {
-    expect(decodeUtf8Text(new TextEncoder().encode("   \n\t "))).toBeNull();
   });
 });
 

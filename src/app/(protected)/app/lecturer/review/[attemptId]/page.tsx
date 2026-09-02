@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/shared/states/empty-state";
 import { LecturerFeedbackForm } from "@/features/assessment/components/lecturer-feedback-form";
 import { ScoringForm } from "@/features/assessment/components/scoring-form";
 import { RevisionHistory } from "@/features/learning-workspace/components/revision-history";
+import { isRubricComplete } from "@/lib/assessment/rubric-scoring";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import {
   getAttemptReview,
@@ -65,12 +66,20 @@ export default async function AttemptReviewPage({
         title={`Tinjau: ${review.studentName}`}
         description={`${review.stageSequence}. ${review.stageTitle} — ${review.activityTitle}`}
         actions={
-          <Link
-            href="/app/lecturer/review"
-            className="text-sm underline underline-offset-4"
-          >
-            Kembali ke antrean
-          </Link>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link
+              href="/app/lecturer/guide#bantuan-ai-review"
+              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Cara menggunakan bantuan AI
+            </Link>
+            <Link
+              href="/app/lecturer/review"
+              className="text-sm underline underline-offset-4"
+            >
+              Kembali ke antrean
+            </Link>
+          </div>
         }
       />
 
@@ -225,6 +234,10 @@ export default async function AttemptReviewPage({
             id: category.id,
             name: category.name,
           }))}
+          aiReview={{
+            attemptId: review.attemptId,
+            hasRubric: isRubricComplete(review.rubric?.criteria ?? []),
+          }}
         />
       </div>
     </PageContainer>

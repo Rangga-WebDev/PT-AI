@@ -2,6 +2,15 @@
 
 # JUKNIS — Mengisi Konten Nyata PT-AI LMS
 
+> **Cakupan berkas ini: administrator dan operator.**
+> Panduan langkah demi langkah untuk **dosen** dan **mahasiswa** kini berada di
+> [docs/guides/JUKNIS_DOSEN.md](guides/JUKNIS_DOSEN.md) dan
+> [docs/guides/JUKNIS_MAHASISWA.md](guides/JUKNIS_MAHASISWA.md), serta di dalam aplikasi
+> pada menu **Panduan**. Bila kedua dokumen berbeda, panduan di aplikasi yang berlaku.
+>
+> Yang tersisa di sini adalah pekerjaan yang memang masih menjadi wewenang administrator
+> (struktur akademik, akun) dan pekerjaan operator (sumber, source pack, pengindeksan AI).
+
 Petunjuk teknis pengisian konten dari keadaan kosong sampai unit dapat dikerjakan mahasiswa.
 Urutan di bawah **tidak boleh dibalik**: setiap langkah memakai hasil langkah sebelumnya, dan
 sebagian ditolak basis data bila prasyaratnya belum ada.
@@ -87,6 +96,11 @@ Isi mata kuliah, periode akademik, kode kelas (misalnya `A`), dan nama.
 Kelas dibuat berstatus **draf**. Ubah ke **terbit** setelah dosen dan mahasiswa terdaftar —
 mahasiswa tidak dapat melihat kelas yang masih draf.
 
+> **Kini dosen dapat membuat kelasnya sendiri** dari menu Kelas → **+ Buat kelas**, dan
+> langsung tercatat sebagai pengampu. Jalur admin di atas tetap berlaku untuk kelas yang
+> disiapkan terpusat. Dosen juga dapat menerbitkan sendiri kelas yang ia ampu; pengarsipan
+> tetap wewenang admin.
+
 ---
 
 ## 3. Akun dan keanggotaan kelas — Admin
@@ -105,9 +119,11 @@ sampaikan kepada pemiliknya melalui jalur yang aman.
 **Halaman:** `/app/admin/classes/[classId]`
 
 - **Dosen pengampu** — dosen tanpa penugasan ini **tidak dapat membuka kelas sama sekali**,
-  termasuk perancang materinya.
+  termasuk perancang materinya. Pengecualian: dosen yang membuat sendiri kelasnya sudah
+  tercatat sebagai pengampu tanpa langkah ini.
 - **Mahasiswa** — daftarkan satu per satu. Mahasiswa yang tidak terdaftar tidak dapat melihat
-  unit mana pun dari kelas tersebut.
+  unit mana pun dari kelas tersebut. **Dosen pengampu kini juga dapat mendaftarkan mahasiswa**
+  dari Kelas → Mahasiswa → + Tambah mahasiswa.
 
 > Batas ini ditegakkan Row Level Security, bukan hanya oleh tampilan. Melewatkan langkah ini
 > membuat dosen melihat halaman kosong tanpa pesan galat yang jelas.
@@ -230,6 +246,10 @@ Tulis klaim yang **dapat diperdebatkan**, bukan fakta yang tinggal dicek.
 
 **Halaman:** `/app/lecturer/rubrics`
 
+> **Jalur yang disarankan:** tekan **Gunakan template PT-AI** pada bagian teratas halaman.
+> Satu tekan menghasilkan enam kriteria berpikir kritis lengkap dengan level 0–4 dan
+> deskriptornya. Langkah manual di bawah hanya diperlukan untuk rubrik di luar standar PT-AI.
+
 1. Buat rubrik: judul dan deskripsi.
 2. Tambahkan kriteria: kode, deskripsi, **dimensi berpikir kritis**, dan bobot.
 3. Tambahkan level untuk tiap kriteria: label, deskriptor, dan nilai.
@@ -237,6 +257,9 @@ Tulis klaim yang **dapat diperdebatkan**, bukan fakta yang tinggal dicek.
 Dimensi yang tersedia: `interpretation`, `analysis`, `evaluation`, `inference`, `explanation`,
 `self_regulation`. Dimensi inilah yang muncul pada progres mahasiswa, jadi pemetaannya harus
 sungguh-sungguh.
+
+Saat menilai, dosen **memilih level**, bukan mengetik angka bebas. Nilai 0–100 dihitung
+aplikasi dari level yang dipilih dan bobot rubrik.
 
 ### 8.2 Aktivitas (wajib, minimal satu per unit)
 

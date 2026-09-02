@@ -20,6 +20,7 @@ const COURSE_DOCUMENT_KINDS = [
 
 function ReadinessState({ result }: { result: UploadResult }) {
   const ready = result.extractionStatus === "succeeded";
+  const failed = result.extractionStatus === "failed";
 
   return (
     <div className="flex flex-col gap-4">
@@ -29,17 +30,23 @@ function ReadinessState({ result }: { result: UploadResult }) {
           <span className="text-sm text-muted-foreground">
             Status pembacaan
           </span>
-          <StatusBadge status={ready ? "published" : "evidence"}>
+          <StatusBadge
+            status={ready ? "published" : failed ? "danger" : "evidence"}
+          >
             {ready
               ? MATERIAL_EXTRACTION_LABEL.succeeded
-              : MATERIAL_EXTRACTION_LABEL.pending}
+              : failed
+                ? MATERIAL_EXTRACTION_LABEL.failed
+                : MATERIAL_EXTRACTION_LABEL.pending}
           </StatusBadge>
         </div>
       </div>
 
       <div className="border-t border-border pt-4">
         <p className="text-sm text-muted-foreground">
-          Nantinya dokumen ini dapat dipakai untuk:
+          {ready
+            ? "Dokumen ini dapat dipakai untuk:"
+            : "Setelah teksnya terbaca, dokumen ini dapat dipakai untuk:"}
         </p>
         <ul className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
           <li>— menyusun struktur pertemuan</li>
@@ -49,7 +56,8 @@ function ReadinessState({ result }: { result: UploadResult }) {
         {!ready ? (
           <p className="mt-3 text-xs text-subtle">
             Teks dokumen ini belum terbaca, sehingga belum dapat dijadikan
-            rujukan. Berkasnya tetap tersimpan dan dapat diunduh.
+            rujukan. Berkasnya tetap tersimpan dan dapat diunduh, dan pembacaan
+            dapat diulang dari daftar materi.
           </p>
         ) : null}
       </div>

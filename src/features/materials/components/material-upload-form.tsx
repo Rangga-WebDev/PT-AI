@@ -5,6 +5,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { extractMaterialAction } from "@/actions/courses/materials";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,10 +73,17 @@ export function MaterialUploadForm({
         return;
       }
 
-      onUploaded({
-        resourceId: payload.resourceId,
-        extractionStatus: payload.extractionStatus ?? "pending",
-      });
+      let extractionStatus = payload.extractionStatus ?? "pending";
+
+      // Pembacaan diminta sebagai permintaan tersendiri, bukan dititipkan pada
+      // unggahan: pada lingkungan tanpa jaminan eksekusi latar, pekerjaan yang
+      // ditinggalkan setelah respons terkirim belum tentu pernah selesai.
+      if (extractionStatus === "pending") {
+        const extraction = await extractMaterialAction(payload.resourceId);
+        extractionStatus = extraction.ok ? "succeeded" : "failed";
+      }
+
+      onUploaded({ resourceId: payload.resourceId, extractionStatus });
       router.refresh();
     } catch {
       setError("Berkas gagal diunggah. Periksa koneksi lalu coba lagi.");

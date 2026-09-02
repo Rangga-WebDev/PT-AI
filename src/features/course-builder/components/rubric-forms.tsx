@@ -6,6 +6,7 @@ import {
   createCriterionAction,
   createLevelAction,
   createRubricAction,
+  createStandardRubricAction,
 } from "@/actions/courses/rubrics";
 import {
   ActionForm,
@@ -14,10 +15,41 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  PTAI_CT_CRITERIA,
+  PTAI_CT_RUBRIC_TITLE,
+} from "@/lib/assessment/ptai-critical-thinking-rubric";
 import { DIMENSION_LABEL } from "@/lib/constants/stages";
 
 const selectClass =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+
+export function UseStandardRubricForm() {
+  return (
+    <ActionForm
+      action={createStandardRubricAction}
+      submitLabel="Gunakan template PT-AI"
+    >
+      {() => (
+        <div className="flex flex-col gap-4">
+          <p className="max-w-prose text-sm text-muted-foreground">
+            Membuat {PTAI_CT_CRITERIA.length} kriteria berpikir kritis —{" "}
+            {PTAI_CT_CRITERIA.map((criterion) => criterion.title).join(", ")} —
+            masing-masing dengan lima level 0–4 beserta deskriptornya.
+          </p>
+          <div className="flex max-w-md flex-col gap-2">
+            <Label htmlFor="standard-rubric-title">Judul (opsional)</Label>
+            <Input
+              id="standard-rubric-title"
+              name="title"
+              placeholder={PTAI_CT_RUBRIC_TITLE}
+            />
+          </div>
+        </div>
+      )}
+    </ActionForm>
+  );
+}
 
 export function CreateRubricForm() {
   return (

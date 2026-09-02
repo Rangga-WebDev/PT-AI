@@ -81,9 +81,31 @@ export const classSchema = z.object({
     .optional(),
 });
 
+// Dosen hanya menentukan identitas kelas; nama lengkapnya disusun server dari
+// nama mata kuliah agar tidak ada dua sumber kebenaran.
+export const lecturerClassSchema = z.object({
+  courseId: uuid("Mata kuliah"),
+  academicPeriodId: uuid("Periode akademik"),
+  code,
+  capacity: z.coerce
+    .number()
+    .int("Kapasitas harus bilangan bulat.")
+    .min(1, "Kapasitas minimal 1.")
+    .max(500, "Kapasitas maksimal 500.")
+    .optional(),
+});
+
 export const classStatusSchema = z.object({
   classId: uuid("Kelas"),
   status: z.enum(["draft", "published", "archived"], {
+    message: "Status tidak valid.",
+  }),
+});
+
+// Dosen hanya menggeser antara draf dan terbit; arsip tetap wewenang admin.
+export const classPublishSchema = z.object({
+  classId: uuid("Kelas"),
+  status: z.enum(["draft", "published"], {
     message: "Status tidak valid.",
   }),
 });

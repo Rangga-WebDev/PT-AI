@@ -2,9 +2,9 @@
 
 import { notFound } from "next/navigation";
 
-import { PageContainer } from "@/components/layout/page-container";
-import { PageHeader } from "@/components/layout/page-header";
+import { ClassShell } from "@/features/classes/components/class-shell";
 import { MaterialsWorkspace } from "@/features/materials/components/materials-workspace";
+import { lecturerClassNav } from "@/lib/classes/navigation";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import { getClassDetail } from "@/server/repositories/classes";
 import { listClassMaterials } from "@/server/repositories/materials";
@@ -24,13 +24,21 @@ export default async function LecturerClassMaterialsPage({
   if (!classItem) notFound();
 
   return (
-    <PageContainer>
-      <PageHeader
-        eyebrow={classItem.name}
-        title="Materi"
-        description="Bahan ajar kelas ini. Mahasiswa hanya melihat bahan yang sudah terbit dan ditujukan kepada mereka."
-      />
+    <ClassShell
+      classItem={classItem}
+      items={lecturerClassNav(classId)}
+      overviewHref={`/app/lecturer/classes/${classId}`}
+    >
+      <div className="flex flex-col gap-1">
+        <h2 className="font-heading text-h3 font-semibold text-foreground">
+          Materi
+        </h2>
+        <p className="max-w-prose text-sm text-muted-foreground">
+          Mahasiswa hanya melihat bahan yang sudah terbit dan ditujukan kepada
+          mereka.
+        </p>
+      </div>
       <MaterialsWorkspace classId={classId} materials={materials} />
-    </PageContainer>
+    </ClassShell>
   );
 }

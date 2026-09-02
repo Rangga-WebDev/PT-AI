@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { DimensionProgressRow } from "@/lib/analytics/aggregate";
+import { MEASUREMENT_SOURCE_LABEL } from "@/lib/analytics/aggregate";
 import { cn } from "@/lib/utils";
 
 interface InsightCardProps {
@@ -98,7 +99,8 @@ export function DimensionBars({ items }: { items: DimensionProgressRow[] }) {
                   ? ""
                   : delta === 0
                     ? " · tetap"
-                    : ` · ${delta > 0 ? "+" : "−"}${Math.abs(delta)}`}
+                    : ` · ${delta > 0 ? "+" : "−"}${Math.abs(delta)}`}{" "}
+                · {MEASUREMENT_SOURCE_LABEL[item.measurementSource]}
               </span>
             </div>
             <div

@@ -44,6 +44,14 @@ export default async function QuickSetupPage({
         eyebrow={classItem.name}
         title="Quick Setup"
         description="AI menstrukturkan RPS atau CPMK yang sudah Anda unggah menjadi draf pembelajaran. Hasilnya selalu berupa draf dan tidak pernah diterapkan ke kelas dengan sendirinya."
+        actions={
+          <Link
+            href="/app/lecturer/guide#quick-setup"
+            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            Cara menyiapkan kelas dari RPS
+          </Link>
+        }
       />
 
       <div className="flex flex-col gap-10">

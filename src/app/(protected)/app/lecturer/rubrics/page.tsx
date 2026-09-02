@@ -9,6 +9,7 @@ import {
   CreateCriterionForm,
   CreateLevelForm,
   CreateRubricForm,
+  UseStandardRubricForm,
 } from "@/features/course-builder/components/rubric-forms";
 import { DIMENSION_LABEL, PUBLICATION_LABEL } from "@/lib/constants/stages";
 import { requireLecturerAccess } from "@/lib/supabase/auth";
@@ -40,6 +41,13 @@ export default async function RubricsPage() {
       />
 
       <div className="flex flex-col gap-5">
+        <AnalyticsCard
+          title="Rubrik standar berpikir kritis PT-AI"
+          description="Enam dimensi dengan level 0–4 dan deskriptor baku. Dipakai apa adanya atau disesuaikan setelah dibuat."
+        >
+          <UseStandardRubricForm />
+        </AnalyticsCard>
+
         <AnalyticsCard
           title="Tambah rubrik"
           description="Rubrik dapat dipakai ulang pada banyak aktivitas."

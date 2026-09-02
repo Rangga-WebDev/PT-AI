@@ -18,8 +18,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   checkUpload,
   createFileMaterialSchema,
-  decodeUtf8Text,
-  isInlineExtractable,
   materialStorageKey,
   UPLOAD_REJECTION_MESSAGE,
   type ExtractionStatus,
@@ -28,7 +26,6 @@ import { nextMaterialSequence } from "@/server/repositories/materials";
 import {
   checksumOf,
   putMaterialObject,
-  recordExtractionOutcome,
   removeMaterialObject,
 } from "@/server/services/material-storage";
 
@@ -168,15 +165,10 @@ export async function uploadClassMaterial(
 
     rowInserted = false;
 
-    return {
-      ok: true,
-      resourceId,
-      extractionStatus: await runInlineExtraction(
-        resourceId,
-        check.mimeType,
-        bytes,
-      ),
-    };
+    // Pembacaan teks tidak dikerjakan di sini. Ia adalah daur hidup tersendiri
+    // yang dijalankan lewat `extractMaterial()`, sehingga hanya ada satu
+    // implementasi ekstraksi di seluruh sistem.
+    return { ok: true, resourceId, extractionStatus: "pending" };
   } catch (error) {
     // Objek tidak pernah ditulis sebelum barisnya ada, sehingga objek yatim
     // mustahil. Yang mungkin adalah kebalikannya: baris yang penunjuknya tidak
@@ -188,31 +180,7 @@ export async function uploadClassMaterial(
   }
 }
 
-/**
- * Ekstraksi dijalankan setelah objek aman tersimpan. Kegagalannya tidak boleh
- * membatalkan unggahan yang sudah berhasil, sehingga bahan tetap dapat diunduh
- * meski teksnya belum terbaca. Berkas biner sengaja dibiarkan `pending`.
- */
-async function runInlineExtraction(
-  resourceId: string,
-  mimeType: string,
-  bytes: Uint8Array,
-): Promise<ExtractionStatus> {
-  if (!isInlineExtractable(mimeType)) return "pending";
-
-  const text = decodeUtf8Text(bytes);
-
-  try {
-    await recordExtractionOutcome(
-      resourceId,
-      text === null ? { status: "failed" } : { status: "succeeded", text },
-    );
-    return text === null ? "failed" : "succeeded";
-  } catch {
-    return "pending";
-  }
-}
-
+/** Objek yatim mustahil karena objek ditulis setelah barisnya ada. */
 async function discardPartialUpload(
   classId: string,
   resourceId: string,

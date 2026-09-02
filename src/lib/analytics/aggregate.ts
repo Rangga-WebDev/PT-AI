@@ -17,9 +17,19 @@ export interface DimensionProgressRow {
   target: number;
   measurementCount: number;
   measuredAt: string;
+  measurementSource: DimensionMeasurement["measurementSource"];
 }
 
 export const DEFAULT_MASTERY_TARGET = 75;
+
+export const MEASUREMENT_SOURCE_LABEL: Record<
+  DimensionMeasurement["measurementSource"],
+  string
+> = {
+  rubric: "penilaian rubrik",
+  pretest: "pretest",
+  posttest: "posttest",
+};
 
 const DIMENSION_ORDER: CtDimension[] = [
   "interpretation",
@@ -33,6 +43,8 @@ const DIMENSION_ORDER: CtDimension[] = [
 /**
  * Hanya dimensi yang benar-benar pernah diukur yang dikembalikan. Dimensi tanpa
  * pengukuran sengaja tidak diisi 0, karena "belum diukur" bukan "nilai nol".
+ * Perbandingan dengan pengukuran sebelumnya dibatasi pada sumber yang sama:
+ * rubrik aktivitas dan instrumen pretest/posttest bukan skala yang setara.
  */
 export function summarizeDimensions(
   measurements: DimensionMeasurement[],
@@ -56,7 +68,11 @@ export function summarizeDimensions(
       (a, b) => Date.parse(a.measuredAt) - Date.parse(b.measuredAt),
     );
     const latest = sorted[sorted.length - 1]!;
-    const previous = sorted.length > 1 ? sorted[sorted.length - 2]! : null;
+    const sameSource = sorted.filter(
+      (item) => item.measurementSource === latest.measurementSource,
+    );
+    const previous =
+      sameSource.length > 1 ? sameSource[sameSource.length - 2]! : null;
 
     rows.push({
       dimension,
@@ -64,8 +80,9 @@ export function summarizeDimensions(
       score: latest.score,
       previousScore: previous?.score ?? null,
       target,
-      measurementCount: sorted.length,
+      measurementCount: sameSource.length,
       measuredAt: latest.measuredAt,
+      measurementSource: latest.measurementSource,
     });
   }
 

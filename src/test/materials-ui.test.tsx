@@ -13,6 +13,7 @@ const updateMaterialAction = vi.fn();
 const setMaterialPublicationAction = vi.fn();
 const deleteMaterialAction = vi.fn();
 const requestMaterialDownloadAction = vi.fn();
+const extractMaterialAction = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh }),
@@ -31,6 +32,7 @@ vi.mock("@/actions/courses/materials", () => ({
     deleteMaterialAction(state, data),
   requestMaterialDownloadAction: (id: string) =>
     requestMaterialDownloadAction(id),
+  extractMaterialAction: (id: string) => extractMaterialAction(id),
 }));
 
 const { MaterialsWorkspace } =
@@ -82,6 +84,7 @@ beforeEach(() => {
       expiresInSeconds: 300,
     },
   });
+  extractMaterialAction.mockResolvedValue({ ok: true, message: "terbaca" });
   vi.stubGlobal("fetch", vi.fn());
   vi.stubGlobal("open", vi.fn());
 });
@@ -390,7 +393,8 @@ describe("dokumen awal dan CTA AI", () => {
     expect(screen.getByRole("option", { name: "RPS" })).toBeInTheDocument();
   });
 
-  it("menyebut status pembacaan setelah dokumen awal terunggah", async () => {
+  // Unggahan meninggalkan status `pending`; pembacaan diminta terpisah oleh UI.
+  it("membaca teks dokumen sebagai permintaan tersendiri setelah unggah", async () => {
     const user = userEvent.setup();
     vi.stubGlobal(
       "fetch",
@@ -415,7 +419,45 @@ describe("dokumen awal dan CTA AI", () => {
     );
     await user.click(screen.getByRole("button", { name: "Unggah dokumen" }));
 
-    expect(await screen.findByText("Menunggu pembacaan")).toBeInTheDocument();
+    expect(await screen.findByText("Teks siap")).toBeInTheDocument();
+    expect(extractMaterialAction).toHaveBeenCalledWith(
+      "44444444-4444-4444-8444-444444444444",
+    );
+    expect(
+      screen.queryByText(/belum dapat dijadikan rujukan/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("menyatakan kegagalan pembacaan apa adanya", async () => {
+    const user = userEvent.setup();
+    extractMaterialAction.mockResolvedValue({
+      ok: false,
+      error: "Teks tidak ditemukan pada PDF.",
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          resourceId: "44444444-4444-4444-8444-444444444444",
+          extractionStatus: "pending",
+        }),
+      }),
+    );
+
+    render(<MaterialsWorkspace classId={CLASS_ID} materials={[]} />);
+    await user.click(
+      screen.getAllByRole("button", { name: "Unggah RPS / CPMK" })[0]!,
+    );
+    await user.type(screen.getByLabelText("Judul"), "RPS 2026");
+    await user.upload(
+      screen.getByLabelText("Berkas"),
+      new File(["%PDF-1.7"], "rps.pdf", { type: "application/pdf" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Unggah dokumen" }));
+
+    expect(await screen.findByText("Pembacaan gagal")).toBeInTheDocument();
     expect(
       screen.getByText(/belum dapat dijadikan rujukan/i),
     ).toBeInTheDocument();

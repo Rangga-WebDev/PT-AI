@@ -66,6 +66,28 @@ export async function removeMaterialObject(params: {
     .remove([materialStorageKey(params.classId, params.resourceId)]);
 }
 
+/**
+ * Kunci objek berasal dari baris basis data yang sudah diotorisasi, bukan dari
+ * permintaan. Bucket tetap tertutup bagi klien; hanya server yang membacanya.
+ */
+export async function readMaterialObject(
+  storagePath: string,
+): Promise<Uint8Array> {
+  const admin = createAdminClient();
+
+  const { data, error } = await admin.storage
+    .from(MATERIALS_BUCKET)
+    .download(storagePath);
+
+  if (error || !data) {
+    throw new StorageError(
+      `readMaterialObject: ${error?.message ?? "objek kosong"}`,
+    );
+  }
+
+  return new Uint8Array(await data.arrayBuffer());
+}
+
 export interface SignedMaterialDownload {
   url: string;
   filename: string;

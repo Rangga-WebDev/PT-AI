@@ -23,6 +23,8 @@ import {
 import type { FormState } from "@/actions/administration/accounts";
 import type { QuickSetupDraftView } from "@/server/repositories/ai-drafts";
 
+import { ApplyPanel } from "./apply-panel";
+
 const DRAFT_STATUS_LABEL = {
   draft: "Draf — belum diterapkan ke kelas",
   approved: "Disetujui — belum diterapkan ke kelas",
@@ -455,16 +457,17 @@ export function DraftReview({
                 confirmMessage="Buang draf ini? Tindakan ini tidak dapat dibatalkan."
               />
             </>
+          ) : view.status === "approved" ? (
+            <ApplyPanel draftId={view.id} classId={classId} />
           ) : (
-            <p className="text-sm text-subtle">
-              Draf ini sudah ditinjau sehingga isinya dibekukan.
-            </p>
+            <p className="text-sm text-subtle">Draf ini sudah dibuang.</p>
           )}
         </div>
 
         <p className="text-xs text-subtle">
-          Menyetujui draf belum membuat modul, unit, maupun aktivitas apa pun di
-          kelas.
+          {editable
+            ? "Menyetujui draf belum membuat modul, unit, maupun aktivitas apa pun di kelas."
+            : "Penerapan hanya menambahkan pertemuan yang belum ada. Isi yang sudah Anda buat tidak pernah ditimpa."}
         </p>
       </div>
     </div>

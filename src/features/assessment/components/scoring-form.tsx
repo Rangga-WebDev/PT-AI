@@ -12,11 +12,11 @@ import {
 import { recordBranchingDecisionAction } from "@/actions/assessment/branching";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { isRubricComplete, scoreRubric } from "@/lib/assessment/rubric-scoring";
 import { DIMENSION_LABEL, type CtDimension } from "@/lib/constants/stages";
-import { weightedRubricScore } from "@/lib/mastery/access";
+import { AiReviewPanel } from "./ai-review-panel";
 
 const selectClass =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
@@ -38,8 +38,9 @@ interface Criterion {
   id: string;
   code: string;
   description: string;
-  dimension: string;
+  dimension: CtDimension;
   weight: number;
+  levels: { label: string; descriptor: string; score: number }[];
 }
 
 interface ScoringFormProps {
@@ -49,6 +50,12 @@ interface ScoringFormProps {
   criteria: Criterion[];
   existingMastery: { id: string; outcome: string; isFinal: boolean } | null;
   errorCategories: { id: string; name: string }[];
+  /**
+   * Asisten AI dirender dari dalam formulir, bukan disuntikkan dari server:
+   * ia hanya boleh mengusulkan ke state nilai milik formulir ini, sehingga
+   * yang menekan simpan tetap dosen.
+   */
+  aiReview?: { attemptId: string; hasRubric: boolean } | undefined;
 }
 
 export function ScoringForm({
@@ -58,6 +65,7 @@ export function ScoringForm({
   criteria,
   existingMastery,
   errorCategories,
+  aiReview,
 }: ScoringFormProps) {
   const router = useRouter();
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -74,16 +82,12 @@ export function ScoringForm({
     useState<keyof typeof OUTCOME_LABEL>("met");
   const [overrideReason, setOverrideReason] = useState("");
 
-  const preview =
-    criteria.length > 0
-      ? weightedRubricScore(
-          criteria.map((criterion) => ({
-            weight: criterion.weight,
-            score: scores[criterion.id] ?? 0,
-            maxScore: 100,
-          })),
-        )
-      : null;
+  const rubricComplete = criteria.length > 0 && isRubricComplete(criteria);
+  const computed = rubricComplete ? scoreRubric(criteria, scores) : null;
+  const preview = computed?.ok ? computed.data.score : null;
+  const allCriteriaScored = criteria.every(
+    (criterion) => scores[criterion.id] !== undefined,
+  );
 
   function run(operation: () => Promise<{ ok?: boolean; error?: string }>) {
     setError(null);
@@ -99,6 +103,17 @@ export function ScoringForm({
 
   return (
     <div className="flex flex-col gap-6">
+      {aiReview ? (
+        <AiReviewPanel
+          attemptId={aiReview.attemptId}
+          hasRubric={aiReview.hasRubric}
+          applyScore={(criterionId, score) =>
+            setScores((current) => ({ ...current, [criterionId]: score }))
+          }
+          applyFeedback={(text) => setComment(text)}
+        />
+      ) : null}
+
       <section
         aria-labelledby="penilaian-heading"
         data-slot="scoring-form"
@@ -111,11 +126,6 @@ export function ScoringForm({
           >
             Penilaian rubrik
           </h3>
-          {preview !== null ? (
-            <StatusBadge status="info" withDot={false}>
-              Skor berbobot: {preview}
-            </StatusBadge>
-          ) : null}
         </div>
 
         {criteria.length === 0 ? (
@@ -123,43 +133,98 @@ export function ScoringForm({
             Aktivitas ini belum memiliki rubrik. Anda tetap dapat menetapkan
             hasil ketuntasan beserta catatannya.
           </p>
+        ) : !rubricComplete ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            Rubrik belum lengkap dan belum dapat digunakan untuk penilaian.
+            Lengkapi kriteria beserta levelnya terlebih dahulu.
+          </p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {criteria.map((criterion) => (
-              <li
-                key={criterion.id}
-                className="flex flex-wrap items-end justify-between gap-3 rounded-lg border border-border p-3"
+          <>
+            <ul className="flex flex-col gap-5">
+              {criteria.map((criterion) => (
+                <li
+                  key={criterion.id}
+                  className="flex flex-col gap-2.5 border-t border-border pt-5 first:border-t-0 first:pt-0"
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <span className="text-sm font-medium text-foreground">
+                      {DIMENSION_LABEL[criterion.dimension]}
+                    </span>
+                    <span className="font-mono text-xs text-subtle">
+                      {criterion.code} · bobot {criterion.weight}
+                    </span>
+                  </div>
+                  <p className="max-w-prose text-sm text-muted-foreground">
+                    {criterion.description}
+                  </p>
+
+                  <fieldset className="flex flex-col gap-1.5">
+                    <legend className="sr-only">
+                      Level {DIMENSION_LABEL[criterion.dimension]}
+                    </legend>
+                    {criterion.levels.map((level) => {
+                      const checked = scores[criterion.id] === level.score;
+                      return (
+                        <label
+                          key={level.score}
+                          htmlFor={`level-${criterion.id}-${level.score}`}
+                          className={`flex cursor-pointer gap-2.5 rounded-lg border px-3 py-2 ${
+                            checked
+                              ? "border-primary/60 bg-primary/8"
+                              : "border-border"
+                          }`}
+                        >
+                          <input
+                            id={`level-${criterion.id}-${level.score}`}
+                            type="radio"
+                            name={`criterion-${criterion.id}`}
+                            value={level.score}
+                            checked={checked}
+                            onChange={() =>
+                              setScores((current) => ({
+                                ...current,
+                                [criterion.id]: level.score,
+                              }))
+                            }
+                            className="mt-1 size-3.5 shrink-0 accent-primary"
+                          />
+                          <span className="flex flex-col gap-0.5">
+                            <span className="text-sm text-foreground">
+                              {level.score} · {level.label}
+                            </span>
+                            <span className="text-xs text-subtle">
+                              {level.descriptor}
+                            </span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </fieldset>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex flex-wrap items-end justify-between gap-3 border-t border-border pt-4">
+              <div className="flex flex-col gap-0.5">
+                <span className="font-mono text-xs tracking-widest text-subtle uppercase">
+                  Nilai rubrik
+                </span>
+                <span className="text-xs text-subtle">
+                  Dihitung dari level setiap kriteria dan bobot rubrik.
+                </span>
+              </div>
+              <span
+                data-slot="rubric-score"
+                className="font-heading text-h3 tabular-nums"
               >
-                <div className="flex min-w-0 flex-col gap-0.5">
-                  <span className="text-sm text-foreground">
-                    {criterion.code} · {criterion.description}
-                  </span>
-                  <span className="font-mono text-xs text-subtle">
-                    {DIMENSION_LABEL[criterion.dimension as CtDimension] ??
-                      criterion.dimension}{" "}
-                    · bobot {criterion.weight}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor={`score-${criterion.id}`}>Skor (0–100)</Label>
-                  <Input
-                    id={`score-${criterion.id}`}
-                    type="number"
-                    min={0}
-                    max={100}
-                    className="w-28"
-                    value={scores[criterion.id] ?? ""}
-                    onChange={(event) =>
-                      setScores((current) => ({
-                        ...current,
-                        [criterion.id]: Number(event.target.value),
-                      }))
-                    }
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
+                {preview ?? "—"}
+                <span className="text-sm text-subtle"> / 100</span>
+              </span>
+            </div>
+          </>
         )}
 
         <div className="flex flex-col gap-2">
@@ -191,10 +256,14 @@ export function ScoringForm({
           />
         </div>
 
-        <div>
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             data-slot="submit-assessment"
-            disabled={isPending || comment.trim().length < 10}
+            disabled={
+              isPending ||
+              comment.trim().length < 10 ||
+              (criteria.length > 0 && (!rubricComplete || !allCriteriaScored))
+            }
             onClick={() =>
               run(() =>
                 submitMasteryAssessmentAction({
@@ -210,6 +279,11 @@ export function ScoringForm({
           >
             Simpan penilaian
           </Button>
+          {rubricComplete && !allCriteriaScored ? (
+            <span className="text-xs text-subtle">
+              Pilih level untuk setiap kriteria sebelum menyimpan.
+            </span>
+          ) : null}
         </div>
       </section>
 

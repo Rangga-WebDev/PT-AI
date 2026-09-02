@@ -3557,6 +3557,23 @@ export type Database = {
       class_of_stage: { Args: { p_stage_id: string }; Returns: string };
       current_organization_id: { Args: never; Returns: string };
       current_profile_id: { Args: never; Returns: string };
+      create_lecturer_class: {
+        Args: {
+          p_course_id: string;
+          p_academic_period_id: string;
+          p_code: string;
+          p_capacity?: number | null;
+        };
+        Returns: string;
+      };
+      search_enrollable_students: {
+        Args: { p_class_id: string; p_query: string; p_limit?: number };
+        Returns: { id: string; full_name: string; identifier: string }[];
+      };
+      enroll_student_in_class: {
+        Args: { p_class_id: string; p_student_id: string };
+        Returns: string;
+      };
       export_ai_usage: {
         Args: never;
         Returns: {
