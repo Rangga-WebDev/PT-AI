@@ -2,6 +2,7 @@
 
 import "server-only";
 
+import { redactDatabaseDetail, redactUnexpected } from "@/lib/errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type LearningEventType =
@@ -63,13 +64,13 @@ export async function recordLearningEvent(
     if (error) {
       console.error("[learning_events] gagal mencatat peristiwa", {
         eventType: input.eventType,
-        message: error.message,
+        message: redactDatabaseDetail(error.message),
       });
     }
   } catch (error) {
     console.error("[learning_events] gagal mencatat peristiwa", {
       eventType: input.eventType,
-      message: error instanceof Error ? error.message : String(error),
+      error: redactUnexpected(error),
     });
   }
 }

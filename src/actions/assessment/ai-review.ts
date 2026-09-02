@@ -10,6 +10,10 @@ import {
   requestReviewSuggestion,
   REVIEW_MESSAGE,
 } from "@/server/ai/lecturer-review";
+import {
+  consumeRateLimit,
+  RATE_LIMIT_MESSAGE,
+} from "@/server/services/rate-limit";
 import type { EvidencePacket } from "@/lib/ai/evidence-packet";
 import type { ReviewSuggestion } from "@/lib/ai/review-schema";
 
@@ -42,6 +46,10 @@ export async function requestAiReviewAction(
     const parsed = attemptSchema.safeParse({ attemptId });
     if (!parsed.success) {
       return { ok: false, error: "Pekerjaan tidak valid." };
+    }
+
+    if (!(await consumeRateLimit("ai_review"))) {
+      return { ok: false, error: RATE_LIMIT_MESSAGE.ai_review };
     }
 
     const result = await requestReviewSuggestion(

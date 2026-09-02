@@ -4,11 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { EvidenceCard } from "@/components/cards/evidence-cards";
-import {
-  AnalyticsCard,
-  DimensionBars,
-  InsightCard,
-} from "@/components/cards/insight-cards";
+import { AnalyticsCard, DimensionBars } from "@/components/cards/insight-cards";
 import { HeroLearningCard } from "@/components/cards/learning-cards";
 import { LockedCard } from "@/components/cards/pathway-cards";
 import { BentoGrid } from "@/components/layout/bento-grid";
@@ -28,10 +24,9 @@ export const metadata: Metadata = {
 
 export default async function StudentDashboardPage() {
   const user = await requireStudentAccess();
-  const firstName = user.fullName.split(" ")[0] ?? user.fullName;
 
   const [units, pendingSources, measurements] = await Promise.all([
-    listStudentUnits(),
+    listStudentUnits(undefined, 64),
     listPendingSourcesForStudent(user.id),
     listDimensionMeasurements(user.id),
   ]);
@@ -41,15 +36,15 @@ export default async function StudentDashboardPage() {
   return (
     <PageContainer>
       <PageHeader
-        eyebrow="Beranda mahasiswa"
-        title={`Selamat datang, ${firstName}`}
-        description="Lanjutkan proses berpikir Anda: baca kasus, susun argumen, periksa bukti, lalu revisi berdasarkan alasan."
+        eyebrow="Beranda"
+        title="Lanjutkan belajar"
+        description="Baca kasus, susun argumen, periksa bukti, lalu revisi berdasarkan alasan."
         actions={
           <Link
             href="/app/student/classes"
             className={buttonVariants({ variant: "outline" })}
           >
-            Lihat kelas
+            Kelas saya
           </Link>
         }
       />
@@ -90,21 +85,6 @@ export default async function StudentDashboardPage() {
               <DimensionBars items={dimensions} />
             )}
           </AnalyticsCard>
-
-          <InsightCard
-            className="md:col-span-4 lg:col-span-3"
-            label="Unit terbit"
-            value={String(units.length)}
-            tone="success"
-            description="Unit yang sudah dapat Anda kerjakan."
-          />
-          <InsightCard
-            className="md:col-span-4 lg:col-span-3"
-            label="Sumber perlu diperiksa"
-            value={String(pendingSources.length)}
-            tone="evidence"
-            description="Verifikasi sumber sebelum dipakai sebagai bukti."
-          />
 
           {pendingSources.slice(0, 2).map((source) => (
             <EvidenceCard

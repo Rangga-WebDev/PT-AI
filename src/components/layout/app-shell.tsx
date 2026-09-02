@@ -46,8 +46,6 @@ export function AppShell({
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  const allItems = navSections.flatMap((section) => section.items);
-
   return (
     <TooltipProvider>
       <div className="min-h-svh bg-background">
@@ -81,7 +79,7 @@ export function AppShell({
             {children}
           </main>
         </div>
-        <MobileNavigation items={allItems} currentPath={currentPath} />
+        <MobileNavigation sections={navSections} currentPath={currentPath} />
         <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
           <SheetContent side="left" className="w-72 gap-0 bg-sidebar p-0">
             <SheetHeader className="border-b border-sidebar-border">

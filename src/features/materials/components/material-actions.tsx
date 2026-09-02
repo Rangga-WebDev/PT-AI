@@ -40,22 +40,42 @@ function PublicationButton({
   );
 }
 
+/** Pencabutan menutup akses mahasiswa; satu langkah pemastian sebelum dijalankan. */
 function RevokeButton({ material }: { material: MaterialView }) {
   const [, formAction] = useActionState<FormState, FormData>(
     deleteMaterialAction,
     {},
   );
+  const [confirming, setConfirming] = useState(false);
 
-  return (
-    <form action={formAction}>
-      <input type="hidden" name="id" value={material.id} />
+  if (!confirming) {
+    return (
       <Button
-        type="submit"
+        type="button"
         size="sm"
         variant="ghost"
         className="hover:text-destructive"
+        onClick={() => setConfirming(true)}
       >
         Cabut
+      </Button>
+    );
+  }
+
+  return (
+    <form action={formAction} className="flex items-center gap-1.5">
+      <input type="hidden" name="id" value={material.id} />
+      <span className="text-xs text-muted-foreground">Cabut materi ini?</span>
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        onClick={() => setConfirming(false)}
+      >
+        Batal
+      </Button>
+      <Button type="submit" size="sm" variant="danger">
+        Ya, cabut
       </Button>
     </form>
   );

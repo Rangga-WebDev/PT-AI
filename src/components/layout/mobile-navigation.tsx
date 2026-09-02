@@ -4,22 +4,23 @@
 
 import Link from "next/link";
 
-import { navIcons, type NavItem } from "@/lib/navigation";
+import { navIcons, mobileBarItems, type NavSection } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
 // Bottom navigation mobile (DSN-008): target sentuh minimal 44px.
-// Maksimal 4 item utama; menu lengkap tersedia melalui drawer di Topbar.
+// Berisi tujuan yang paling sering dibuka; menu lengkap tetap tersedia
+// melalui drawer di Topbar.
 
 interface MobileNavigationProps {
-  items: NavItem[];
+  sections: NavSection[];
   currentPath: string;
 }
 
 export function MobileNavigation({
-  items,
+  sections,
   currentPath,
 }: MobileNavigationProps) {
-  const visibleItems = items.slice(0, 4);
+  const visibleItems = mobileBarItems(sections);
 
   return (
     <nav
@@ -42,7 +43,9 @@ export function MobileNavigation({
                 )}
               >
                 <Icon aria-hidden="true" className="size-5" />
-                <span className="max-w-full truncate">{item.label}</span>
+                <span className="max-w-full truncate">
+                  {item.shortLabel ?? item.label}
+                </span>
               </Link>
             </li>
           );

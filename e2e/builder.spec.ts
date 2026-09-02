@@ -10,14 +10,14 @@ async function openBuilder(page: import("@playwright/test").Page) {
     .getByRole("link", { name: /Buka kelas|Lihat kelas/i })
     .first()
     .click();
-  await page.getByRole("link", { name: "Perancang materi" }).click();
+  await page.getByRole("link", { name: "PT-AI", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Perancang materi" }),
+    page.getByRole("heading", { name: "Perancang PT-AI" }),
   ).toBeVisible();
 }
 
-test.describe("Perancang materi dosen", () => {
-  test("menampilkan struktur modul dan unit kelas", async ({ page }) => {
+test.describe("Perancang PT-AI dosen", () => {
+  test("menampilkan struktur pertemuan dan unit kelas", async ({ page }) => {
     await openBuilder(page);
 
     await expect(

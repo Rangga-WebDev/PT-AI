@@ -222,6 +222,8 @@ export interface PendingSourceView extends CaseSourceView {
 /**
  * Sumber pada unit terbit yang belum diverifikasi mahasiswa. RLS sudah
  * membatasi ke kelas yang diikuti, jadi tidak ada penyaringan kelas di sini.
+ * Source pack seluruh kasus diambil sekali; menanyakannya per kasus membuat
+ * jumlah kueri tumbuh sebanyak kasus yang terbit.
  */
 export async function listPendingSourcesForStudent(
   studentId: string,
@@ -239,12 +241,39 @@ export async function listPendingSourcesForStudent(
 
   if (!cases || cases.length === 0) return [];
 
-  const { data: verified } = await supabase
-    .from("source_verifications")
-    .select("source_id")
-    .eq("student_id", studentId);
+  const [{ data: verified }, { data: caseSources }] = await Promise.all([
+    supabase
+      .from("source_verifications")
+      .select("source_id")
+      .eq("student_id", studentId),
+    supabase
+      .from("case_sources")
+      .select(
+        "case_id, sequence, is_required, sources!inner(id, title, publisher, source_type)",
+      )
+      .in(
+        "case_id",
+        cases.map((row) => row.id),
+      )
+      .order("sequence"),
+  ]);
 
   const verifiedIds = new Set((verified ?? []).map((row) => row.source_id));
+
+  const sourcesByCase = new Map<string, CaseSourceView[]>();
+  for (const row of caseSources ?? []) {
+    const list = sourcesByCase.get(row.case_id) ?? [];
+    list.push({
+      sourceId: row.sources.id,
+      title: row.sources.title,
+      publisher: row.sources.publisher,
+      sourceType: row.sources.source_type,
+      isRequired: row.is_required,
+      sequence: row.sequence,
+    });
+    sourcesByCase.set(row.case_id, list);
+  }
+
   const pending: PendingSourceView[] = [];
 
   for (const caseRow of cases) {
@@ -255,7 +284,7 @@ export async function listPendingSourcesForStudent(
 
     if (!activity) continue;
 
-    for (const source of await listCaseSources(caseRow.id)) {
+    for (const source of sourcesByCase.get(caseRow.id) ?? []) {
       if (verifiedIds.has(source.sourceId)) continue;
       pending.push({ ...source, activityId: activity.id });
     }

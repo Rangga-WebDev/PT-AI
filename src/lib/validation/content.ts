@@ -24,7 +24,7 @@ export const moduleSchema = z.object({
 });
 
 export const learningUnitSchema = z.object({
-  moduleId: uuid("Modul"),
+  moduleId: uuid("Pertemuan"),
   title,
   objective: longText("Tujuan pembelajaran"),
   opensAt: z.string().optional(),

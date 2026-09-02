@@ -13,6 +13,7 @@ const removeMaterialObject = vi.fn();
 const recordExtractionOutcome = vi.fn();
 const insert = vi.fn();
 const deleteEq = vi.fn();
+const consumeRateLimit = vi.fn(async () => true);
 
 // Penjaga `server-only` dilumpuhkan hanya di berkas ini. Melonggarkannya lewat
 // alias Vitest akan mencabut penjaga itu dari seluruh proyek.
@@ -42,6 +43,11 @@ vi.mock("@/server/services/material-storage", () => ({
   removeMaterialObject: (args: unknown) => removeMaterialObject(args),
   recordExtractionOutcome: (id: string, outcome: unknown) =>
     recordExtractionOutcome(id, outcome),
+}));
+
+vi.mock("@/server/services/rate-limit", () => ({
+  consumeRateLimit: () => consumeRateLimit(),
+  RATE_LIMIT_MESSAGE: { material_upload: "Terlalu banyak unggahan." },
 }));
 
 const { uploadClassMaterial } =
@@ -88,6 +94,7 @@ beforeEach(() => {
   removeMaterialObject.mockResolvedValue(undefined);
   recordExtractionOutcome.mockResolvedValue(undefined);
   deleteEq.mockResolvedValue({ error: null });
+  consumeRateLimit.mockResolvedValue(true);
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 

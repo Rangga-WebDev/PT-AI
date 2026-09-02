@@ -101,7 +101,7 @@ export async function createModuleAction(
     if (error) return fail(error);
 
     revalidatePath(`/app/lecturer/classes/${parsed.data.classId}/builder`);
-    return { ok: true, message: "Modul berhasil ditambahkan." };
+    return { ok: true, message: "Pertemuan berhasil ditambahkan." };
   } catch (error) {
     return fail(error);
   }

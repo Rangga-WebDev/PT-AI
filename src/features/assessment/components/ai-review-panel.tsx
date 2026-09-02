@@ -61,7 +61,7 @@ export function AiReviewPanel({
   return (
     <section
       aria-labelledby="ai-review-heading"
-      className="flex flex-col gap-4 rounded-xl border border-ai/35 bg-ai/6 p-5"
+      className="flex flex-col gap-4 border-l-2 border-ai/40 py-1 pl-5"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">

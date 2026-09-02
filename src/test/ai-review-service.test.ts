@@ -395,12 +395,44 @@ describe("wewenang nilai akhir", () => {
     expect(row.after["rubricCriteriaIds"]).toContain(CRITERION_ID);
   });
 
-  it("tetap mengembalikan usulan meski pencatatan gagal", async () => {
+  // Jejak harus cukup untuk menjawab: siapa dinilai, pekerjaan apa, oleh
+  // dosen mana, dengan model dan prompt versi berapa.
+  it("mencatat identitas pekerjaan, model, dan versi prompt", async () => {
+    await requestReviewSuggestion(ATTEMPT_ID, "lecturer");
+
+    const row = auditInsert.mock.calls[0]![0] as {
+      after: Record<string, unknown>;
+    };
+    expect(row.after["studentId"]).toBe("student-1");
+    expect(row.after["activityId"]).toBe("activity-1");
+    expect(row.after["classId"]).toBe(CLASS_ID);
+    expect(row.after["lecturerId"]).toBe("lecturer");
+    expect(row.after["model"]).toBeTruthy();
+    expect(row.after["promptVersion"]).toBeTruthy();
+    expect(row.after["at"]).toBeTruthy();
+    expect(row.after["suggestedFeedback"]).toBe(
+      "Perkuat penelusuran bukti pada revisi berikutnya.",
+    );
+  });
+
+  // Usulan yang tampil tanpa jejak membuat keputusan dosen kelak tidak dapat
+  // ditelusuri. Lebih baik gagal terang-terangan.
+  it("menahan usulan ketika pencatatan jejak dilempar", async () => {
     auditInsert.mockRejectedValue(new Error("audit down"));
 
     const result = await requestReviewSuggestion(ATTEMPT_ID, "lecturer");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBe(false);
+    expect(result.ok === false && result.reason).toBe("provenance_failed");
+  });
+
+  it("menahan usulan ketika pencatatan jejak ditolak basis data", async () => {
+    auditInsert.mockResolvedValue({ error: { code: "42501" } });
+
+    const result = await requestReviewSuggestion(ATTEMPT_ID, "lecturer");
+
+    expect(result.ok).toBe(false);
+    expect(result.ok === false && result.reason).toBe("provenance_failed");
   });
 });
 

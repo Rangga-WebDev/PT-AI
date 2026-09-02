@@ -197,7 +197,7 @@ export default async function AttemptReviewPage({
 
           <AnalyticsCard
             title="Refleksi mahasiswa"
-            description="Sembilan unsur wajib (LOCK-PED-011)."
+            description="Sembilan unsur wajib diisi mahasiswa."
           >
             {reflection === null ? (
               <EmptyState description="Mahasiswa belum mengisi refleksi." />

@@ -4,6 +4,10 @@ import { NextResponse } from "next/server";
 
 import { MATERIAL_MAX_BYTES } from "@/lib/validation/materials";
 import {
+  consumeRateLimit,
+  RATE_LIMIT_MESSAGE,
+} from "@/server/services/rate-limit";
+import {
   uploadClassMaterial,
   type UploadFailureReason,
 } from "@/server/services/material-upload";
@@ -42,6 +46,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   if (declaredLength > MAX_REQUEST_BYTES) {
     return reject("Ukuran berkas melebihi 25 MB.", 413);
+  }
+
+  // Pembatas laju dijalankan sebelum body dibaca, dengan alasan yang sama.
+  if (!(await consumeRateLimit("material_upload"))) {
+    return reject(RATE_LIMIT_MESSAGE.material_upload, 429);
   }
 
   let form: FormData;

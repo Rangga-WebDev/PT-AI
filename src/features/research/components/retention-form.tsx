@@ -98,8 +98,8 @@ export function RetentionRuleForm({
         {RETENTION_DOMAINS.filter((item) => item.isAppendOnly)
           .map((item) => item.label.toLowerCase())
           .join(", ")}{" "}
-        — tidak tunduk pada retensi (LOCK-PED-012). Penghapusan data penelitian
-        dilakukan dengan memutus pemetaan identitas peserta.
+        — tidak tunduk pada retensi. Penghapusan data penelitian dilakukan
+        dengan memutus pemetaan identitas peserta.
       </p>
 
       {error ? (

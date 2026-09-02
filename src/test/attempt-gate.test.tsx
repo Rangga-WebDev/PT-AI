@@ -51,9 +51,14 @@ const BASELINE = {
 
 describe("AttemptGate — attempt-first (LOCK-PED-004)", () => {
   it("mengunci umpan balik AI sebelum respons awal tersimpan", () => {
-    render(<AttemptGate {...BASE_PROPS} baseline={null} />);
+    const { container } = render(
+      <AttemptGate {...BASE_PROPS} baseline={null} />,
+    );
 
-    expect(screen.getByText("Bantuan AI terkunci")).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="ai-locked"]')).not.toBeNull();
+    expect(
+      screen.getByText(/Simpan respons awal Anda terlebih dahulu/),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Umpan balik AI")).not.toBeInTheDocument();
   });
 
@@ -84,11 +89,13 @@ describe("AttemptGate — attempt-first (LOCK-PED-004)", () => {
   });
 
   it("membuka umpan balik AI ketika baseline sudah ada", () => {
-    render(<AttemptGate {...BASE_PROPS} baseline={BASELINE} />);
+    const { container } = render(
+      <AttemptGate {...BASE_PROPS} baseline={BASELINE} />,
+    );
 
     expect(screen.getByText("Umpan balik AI")).toBeInTheDocument();
     expect(screen.getByText("Batas peran AI")).toBeInTheDocument();
-    expect(screen.queryByText("Bantuan AI terkunci")).not.toBeInTheDocument();
+    expect(container.querySelector('[data-slot="ai-locked"]')).toBeNull();
   });
 
   it("menampilkan baseline sebagai teks permanen tanpa editor", () => {

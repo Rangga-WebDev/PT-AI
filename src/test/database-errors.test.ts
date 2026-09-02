@@ -158,7 +158,7 @@ describe("kerahasiaan pesan publik", () => {
 });
 
 describe("pencatatan sisi server", () => {
-  it("mencatat kind, sqlstate, operasi, dan detail asli", () => {
+  it("mencatat sebabnya tanpa nilai kolom yang memicunya", () => {
     const spy = vi.spyOn(console, "error");
     toDatabaseError(pgError("23503"), "recordMeasurement");
 
@@ -168,8 +168,11 @@ describe("pencatatan sisi server", () => {
         kind: "foreign_key_violation",
         sqlstate: "23503",
         operation: "recordMeasurement",
-        details: "Key (email)=(mahasiswa@kampus.ac.id) already exists.",
       }),
+    );
+
+    expect(JSON.stringify(spy.mock.calls)).not.toContain(
+      "mahasiswa@kampus.ac.id",
     );
   });
 

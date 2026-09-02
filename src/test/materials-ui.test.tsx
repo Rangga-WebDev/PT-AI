@@ -320,11 +320,14 @@ describe("aksi pada bahan", () => {
     expect(data.get("status")).toBe("draft");
   });
 
-  it("mencabut bahan lewat Server Action", async () => {
+  it("mencabut bahan lewat Server Action setelah dipastikan", async () => {
     const user = userEvent.setup();
     render(<MaterialsWorkspace classId={CLASS_ID} materials={[material()]} />);
 
     await user.click(screen.getAllByRole("button", { name: "Cabut" })[0]!);
+    expect(deleteMaterialAction).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Ya, cabut" }));
 
     await waitFor(() => expect(deleteMaterialAction).toHaveBeenCalled());
   });

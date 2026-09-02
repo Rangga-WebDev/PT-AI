@@ -65,6 +65,7 @@ export default async function LecturerClassesPage() {
               item={item}
               href={`/app/lecturer/classes/${item.id}`}
               showStatus
+              showStudentCount
             />
           ))}
         </div>

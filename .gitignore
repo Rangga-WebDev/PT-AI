@@ -50,3 +50,4 @@ next-env.d.ts
 
 # sumber referensi penelitian: simpan versi .md, bukan biner
 *.docx
+backup/

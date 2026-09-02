@@ -54,7 +54,7 @@ export default async function ClassAnalyticsPage({
     <PageContainer>
       <PageHeader
         eyebrow={`${classItem.courseName} · ${classItem.code}`}
-        title="Analitik kelas"
+        title="Progres kelas"
         description="Ringkasan proses, bukan penilaian akhir. Angka di sini menggambarkan apa yang dikerjakan mahasiswa, sedangkan mutu penalaran tetap Anda yang menilai."
       />
 

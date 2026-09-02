@@ -10,6 +10,7 @@ const requireLecturerOfClass = vi.fn();
 const generateQuickSetupDraft = vi.fn();
 const insert = vi.fn();
 const update = vi.fn();
+const consumeRateLimit = vi.fn(async () => true);
 const touchedTables: string[] = [];
 
 vi.mock("server-only", () => ({}));
@@ -18,6 +19,11 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 vi.mock("@/lib/supabase/auth", () => ({
   requireLecturerOfClass: (classId: string) => requireLecturerOfClass(classId),
+}));
+
+vi.mock("@/server/services/rate-limit", () => ({
+  consumeRateLimit: () => consumeRateLimit(),
+  RATE_LIMIT_MESSAGE: { quick_setup: "Terlalu banyak penyusunan draf." },
 }));
 
 vi.mock("@/server/ai/quick-setup", async () => {
@@ -100,6 +106,7 @@ function form(extra: Record<string, string> = {}): FormData {
 beforeEach(() => {
   vi.clearAllMocks();
   touchedTables.length = 0;
+  consumeRateLimit.mockResolvedValue(true);
   requireLecturerOfClass.mockResolvedValue({ id: "lecturer" });
   generateQuickSetupDraft.mockResolvedValue({
     ok: true,

@@ -75,12 +75,12 @@ export function ActivityRubricForm({
 
 export function CreateModuleForm({ classId }: { classId: string }) {
   return (
-    <ActionForm action={createModuleAction} submitLabel="Tambah modul">
+    <ActionForm action={createModuleAction} submitLabel="Tambah pertemuan">
       {(state) => (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <input type="hidden" name="classId" value={classId} />
           <div className="flex flex-col gap-2">
-            <Label htmlFor="module-title">Judul modul</Label>
+            <Label htmlFor="module-title">Judul pertemuan</Label>
             <Input id="module-title" name="title" required />
             <FieldError messages={state.fieldErrors?.["title"]} />
           </div>
@@ -105,7 +105,7 @@ export function CreateUnitForm({
       {(state) => (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="unit-module">Modul induk</Label>
+            <Label htmlFor="unit-module">Pertemuan induk</Label>
             <select
               id="unit-module"
               name="moduleId"

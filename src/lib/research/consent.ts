@@ -152,7 +152,7 @@ export function validateRetentionRule(
   if (domain.isAppendOnly) {
     return {
       ok: false,
-      error: `${domain.label} adalah jejak permanen (LOCK-PED-012) dan tidak tunduk pada retensi. Penghapusan data penelitian dilakukan dengan memutus pemetaan identitas peserta.`,
+      error: `${domain.label} adalah jejak permanen dan tidak tunduk pada retensi. Penghapusan data penelitian dilakukan dengan memutus pemetaan identitas peserta.`,
     };
   }
 

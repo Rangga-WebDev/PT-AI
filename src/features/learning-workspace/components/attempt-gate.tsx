@@ -2,7 +2,6 @@
 
 "use client";
 
-import { Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -170,22 +169,20 @@ export function AttemptGate({
         <section
           data-slot="ai-locked"
           aria-labelledby="ai-locked-heading"
-          className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-ai/40 bg-ai/[0.05] p-6"
+          className="flex flex-col items-start gap-2 border-l-2 border-ai/40 py-1 pl-4"
         >
-          <span className="inline-flex items-center gap-2 font-mono text-xs tracking-widest text-ai uppercase">
-            <Lock aria-hidden="true" className="size-3.5" />
-            Bantuan AI terkunci
+          <span className="font-mono text-xs tracking-widest text-ai uppercase">
+            Bantuan AI
           </span>
           <h3
             id="ai-locked-heading"
             className="font-heading text-h4 font-semibold"
           >
-            Simpan respons awal untuk membuka umpan balik AI
+            Menyusul setelah respons awal Anda
           </h3>
           <p className="max-w-prose text-sm text-muted-foreground">
-            Anda berpikir lebih dahulu, AI menanggapi kemudian. Aturan ini
-            menjaga agar umpan balik menilai penalaran Anda sendiri, bukan
-            menggantikannya.
+            Simpan respons awal Anda terlebih dahulu. Setelah itu, bantuan AI
+            dapat membantu Anda meninjau pemikiran yang sudah Anda bangun.
           </p>
         </section>
       )}

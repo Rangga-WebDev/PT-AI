@@ -251,7 +251,7 @@ export default async function LearnStagePage({
                               )}
                             </ul>
                           ) : null}
-                          <p className="font-mono text-xs text-subtle">
+                          <p className="text-xs text-subtle">
                             {activity.allowsAi
                               ? `Bantuan AI tersedia: ${activity.allowedAiFunctions
                                   .map((fn) => AI_FUNCTION_LABEL[fn] ?? fn)

@@ -29,7 +29,7 @@ test.describe("Bantuan AI (LOCK-PED-004, 005, 006)", () => {
   }) => {
     await openStage(page);
 
-    await expect(page.getByText("Bantuan AI terkunci")).toBeVisible();
+    await expect(page.locator('[data-slot="ai-locked"]')).toBeVisible();
     await expect(page.locator('[data-slot="ai-feedback-panel"]')).toHaveCount(
       0,
     );

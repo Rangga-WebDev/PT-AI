@@ -222,8 +222,16 @@ export interface StudentUnitSummary {
  * Unit yang terlihat mahasiswa. Penyaringan status dan keanggotaan kelas
  * dilakukan RLS; filter di sini hanya mempersempit, bukan menjadi pengaman.
  */
+/**
+ * Urutan sesungguhnya adalah (urutan pertemuan, urutan unit), dan itu tidak
+ * dapat diminta ke server karena pertemuan berada pada relasi tersemat.
+ * Karena unit paling awal selalu bernomor kecil, mengambil sejumlah unit
+ * bernomor terkecil sudah pasti memuat unit paling awal, sekaligus menahan
+ * payload dan batas baris bawaan PostgREST.
+ */
 export async function listStudentUnits(
   classId?: string,
+  limit = 200,
 ): Promise<StudentUnitSummary[]> {
   const supabase = await createClient();
 
@@ -236,7 +244,9 @@ export async function listStudentUnits(
     )
     .eq("status", "published")
     .eq("modules.status", "published")
-    .is("deleted_at", null);
+    .is("deleted_at", null)
+    .order("sequence")
+    .limit(limit);
 
   if (classId) {
     query = query.eq("modules.class_id", classId);

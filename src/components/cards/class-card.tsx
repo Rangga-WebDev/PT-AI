@@ -20,6 +20,8 @@ interface ClassCardProps {
   item: ClassSummaryView;
   href: string;
   showStatus?: boolean | undefined;
+  /** Jumlah peserta berguna bagi pengelola kelas, bukan bagi pesertanya. */
+  showStudentCount?: boolean | undefined;
   className?: string | undefined;
 }
 
@@ -33,8 +35,13 @@ export function ClassCard({
   item,
   href,
   showStatus = false,
+  showStudentCount = false,
   className,
 }: ClassCardProps) {
+  // Nama kelas sudah memuat nama mata kuliah; menampilkannya dua kali hanya
+  // menambah baris tanpa menambah keterangan.
+  const showCourse = !item.name.startsWith(item.courseName);
+
   return (
     <Card className={cn(className)}>
       <CardHeader>
@@ -42,7 +49,9 @@ export function ClassCard({
           {item.code} · {item.academicPeriod}
         </p>
         <CardTitle>{item.name}</CardTitle>
-        <CardDescription>{item.courseName}</CardDescription>
+        {showCourse ? (
+          <CardDescription>{item.courseName}</CardDescription>
+        ) : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-2 text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-2">
@@ -51,10 +60,12 @@ export function ClassCard({
             ? item.lecturerNames.join(", ")
             : "Belum ada dosen pengampu"}
         </span>
-        <span className="inline-flex items-center gap-2">
-          <Users aria-hidden="true" className="size-4 text-subtle" />
-          {item.studentCount} mahasiswa
-        </span>
+        {showStudentCount ? (
+          <span className="inline-flex items-center gap-2">
+            <Users aria-hidden="true" className="size-4 text-subtle" />
+            {item.studentCount} mahasiswa
+          </span>
+        ) : null}
         {showStatus ? (
           <StatusBadge
             status={item.status === "published" ? "published" : "draft"}

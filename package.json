@@ -13,6 +13,9 @@
     "test:e2e": "node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test",
     "test:db": "node --env-file-if-exists=.env.local scripts/run-db-tests.mjs",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/apply-migrations.mjs",
+    "db:backup": "node --env-file-if-exists=.env.local scripts/backup-database.mjs",
+    "db:rebuild": "node --env-file-if-exists=.env.local scripts/rebuild-database.mjs",
+    "db:purge": "node --env-file-if-exists=.env.local scripts/purge-auth-storage.mjs",
     "db:seed": "node --env-file-if-exists=.env.local scripts/run-db-seed.mjs",
     "db:seed:users": "node --env-file-if-exists=.env.local scripts/seed-dev-users.mjs",
     "db:seed:academics": "node --env-file-if-exists=.env.local scripts/seed-dev-academics.mjs",
@@ -23,6 +26,9 @@
     "check:secrets": "node --env-file-if-exists=.env.local scripts/check-client-secrets.mjs",
     "check:headers": "node scripts/check-security-headers.mjs",
     "check:storage": "node --env-file-if-exists=.env.local scripts/verify-material-storage.mjs",
+    "check:schema": "node --env-file-if-exists=.env.local scripts/verify-schema.mjs",
+    "check:clean": "node --env-file-if-exists=.env.local scripts/check-cleanliness.mjs",
+    "check:maintenance": "node --env-file-if-exists=.env.local scripts/verify-maintenance.mjs",
     "docs:guides": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-guides.mjs"
   },
   "dependencies": {

@@ -13,6 +13,7 @@ import {
   type ReviewSuggestion,
 } from "@/lib/ai/review-schema";
 import { isRubricComplete } from "@/lib/assessment/rubric-scoring";
+import { redactUnexpected } from "@/lib/errors/redact";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -37,7 +38,8 @@ export type ReviewFailure =
   | "incomplete_rubric"
   | "provider_error"
   | "invalid_output"
-  | "untraceable_citation";
+  | "untraceable_citation"
+  | "provenance_failed";
 
 export const REVIEW_MESSAGE: Record<ReviewFailure, string> = {
   attempt_not_found: "Pekerjaan mahasiswa tidak ditemukan.",
@@ -52,6 +54,8 @@ export const REVIEW_MESSAGE: Record<ReviewFailure, string> = {
     "Keluaran AI tidak sesuai format yang diizinkan sehingga tidak ditampilkan.",
   untraceable_citation:
     "AI merujuk bukti yang tidak ada pada pekerjaan ini, sehingga hasilnya ditolak.",
+  provenance_failed:
+    "Jejak usulan AI gagal dicatat, sehingga usulannya tidak ditampilkan. Coba lagi beberapa saat.",
 };
 
 export interface ReviewOutcome {
@@ -93,10 +97,14 @@ interface ReflectionShape {
  * Paket dibangun dari repositori yang sama dengan yang dipakai halaman review,
  * bukan dari pengumpulan artefak kedua dengan semantik yang sedikit berbeda.
  */
-async function buildPacket(
-  attemptId: string,
-): Promise<
-  | { ok: true; packet: EvidencePacket; classId: string }
+async function buildPacket(attemptId: string): Promise<
+  | {
+      ok: true;
+      packet: EvidencePacket;
+      classId: string;
+      studentId: string;
+      activityId: string;
+    }
   | { ok: false; reason: ReviewFailure }
 > {
   const review = await getAttemptReview(attemptId);
@@ -220,6 +228,8 @@ async function buildPacket(
   return {
     ok: true,
     classId: review.classId,
+    studentId: review.studentId,
+    activityId: review.activityId,
     packet: {
       attemptId: review.attemptId,
       activityTitle: review.activityTitle,
@@ -292,13 +302,20 @@ export async function requestReviewSuggestion(
     return { ok: false, reason: "untraceable_citation" };
   }
 
-  await recordSuggestion({
+  const recorded = await recordSuggestion({
     attemptId,
     classId: built.classId,
+    studentId: built.studentId,
+    activityId: built.activityId,
     lecturerId,
     packet,
     suggestion: validated.suggestion,
   });
+
+  // Usulan yang tidak terekam berarti keputusan dosen kelak tidak dapat
+  // ditelusuri ke saran yang melatarinya. Untuk penelitian, itu sama buruknya
+  // dengan tidak punya usulan sama sekali.
+  if (!recorded) return { ok: false, reason: "provenance_failed" };
 
   return {
     ok: true,
@@ -316,22 +333,31 @@ export async function requestReviewSuggestion(
  * mahasiswa yang sama dengan pemanggil, dan isinya menjadi sumber
  * `research.v_ai_usage` — variabel penggunaan AI oleh mahasiswa yang justru
  * sedang diteliti. Jejak usulan karena itu ditulis ke `audit_logs`.
+ *
+ * Mengembalikan false bila jejak gagal ditulis, sehingga usulan tidak jadi
+ * ditampilkan.
  */
 async function recordSuggestion(input: {
   attemptId: string;
   classId: string;
+  studentId: string;
+  activityId: string;
   lecturerId: string;
   packet: EvidencePacket;
   suggestion: ReviewSuggestion;
-}): Promise<void> {
+}): Promise<boolean> {
   const entry = {
     at: new Date().toISOString(),
     attemptId: input.attemptId,
     classId: input.classId,
+    studentId: input.studentId,
+    activityId: input.activityId,
+    lecturerId: input.lecturerId,
     model: CHAT_MODEL,
     promptVersion: REVIEW_PROMPT_VERSION,
     evidenceIds: input.packet.artifacts.map((item) => item.id),
     rubricCriteriaIds: input.packet.criteria.map((item) => item.id),
+    suggestedFeedback: input.suggestion.suggestedFeedback,
     suggestion: input.suggestion.criteria.map((item) => ({
       criterionId: item.criterionId,
       suggestedScore: item.suggestedScore,
@@ -341,20 +367,31 @@ async function recordSuggestion(input: {
   };
 
   try {
-    await createAdminClient().from("audit_logs").insert({
+    const { error } = await createAdminClient().from("audit_logs").insert({
       actor_id: input.lecturerId,
+      actor_role: "lecturer",
       action: "ai_review_suggestion",
       subject_table: "attempts",
       subject_id: input.attemptId,
       after: entry,
     });
+
+    if (error) {
+      console.error("[ai] review audit", {
+        at: new Date().toISOString(),
+        attemptId: input.attemptId,
+        sqlstate: error.code ?? null,
+      });
+      return false;
+    }
+
+    return true;
   } catch (error) {
-    // Usulan tetap boleh ditampilkan; kegagalan mencatat bukan alasan menahan
-    // pekerjaan dosen, tetapi harus terlihat di log server.
     console.error("[ai] review audit", {
       at: new Date().toISOString(),
       attemptId: input.attemptId,
-      error: error instanceof Error ? error.message : "unknown",
+      error: redactUnexpected(error),
     });
+    return false;
   }
 }

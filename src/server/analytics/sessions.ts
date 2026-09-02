@@ -7,6 +7,7 @@ import {
   nextActiveSeconds,
   shouldRollover,
 } from "@/lib/analytics/session";
+import { redactDatabaseDetail, redactUnexpected } from "@/lib/errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -77,10 +78,16 @@ export async function heartbeatSession(input: {
       .eq("id", open.id);
 
     if (error) {
-      console.error("[learning_sessions] heartbeat gagal", error.message);
+      console.error(
+        "[learning_sessions] heartbeat gagal",
+        redactDatabaseDetail(error.message),
+      );
     }
   } catch (error) {
-    console.error("[learning_sessions] heartbeat gagal", error);
+    console.error(
+      "[learning_sessions] heartbeat gagal",
+      redactUnexpected(error),
+    );
   }
 }
 
@@ -103,7 +110,10 @@ export async function endSession(input: {
 
     await closeSessionRow(open.id, "explicit", open.last_heartbeat_at);
   } catch (error) {
-    console.error("[learning_sessions] penutupan gagal", error);
+    console.error(
+      "[learning_sessions] penutupan gagal",
+      redactUnexpected(error),
+    );
   }
 }
 
@@ -120,6 +130,9 @@ async function closeSessionRow(
     .eq("id", sessionId);
 
   if (error) {
-    console.error("[learning_sessions] penutupan gagal", error.message);
+    console.error(
+      "[learning_sessions] penutupan gagal",
+      redactDatabaseDetail(error.message),
+    );
   }
 }

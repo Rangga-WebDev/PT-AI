@@ -11,6 +11,10 @@ import {
 } from "@/lib/ai/quick-setup-schema";
 import { toActionError } from "@/lib/errors";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
+import {
+  consumeRateLimit,
+  RATE_LIMIT_MESSAGE,
+} from "@/server/services/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import {
   generateQuickSetupDraft,
@@ -65,6 +69,10 @@ export async function generateQuickSetupDraftAction(
     }
 
     const lecturer = await requireLecturerOfClass(parsed.data.classId);
+
+    if (!(await consumeRateLimit("quick_setup"))) {
+      return { error: RATE_LIMIT_MESSAGE.quick_setup };
+    }
 
     const generation = await generateQuickSetupDraft({
       classId: parsed.data.classId,

@@ -30,7 +30,7 @@ Terpasang pada PHASE 1 (2026-08-05). Nama package: `pt-ai-lms` (npm menolak huru
 | @testing-library/react / jest-dom / user-event                                              | ^16.3.2 / ^7.0.0 / ^14.6.3                           | PHASE 1          | Component testing (LOCK-TECH-024)                        |
 | @playwright/test                                                                            | ^1.62.1                                              | PHASE 1          | E2E (LOCK-TECH-024); browser Chromium terinstal          |
 
-Belum diinstal (menunggu fase yang membutuhkan): `zod`, `zustand`, `@tanstack/react-query`, `@supabase/ssr`, `@supabase/supabase-js`, `react-hook-form`, `openai`.
+Belum diinstal (menunggu fase yang membutuhkan): `zod`, `zustand`, `@tanstack/react-query`, `@supabase/ssr`, `@supabase/supabase-js`, `react-hook-form`.
 
 ## 3. Perintah Pengembangan (Aktif sejak PHASE 1)
 
@@ -76,18 +76,26 @@ Ketiganya membaca kredensial dari `.env.local`: `SUPABASE_DB_PASSWORD` (host dia
 
 File `.env.example` tersedia sejak PHASE 1 (tanpa nilai). **Secret tidak pernah dikommit** — `.gitignore` memblokir `.env*`.
 
-| Variabel                        | Sisi            | Prefix NEXT*PUBLIC*               | Keterangan                                                     |
-| ------------------------------- | --------------- | --------------------------------- | -------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Client + Server | Ya (bukan secret)                 | URL project Supabase                                           |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + Server | Ya (bukan secret, dilindungi RLS) | Anon/publishable key                                           |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Server only     | **DILARANG**                      | Service role — hanya `src/lib/supabase/admin.ts` (server-only) |
-| `OPENAI_API_KEY`                | Server only     | **DILARANG**                      | Hanya AI provider adapter server-only                          |
+| Variabel                        | Sisi            | Prefix NEXT*PUBLIC*               | Keterangan                                                                                          |
+| ------------------------------- | --------------- | --------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Client + Server | Ya (bukan secret)                 | URL project Supabase                                                                                |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + Server | Ya (bukan secret, dilindungi RLS) | Anon/publishable key                                                                                |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Server only     | **DILARANG**                      | Service role — hanya `src/lib/supabase/admin.ts` (server-only)                                      |
+| `GEMINI_API_KEY`                | Server only     | **DILARANG**                      | Hanya dibaca `src/server/ai/provider.ts` (server-only)                                              |
+| `CRON_SECRET`                   | Server only     | **DILARANG**                      | Rahasia yang dikirim Vercel Cron ke `/api/maintenance`; tanpa ini endpoint menolak semua permintaan |
+| `AI_PROVIDER_MODE`              | Server only     | **DILARANG**                      | Diisi `fake` untuk mematikan panggilan Gemini; dipakai E2E agar deterministik dan hemat kuota       |
+| `SUPABASE_DB_PASSWORD`          | Perkakas        | **DILARANG**                      | Hanya untuk skrip database Node; tidak dibaca aplikasi                                              |
+| `DATABASE_URL`                  | Perkakas        | **DILARANG**                      | Alternatif penuh dari `SUPABASE_DB_PASSWORD`                                                        |
+
+Provider AI proyek ini adalah **Google Gemini** (LOCK-TECH-022 rev. CR-001). Tidak ada `OPENAI_API_KEY`; tidak ada kode yang membacanya.
+
+`AI_PROVIDER_MODE` harus disetel pada proses **server**, bukan pada proses Playwright — Server Action membaca variabel itu di sisi server.
 
 Aturan (LOCKED — SEC-002):
 
 1. Jangan menyimpan secret di source code.
 2. Jangan menggunakan prefix `NEXT_PUBLIC_` untuk secret.
-3. OpenAI API key hanya tersedia server-side.
+3. API key Gemini hanya tersedia server-side.
 4. Supabase service role hanya tersedia server-side.
 
 ## 5. Alamat Pengembangan
@@ -98,3 +106,11 @@ Aturan (LOCKED — SEC-002):
 
 - Frontend + Next.js server: **Vercel**
 - Database, Auth, Storage, pgvector: **Supabase**
+
+### Cron pemeliharaan
+
+`vercel.json` menjadwalkan `GET /api/maintenance` pada `0 18 * * *`. Vercel Cron memakai UTC, sehingga jadwal itu jatuh sekitar pukul 02.00 WITA (Asia/Makassar).
+
+Sekali sehari, bukan sekali sejam: paket Vercel Hobby hanya mengizinkan satu eksekusi cron per hari per jadwal. Presisinya pun tidak dijamin — Hobby dapat menggeser eksekusi ke mana saja dalam jam yang dijadwalkan.
+
+Otorisasinya memakai `CRON_SECRET`. Vercel mengirimkannya sendiri sebagai `Authorization: Bearer <CRON_SECRET>` bila variabel itu ada di project; endpoint menolak seluruh permintaan bila variabel itu tidak disetel.

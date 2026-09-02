@@ -466,7 +466,7 @@ export function DraftReview({
 
         <p className="text-xs text-subtle">
           {editable
-            ? "Menyetujui draf belum membuat modul, unit, maupun aktivitas apa pun di kelas."
+            ? "Menyetujui draf belum membuat pertemuan, unit, maupun aktivitas apa pun di kelas."
             : "Penerapan hanya menambahkan pertemuan yang belum ada. Isi yang sudah Anda buat tidak pernah ditimpa."}
         </p>
       </div>

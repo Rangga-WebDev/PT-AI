@@ -53,7 +53,9 @@ export async function findBaselineAttemptId(
   return data.id;
 }
 
-export async function createDisposableUnit(): Promise<DisposableUnit> {
+export async function createDisposableUnit(
+  options: { responseSchema?: "free_text" | "cer" } = {},
+): Promise<DisposableUnit> {
   if (!url || !serviceRoleKey) {
     throw new Error(
       "NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY dibutuhkan untuk fixture E2E.",
@@ -179,6 +181,7 @@ export async function createDisposableUnit(): Promise<DisposableUnit> {
       title: "Aktivitas Uji Attempt",
       prompt: "Tuliskan rumusan masalah kebijakan pada kasus tersebut.",
       activity_type: "written_response",
+      response_schema: options.responseSchema ?? "free_text",
       allows_ai: true,
       allowed_ai_functions: ["guiding_questions"],
       sequence: 1,

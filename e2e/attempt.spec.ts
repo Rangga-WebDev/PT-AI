@@ -59,7 +59,7 @@ test.describe("Respons awal mahasiswa (LOCK-PED-004)", () => {
   }) => {
     await openStage(page);
 
-    await expect(page.getByText("Bantuan AI terkunci")).toBeVisible();
+    await expect(page.locator('[data-slot="ai-locked"]')).toBeVisible();
     await expect(page.locator('[data-slot="ai-feedback-panel"]')).toHaveCount(
       0,
     );
@@ -79,7 +79,7 @@ test.describe("Respons awal mahasiswa (LOCK-PED-004)", () => {
 
     await expect(page.getByText(/tidak dapat diubah/i)).toBeVisible();
     await expect(page.locator('[data-slot="ai-feedback-panel"]')).toBeVisible();
-    await expect(page.getByText("Bantuan AI terkunci")).toHaveCount(0);
+    await expect(page.locator('[data-slot="ai-locked"]')).toHaveCount(0);
     await expect(page.getByLabel(/Tuliskan jawaban Anda/i)).toHaveCount(0);
   });
 
@@ -92,14 +92,14 @@ test.describe("Respons awal mahasiswa (LOCK-PED-004)", () => {
     await expect(page.getByLabel(/Tuliskan jawaban Anda/i)).toHaveCount(0);
   });
 
-  test("respons yang terkirim muncul pada halaman progres", async ({ page }) => {
+  test("respons yang terkirim muncul pada halaman progres", async ({
+    page,
+  }) => {
     await page.goto("/app/student/progress");
 
     await expect(
       page.getByRole("heading", { name: "Respons yang sudah Anda kirim" }),
     ).toBeVisible();
-    await expect(
-      page.getByText("Aktivitas Uji Attempt").first(),
-    ).toBeVisible();
+    await expect(page.getByText("Aktivitas Uji Attempt").first()).toBeVisible();
   });
 });

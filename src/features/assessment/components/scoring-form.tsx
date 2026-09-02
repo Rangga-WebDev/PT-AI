@@ -103,17 +103,6 @@ export function ScoringForm({
 
   return (
     <div className="flex flex-col gap-6">
-      {aiReview ? (
-        <AiReviewPanel
-          attemptId={aiReview.attemptId}
-          hasRubric={aiReview.hasRubric}
-          applyScore={(criterionId, score) =>
-            setScores((current) => ({ ...current, [criterionId]: score }))
-          }
-          applyFeedback={(text) => setComment(text)}
-        />
-      ) : null}
-
       <section
         aria-labelledby="penilaian-heading"
         data-slot="scoring-form"
@@ -286,6 +275,17 @@ export function ScoringForm({
           ) : null}
         </div>
       </section>
+
+      {aiReview ? (
+        <AiReviewPanel
+          attemptId={aiReview.attemptId}
+          hasRubric={aiReview.hasRubric}
+          applyScore={(criterionId, score) =>
+            setScores((current) => ({ ...current, [criterionId]: score }))
+          }
+          applyFeedback={(text) => setComment(text)}
+        />
+      ) : null}
 
       <section
         aria-labelledby="branching-heading"

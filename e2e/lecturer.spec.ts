@@ -9,7 +9,7 @@ test.describe("Area dosen", () => {
     await page.goto("/app/lecturer/dashboard");
 
     await expect(
-      page.getByRole("heading", { name: "Antrean review terbaru" }),
+      page.getByRole("heading", { name: "Menunggu dinilai" }),
     ).toBeVisible();
   });
 

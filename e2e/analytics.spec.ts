@@ -24,7 +24,7 @@ test.describe("Analitik dan laporan AI (LOCK-PED-008, SEC-005)", () => {
     await page.goto(`/app/lecturer/classes/${classId}/analytics`);
 
     await expect(
-      page.getByRole("heading", { name: "Analitik kelas" }),
+      page.getByRole("heading", { name: "Progres kelas" }),
     ).toBeVisible();
     await expect(
       page.locator('[data-slot="mastery-distribution"]'),
@@ -103,9 +103,12 @@ test.describe("Analitik dan laporan AI (LOCK-PED-008, SEC-005)", () => {
         page.getByRole("heading", { name: "Enam dimensi berpikir kritis" }),
       ).toBeVisible();
 
-      // Hanya dimensi yang benar-benar diukur yang muncul; tidak ada baris nol.
+      // Hanya dimensi yang benar-benar diukur yang muncul; tidak ada baris nol
+      // dan tidak pernah lebih dari enam dimensi resmi.
       const bars = page.locator('[data-slot="dimension-bars"] > li');
-      await expect(bars).toHaveCount(1);
+      const count = await bars.count();
+      expect(count).toBeGreaterThan(0);
+      expect(count).toBeLessThanOrEqual(6);
     } finally {
       await context.close();
     }

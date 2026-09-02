@@ -51,8 +51,8 @@ export default async function CourseBuilderPage({
     <PageContainer>
       <PageHeader
         eyebrow={`${classItem.code} · ${classItem.academicPeriod}`}
-        title="Perancang materi"
-        description="Susun modul, unit, kasus, dan aktivitas. Unit hanya dapat diterbitkan setelah kasus dan aktivitas tersedia."
+        title="Perancang PT-AI"
+        description="Susun pertemuan, unit berpikir kritis, kasus, dan aktivitasnya. Unit hanya dapat diterbitkan setelah kasus dan aktivitas tersedia."
         actions={
           <Link
             href={`/app/lecturer/classes/${classId}`}
@@ -65,8 +65,8 @@ export default async function CourseBuilderPage({
 
       <div className="flex flex-col gap-5">
         <AnalyticsCard
-          title="Tambah modul"
-          description="Modul mengelompokkan unit pembelajaran dalam satu kelas."
+          title="Tambah pertemuan"
+          description="Pertemuan mengelompokkan unit berpikir kritis dalam satu kelas."
         >
           <CreateModuleForm classId={classId} />
         </AnalyticsCard>
@@ -81,11 +81,14 @@ export default async function CourseBuilderPage({
         ) : null}
 
         <AnalyticsCard
-          title="Struktur materi"
-          description="Daftar modul dan unit beserta status penerbitannya."
+          title="Struktur pembelajaran"
+          description="Daftar pertemuan dan unit beserta status penerbitannya."
         >
           {modules.length === 0 ? (
-            <EmptyState description="Belum ada modul. Tambahkan modul terlebih dahulu." />
+            <EmptyState
+              title="Belum ada pertemuan"
+              description="Tambahkan pertemuan terlebih dahulu, lalu susun unit berpikir kritis di dalamnya."
+            />
           ) : (
             <ol className="flex flex-col gap-4">
               {modules.map((module) => (
@@ -117,7 +120,7 @@ export default async function CourseBuilderPage({
                         label={
                           module.status === "published"
                             ? "Jadikan draf"
-                            : "Terbitkan modul"
+                            : "Terbitkan pertemuan"
                         }
                         fields={{
                           id: module.id,
@@ -132,7 +135,7 @@ export default async function CourseBuilderPage({
 
                   {module.units.length === 0 ? (
                     <p className="text-xs text-subtle">
-                      Belum ada unit pada modul ini.
+                      Belum ada unit pada pertemuan ini.
                     </p>
                   ) : (
                     <ul className="flex flex-col gap-2">

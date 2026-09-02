@@ -8,8 +8,10 @@ import {
   type DatabaseErrorKind,
   type PostgresErrorShape,
 } from "./database";
+import { redactDatabaseDetail, redactUnexpected } from "./redact";
 
 export * from "./database";
+export * from "./redact";
 
 // Domain error aplikasi. Pesan pada properti `publicMessage` boleh ditampilkan
 // ke pengguna; detail teknis lain hanya untuk log server.
@@ -105,9 +107,9 @@ export class DatabaseError extends AppError {
 }
 
 /**
- * Detail teknis hanya ke log server. `details` dan `hint` sengaja ikut karena
- * justru itu yang membuat pelanggaran foreign key dapat didiagnosis; keduanya
- * tidak pernah dikirim ke peramban.
+ * Detail teknis hanya ke log server, dan hanya sebabnya. Nilai kolom yang
+ * memicu galat disamarkan lebih dahulu supaya log tidak menjadi salinan kedua
+ * data pribadi.
  */
 export function logDatabaseError(
   error: DatabaseError,
@@ -118,9 +120,9 @@ export function logDatabaseError(
     kind: error.kind,
     sqlstate: error.sqlstate,
     operation: error.operation,
-    message: error.message,
-    details: raw?.details ?? null,
-    hint: raw?.hint ?? null,
+    message: redactDatabaseDetail(error.message),
+    details: redactDatabaseDetail(raw?.details),
+    hint: redactDatabaseDetail(raw?.hint),
   });
 }
 
@@ -165,7 +167,10 @@ export function toActionError(error: unknown): ActionResult<never> {
     return { ok: false, error: dbError.publicMessage, code: dbError.code };
   }
 
-  console.error("[unexpected]", { at: new Date().toISOString(), error });
+  console.error("[unexpected]", {
+    at: new Date().toISOString(),
+    error: redactUnexpected(error),
+  });
   return {
     ok: false,
     error: "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.",

@@ -3557,6 +3557,18 @@ export type Database = {
       class_of_stage: { Args: { p_stage_id: string }; Returns: string };
       current_organization_id: { Args: never; Returns: string };
       current_profile_id: { Args: never; Returns: string };
+      consume_rate_limit: {
+        Args: {
+          p_action: string;
+          p_limit: number;
+          p_window_seconds: number;
+        };
+        Returns: boolean;
+      };
+      prune_rate_limit_counters: {
+        Args: { p_older_than_hours?: number };
+        Returns: number;
+      };
       create_lecturer_class: {
         Args: {
           p_course_id: string;
