@@ -147,7 +147,10 @@ describe("panduan dosen", () => {
       .filter((block) => block.kind === "limit");
 
     expect(limits.length).toBeGreaterThanOrEqual(3);
-    expect(text).toContain("pendaftaran mandiri oleh mahasiswa");
+    expect(text).toContain("pendaftaran massal lewat berkas");
+    expect(text).toContain(
+      "cocokkan nim dengan daftar resmi sebelum menyetujui",
+    );
   });
 });
 
@@ -175,8 +178,10 @@ describe("panduan mahasiswa", () => {
     expect(text).toContain("bukan menggantikannya");
   });
 
-  it("menyatakan bahwa mahasiswa tidak dapat mendaftar sendiri", () => {
-    expect(text).toContain("tidak dapat mendaftarkan diri sendiri");
+  it("menjelaskan pendaftaran kampus dan pengajuan yang menunggu persetujuan dosen", () => {
+    expect(text).toContain("@student.unismuh.ac.id");
+    expect(text).toContain("ajukan masuk");
+    expect(text).toContain("bukan persetujuan otomatis");
   });
 });
 

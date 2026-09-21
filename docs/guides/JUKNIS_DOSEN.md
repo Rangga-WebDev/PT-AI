@@ -43,7 +43,7 @@ AI berperan sebagai pendamping proses: ia memancing pertanyaan, menunjukkan bukt
 2. Masukkan surel dan kata sandi akun dosen Anda.
 3. Setelah masuk, Anda akan melihat menu Pengajaran di sisi kiri.
 
-> **Catatan.** Akun dibuat oleh administrator kampus. Aplikasi ini tidak menyediakan pendaftaran mandiri.
+> **Catatan.** Akun dosen dibuat oleh administrator kampus. Pendaftaran mandiri hanya tersedia untuk mahasiswa.
 
 
 <a id="membuat-kelas"></a>
@@ -72,6 +72,14 @@ Nama kelas disusun otomatis dari nama mata kuliah dan penanda yang Anda isi, mis
 
 ## 4. Menambahkan mahasiswa
 
+1. Terbitkan kelas, lalu buka Mahasiswa dan salin Kode gabung.
+2. Bagikan kode kepada peserta kelas. Mahasiswa mendaftar akun dan mengajukan kode melalui Kelas saya.
+3. Periksa Pengajuan masuk; cari NIM atau nama untuk mencocokkannya dengan daftar peserta resmi.
+4. Tekan Setujui untuk memasukkan mahasiswa ke kelas. Bila tidak sesuai, tekan Tolak, isi alasan, lalu Kirim penolakan.
+5. Gunakan Semua untuk melihat pengajuan yang sudah diputuskan.
+
+> **Catatan.** Pendaftaran tidak memverifikasi kepemilikan surel. Cocokkan NIM dengan daftar resmi sebelum menyetujui. Keputusan persetujuan tercatat dan tidak dapat dibalik dari daftar pengajuan.
+
 1. Buka kelas Anda, lalu pilih Mahasiswa.
 2. Tekan + Tambah mahasiswa.
 3. Ketik nama atau NIM mahasiswa, minimal dua huruf.
@@ -80,7 +88,7 @@ Nama kelas disusun otomatis dari nama mata kuliah dan penanda yang Anda isi, mis
 
 Hasil pencarian hanya memuat akun mahasiswa di kampus Anda yang belum terdaftar di kelas ini. Mahasiswa yang sudah didaftarkan hilang dari daftar hasil.
 
-> **Belum tersedia.** Pencarian melalui alamat surel, pendaftaran massal lewat berkas, pendaftaran mandiri oleh mahasiswa, dan pengeluaran mahasiswa dari kelas belum tersedia.
+> **Belum tersedia.** Pencarian melalui alamat surel, pendaftaran massal lewat berkas, dan pengeluaran mahasiswa dari kelas belum tersedia. Mahasiswa hanya dapat mengajukan kelas, bukan menyetujui dirinya sendiri.
 
 
 <a id="menyiapkan-kelas"></a>

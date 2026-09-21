@@ -7,12 +7,14 @@ import { EmptyState } from "@/components/shared/states/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import { ClassShell } from "@/features/classes/components/class-shell";
 import { EnrollStudentPanel } from "@/features/classes/components/enroll-student-panel";
+import { EnrollmentInbox } from "@/features/classes/components/enrollment-inbox";
 import { lecturerClassNav } from "@/lib/classes/navigation";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import {
   getClassDetail,
   listClassMembers,
 } from "@/server/repositories/classes";
+import { getClassEnrollmentInbox } from "@/server/repositories/enrollment-requests";
 
 export default async function LecturerClassStudentsPage({
   params,
@@ -21,9 +23,10 @@ export default async function LecturerClassStudentsPage({
 
   await requireLecturerOfClass(classId);
 
-  const [classItem, members] = await Promise.all([
+  const [classItem, members, inbox] = await Promise.all([
     getClassDetail(classId),
     listClassMembers(classId),
+    getClassEnrollmentInbox(classId),
   ]);
 
   if (!classItem) notFound();
@@ -37,6 +40,13 @@ export default async function LecturerClassStudentsPage({
       <h2 className="font-heading text-h3 font-semibold text-foreground">
         Mahasiswa
       </h2>
+
+      <EnrollmentInbox
+        classId={classId}
+        joinCode={inbox.joinCode}
+        requests={inbox.requests}
+        open={classItem.status === "published"}
+      />
 
       <EnrollStudentPanel classId={classId} />
 

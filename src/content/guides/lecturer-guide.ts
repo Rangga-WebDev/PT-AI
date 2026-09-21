@@ -36,7 +36,7 @@ export const lecturerGuide: Guide = {
         },
         {
           kind: "note",
-          text: "Akun dibuat oleh administrator kampus. Aplikasi ini tidak menyediakan pendaftaran mandiri.",
+          text: "Akun dosen dibuat oleh administrator kampus. Pendaftaran mandiri hanya tersedia untuk mahasiswa.",
         },
       ],
     },
@@ -82,6 +82,20 @@ export const lecturerGuide: Guide = {
         {
           kind: "steps",
           items: [
+            "Terbitkan kelas, lalu buka Mahasiswa dan salin Kode gabung.",
+            "Bagikan kode kepada peserta kelas. Mahasiswa mendaftar akun dan mengajukan kode melalui Kelas saya.",
+            "Periksa Pengajuan masuk; cari NIM atau nama untuk mencocokkannya dengan daftar peserta resmi.",
+            "Tekan Setujui untuk memasukkan mahasiswa ke kelas. Bila tidak sesuai, tekan Tolak, isi alasan, lalu Kirim penolakan.",
+            "Gunakan Semua untuk melihat pengajuan yang sudah diputuskan.",
+          ],
+        },
+        {
+          kind: "note",
+          text: "Pendaftaran tidak memverifikasi kepemilikan surel. Cocokkan NIM dengan daftar resmi sebelum menyetujui. Keputusan persetujuan tercatat dan tidak dapat dibalik dari daftar pengajuan.",
+        },
+        {
+          kind: "steps",
+          items: [
             "Buka kelas Anda, lalu pilih Mahasiswa.",
             "Tekan + Tambah mahasiswa.",
             "Ketik nama atau NIM mahasiswa, minimal dua huruf.",
@@ -95,7 +109,7 @@ export const lecturerGuide: Guide = {
         },
         {
           kind: "limit",
-          text: "Pencarian melalui alamat surel, pendaftaran massal lewat berkas, pendaftaran mandiri oleh mahasiswa, dan pengeluaran mahasiswa dari kelas belum tersedia.",
+          text: "Pencarian melalui alamat surel, pendaftaran massal lewat berkas, dan pengeluaran mahasiswa dari kelas belum tersedia. Mahasiswa hanya dapat mengajukan kelas, bukan menyetujui dirinya sendiri.",
         },
       ],
     },

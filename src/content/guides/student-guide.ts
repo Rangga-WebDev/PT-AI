@@ -30,13 +30,15 @@ export const studentGuide: Guide = {
           kind: "steps",
           items: [
             "Buka halaman masuk aplikasi.",
+            "Bila belum memiliki akun, tekan Belum punya akun mahasiswa? Daftar. Isi nama lengkap, NIM, surel @student.unismuh.ac.id, dan kata sandi minimal 12 karakter.",
+            "Setelah akun berhasil dibuat, tekan Masuk ke akun. Pendaftaran tidak mengirim surel konfirmasi.",
             "Masukkan surel dan kata sandi akun mahasiswa Anda.",
             "Setelah masuk, Anda akan melihat menu Belajar di sisi kiri.",
           ],
         },
         {
           kind: "note",
-          text: "Akun dibuat oleh kampus. Aplikasi ini tidak menyediakan pendaftaran mandiri.",
+          text: "Gunakan NIM Anda sendiri. NIM tidak dapat diganti sendiri setelah mendaftar; koreksi identitas dilakukan administrator kampus.",
         },
       ],
     },
@@ -46,15 +48,20 @@ export const studentGuide: Guide = {
       blocks: [
         {
           kind: "steps",
-          items: ["Tekan menu Kelas saya.", "Pilih kelas yang ingin dibuka."],
+          items: [
+            "Tekan menu Kelas saya.",
+            "Masukkan Kode gabung dari dosen, lalu tekan Ajukan masuk.",
+            "Periksa Pengajuan saya untuk melihat status persetujuan atau alasan penolakan.",
+            "Setelah disetujui, pilih Buka kelas.",
+          ],
         },
         {
           kind: "paragraph",
-          text: "Sebuah kelas baru muncul di sini bila dosen sudah menerbitkannya dan nama Anda sudah didaftarkan di kelas itu.",
+          text: "Materi kelas baru terbuka setelah dosen menyetujui pengajuan Anda dan kelas sudah diterbitkan.",
         },
         {
           kind: "limit",
-          text: "Anda tidak dapat mendaftarkan diri sendiri ke sebuah kelas. Pendaftaran dilakukan dosen atau administrator. Bila kelas yang Anda tunggu belum muncul, hubungi dosen pengampu.",
+          text: "Kode gabung hanya mengirim pengajuan, bukan persetujuan otomatis. Jika pengajuan ditolak atau data NIM perlu dikoreksi, hubungi dosen pengampu atau administrator.",
         },
       ],
     },

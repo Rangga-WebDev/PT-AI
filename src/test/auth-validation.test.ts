@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  registerStudentSchema,
   requestPasswordResetSchema,
   signInSchema,
   updatePasswordSchema,
@@ -50,6 +51,59 @@ describe("requestPasswordResetSchema", () => {
     expect(requestPasswordResetSchema.safeParse({ email: "" }).success).toBe(
       false,
     );
+  });
+});
+
+describe("registerStudentSchema", () => {
+  const valid = {
+    fullName: "Mahasiswa Kampus",
+    identifier: "105611234567",
+    email: "mahasiswa@student.unismuh.ac.id",
+    password: "kata-sandi-baru-2026",
+    confirmPassword: "kata-sandi-baru-2026",
+  };
+
+  it("menormalkan surel dan NIM tanpa membuang nol di depan", () => {
+    const result = registerStudentSchema.parse({
+      ...valid,
+      email: "  Mahasiswa@STUDENT.UNISMUH.AC.ID  ",
+      identifier: " 001234567890 ",
+      role: "admin",
+    });
+    expect(result.email).toBe(valid.email);
+    expect(result.identifier).toBe("001234567890");
+    expect(result).not.toHaveProperty("role");
+  });
+
+  it.each([
+    "mahasiswa@gmail.com",
+    "mahasiswa@unismuh.ac.id",
+    "mahasiswa@sub.student.unismuh.ac.id",
+    "mahasiswa@student.unismuh.ac.id.example.com",
+    "mahasiswa@fakestudent.unismuh.ac.id",
+  ])("menolak domain di luar kampus: %s", (address) => {
+    expect(
+      registerStudentSchema.safeParse({ ...valid, email: address }).success,
+    ).toBe(false);
+  });
+
+  it.each(["", "12345", "1056ABC123", "1".repeat(25)])(
+    "menolak NIM tidak valid: %s",
+    (identifier) => {
+      expect(
+        registerStudentSchema.safeParse({ ...valid, identifier }).success,
+      ).toBe(false);
+    },
+  );
+
+  it("menolak kata sandi lemah dan konfirmasi yang berbeda", () => {
+    expect(
+      registerStudentSchema.safeParse({ ...valid, password: "pendek" }).success,
+    ).toBe(false);
+    expect(
+      registerStudentSchema.safeParse({ ...valid, confirmPassword: "berbeda" })
+        .success,
+    ).toBe(false);
   });
 });
 

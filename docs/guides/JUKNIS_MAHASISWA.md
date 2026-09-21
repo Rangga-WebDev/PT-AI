@@ -39,10 +39,12 @@ AI di sini bukan tempat meminta jawaban. Ia menemani proses berpikir Anda: meman
 ## 2. Masuk ke aplikasi
 
 1. Buka halaman masuk aplikasi.
-2. Masukkan surel dan kata sandi akun mahasiswa Anda.
-3. Setelah masuk, Anda akan melihat menu Belajar di sisi kiri.
+2. Bila belum memiliki akun, tekan Belum punya akun mahasiswa? Daftar. Isi nama lengkap, NIM, surel @student.unismuh.ac.id, dan kata sandi minimal 12 karakter.
+3. Setelah akun berhasil dibuat, tekan Masuk ke akun. Pendaftaran tidak mengirim surel konfirmasi.
+4. Masukkan surel dan kata sandi akun mahasiswa Anda.
+5. Setelah masuk, Anda akan melihat menu Belajar di sisi kiri.
 
-> **Catatan.** Akun dibuat oleh kampus. Aplikasi ini tidak menyediakan pendaftaran mandiri.
+> **Catatan.** Gunakan NIM Anda sendiri. NIM tidak dapat diganti sendiri setelah mendaftar; koreksi identitas dilakukan administrator kampus.
 
 
 <a id="kelas-saya"></a>
@@ -50,11 +52,13 @@ AI di sini bukan tempat meminta jawaban. Ia menemani proses berpikir Anda: meman
 ## 3. Membuka Kelas saya
 
 1. Tekan menu Kelas saya.
-2. Pilih kelas yang ingin dibuka.
+2. Masukkan Kode gabung dari dosen, lalu tekan Ajukan masuk.
+3. Periksa Pengajuan saya untuk melihat status persetujuan atau alasan penolakan.
+4. Setelah disetujui, pilih Buka kelas.
 
-Sebuah kelas baru muncul di sini bila dosen sudah menerbitkannya dan nama Anda sudah didaftarkan di kelas itu.
+Materi kelas baru terbuka setelah dosen menyetujui pengajuan Anda dan kelas sudah diterbitkan.
 
-> **Belum tersedia.** Anda tidak dapat mendaftarkan diri sendiri ke sebuah kelas. Pendaftaran dilakukan dosen atau administrator. Bila kelas yang Anda tunggu belum muncul, hubungi dosen pengampu.
+> **Belum tersedia.** Kode gabung hanya mengirim pengajuan, bukan persetujuan otomatis. Jika pengajuan ditolak atau data NIM perlu dikoreksi, hubungi dosen pengampu atau administrator.
 
 
 <a id="ringkasan"></a>

@@ -1546,6 +1546,7 @@ export type Database = {
           created_by: string;
           deleted_at: string | null;
           id: string;
+          join_code: string;
           name: string;
           status: Database["public"]["Enums"]["publication_status"];
           updated_at: string;
@@ -1559,6 +1560,7 @@ export type Database = {
           created_by: string;
           deleted_at?: string | null;
           id?: string;
+          join_code?: string;
           name: string;
           status?: Database["public"]["Enums"]["publication_status"];
           updated_at?: string;
@@ -1572,6 +1574,7 @@ export type Database = {
           created_by?: string;
           deleted_at?: string | null;
           id?: string;
+          join_code?: string;
           name?: string;
           status?: Database["public"]["Enums"]["publication_status"];
           updated_at?: string;
@@ -3533,6 +3536,57 @@ export type Database = {
     };
     Functions: {
       build_unit_snapshot: { Args: { p_unit_id: string }; Returns: Json };
+      consume_registration_limit: {
+        Args: { p_ip_hash: string; p_email_hash: string };
+        Returns: boolean;
+      };
+      register_student_profile: {
+        Args: {
+          p_user_id: string;
+          p_organization_id: string;
+          p_full_name: string;
+          p_identifier: string;
+        };
+        Returns: string;
+      };
+      request_enrollment: {
+        Args: { p_join_code: string };
+        Returns: Json;
+      };
+      decide_enrollment_request: {
+        Args: {
+          p_request_id: string;
+          p_approve: boolean;
+          p_note?: string | null;
+        };
+        Returns: string;
+      };
+      list_my_enrollment_requests: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          class_id: string;
+          class_name: string;
+          course_name: string;
+          status: string;
+          requested_at: string;
+          decided_at: string | null;
+          decision_note: string | null;
+        }[];
+      };
+      list_class_enrollment_requests: {
+        Args: { p_class_id: string };
+        Returns: {
+          id: string;
+          student_id: string;
+          full_name: string;
+          identifier: string;
+          status: string;
+          requested_at: string;
+          decided_at: string | null;
+          decision_note: string | null;
+        }[];
+      };
       unit_snapshot_hash: { Args: { p_snapshot: Json }; Returns: string };
       publish_unit_version: { Args: { p_unit_id: string }; Returns: string };
       resolve_unit_version: {

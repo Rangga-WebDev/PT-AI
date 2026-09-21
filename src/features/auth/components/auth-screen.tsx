@@ -3,12 +3,19 @@
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
 import Image from "next/image";
+import Link from "next/link";
+import type { ReactNode } from "react";
 interface AuthScreenProps {
   redirectTo?: string | undefined;
   errorMessage?: string | undefined;
+  children?: ReactNode;
 }
 
-export function AuthScreen({ redirectTo, errorMessage }: AuthScreenProps) {
+export function AuthScreen({
+  redirectTo,
+  errorMessage,
+  children,
+}: AuthScreenProps) {
   return (
     <main
       data-slot="auth-screen"
@@ -46,7 +53,7 @@ export function AuthScreen({ redirectTo, errorMessage }: AuthScreenProps) {
       <section className="flex flex-1 items-start justify-center px-6 py-10 lg:items-center lg:px-12">
         <div className="flex w-full max-w-sm flex-col gap-7">
           <h2 className="text-center font-heading text-h3 font-semibold">
-            Masuk ke akun Anda
+            {children ? "Daftar mahasiswa" : "Masuk ke akun Anda"}
           </h2>
 
           {errorMessage ? (
@@ -58,11 +65,17 @@ export function AuthScreen({ redirectTo, errorMessage }: AuthScreenProps) {
             </p>
           ) : null}
 
-          <SignInForm redirectTo={redirectTo} />
+          {children ?? <SignInForm redirectTo={redirectTo} />}
 
           <p className="text-center text-sm text-muted-foreground">
-            Akun dibuat oleh administrator institusi. Hubungi administrator bila
-            Anda belum memiliki akses.
+            <Link
+              href={children ? "/login" : "/register"}
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              {children
+                ? "Sudah punya akun? Masuk"
+                : "Belum punya akun mahasiswa? Daftar"}
+            </Link>
           </p>
         </div>
       </section>

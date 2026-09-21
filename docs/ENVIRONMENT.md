@@ -76,16 +76,17 @@ Ketiganya membaca kredensial dari `.env.local`: `SUPABASE_DB_PASSWORD` (host dia
 
 File `.env.example` tersedia sejak PHASE 1 (tanpa nilai). **Secret tidak pernah dikommit** — `.gitignore` memblokir `.env*`.
 
-| Variabel                        | Sisi            | Prefix NEXT*PUBLIC*               | Keterangan                                                                                          |
-| ------------------------------- | --------------- | --------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Client + Server | Ya (bukan secret)                 | URL project Supabase                                                                                |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + Server | Ya (bukan secret, dilindungi RLS) | Anon/publishable key                                                                                |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Server only     | **DILARANG**                      | Service role — hanya `src/lib/supabase/admin.ts` (server-only)                                      |
-| `GEMINI_API_KEY`                | Server only     | **DILARANG**                      | Hanya dibaca `src/server/ai/provider.ts` (server-only)                                              |
-| `CRON_SECRET`                   | Server only     | **DILARANG**                      | Rahasia yang dikirim Vercel Cron ke `/api/maintenance`; tanpa ini endpoint menolak semua permintaan |
-| `AI_PROVIDER_MODE`              | Server only     | **DILARANG**                      | Diisi `fake` untuk mematikan panggilan Gemini; dipakai E2E agar deterministik dan hemat kuota       |
-| `SUPABASE_DB_PASSWORD`          | Perkakas        | **DILARANG**                      | Hanya untuk skrip database Node; tidak dibaca aplikasi                                              |
-| `DATABASE_URL`                  | Perkakas        | **DILARANG**                      | Alternatif penuh dari `SUPABASE_DB_PASSWORD`                                                        |
+| Variabel                               | Sisi            | Prefix NEXT*PUBLIC*               | Keterangan                                                                                          |
+| -------------------------------------- | --------------- | --------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Client + Server | Ya (bukan secret)                 | URL project Supabase                                                                                |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`        | Client + Server | Ya (bukan secret, dilindungi RLS) | Anon/publishable key                                                                                |
+| `SUPABASE_SERVICE_ROLE_KEY`            | Server only     | **DILARANG**                      | Service role — hanya `src/lib/supabase/admin.ts` (server-only)                                      |
+| `GEMINI_API_KEY`                       | Server only     | **DILARANG**                      | Hanya dibaca `src/server/ai/provider.ts` (server-only)                                              |
+| `CRON_SECRET`                          | Server only     | **DILARANG**                      | Rahasia yang dikirim Vercel Cron ke `/api/maintenance`; tanpa ini endpoint menolak semua permintaan |
+| `STUDENT_REGISTRATION_ORGANIZATION_ID` | Server only     | **DILARANG**                      | UUID institusi aktif tujuan pendaftaran mahasiswa; kosong berarti pendaftaran ditutup               |
+| `AI_PROVIDER_MODE`                     | Server only     | **DILARANG**                      | Diisi `fake` untuk mematikan panggilan Gemini; dipakai E2E agar deterministik dan hemat kuota       |
+| `SUPABASE_DB_PASSWORD`                 | Perkakas        | **DILARANG**                      | Hanya untuk skrip database Node; tidak dibaca aplikasi                                              |
+| `DATABASE_URL`                         | Perkakas        | **DILARANG**                      | Alternatif penuh dari `SUPABASE_DB_PASSWORD`                                                        |
 
 Provider AI proyek ini adalah **Google Gemini** (LOCK-TECH-022 rev. CR-001). Tidak ada `OPENAI_API_KEY`; tidak ada kode yang membacanya.
 
@@ -114,3 +115,25 @@ Aturan (LOCKED — SEC-002):
 Sekali sehari, bukan sekali sejam: paket Vercel Hobby hanya mengizinkan satu eksekusi cron per hari per jadwal. Presisinya pun tidak dijamin — Hobby dapat menggeser eksekusi ke mana saja dalam jam yang dijadwalkan.
 
 Otorisasinya memakai `CRON_SECRET`. Vercel mengirimkannya sendiri sebagai `Authorization: Bearer <CRON_SECRET>` bila variabel itu ada di project; endpoint menolak seluruh permintaan bila variabel itu tidak disetel.
+
+### Pendaftaran mahasiswa
+
+`/register` menerima surel dengan domain tepat `student.unismuh.ac.id`, NIM 6-24 angka, dan kata sandi minimal 12 karakter. Peran selalu mahasiswa; dosen dan admin dibuat administrator. `STUDENT_REGISTRATION_ORGANIZATION_ID` harus menunjuk institusi yang aktif, bukan nilai dari formulir pengguna.
+
+Di Supabase Cloud, matikan **Allow new users to sign up** dan **Confirm email**. Perubahan `supabase/config.toml` hanya mengatur lingkungan lokal, tidak otomatis mengubah Cloud. Server memeriksa `/auth/v1/settings` dan menolak pendaftaran bila signup publik masih aktif atau pemeriksaan gagal. Akun dibuat melalui Admin API dengan `email_confirm: true`, tanpa mengirim surel konfirmasi. Ini bukan bukti kepemilikan surel; dosen wajib mencocokkan NIM dengan daftar resmi sebelum menyetujui kelas.
+
+Pembatas pendaftaran menyimpan HMAC IP/surel, bukan alamat mentah: maksimum 180 percobaan per IP/jam (mengakomodasi jaringan kampus bersama) dan 5 per surel/jam. Pada Vercel, IP hanya diambil dari header `x-vercel-forwarded-for` yang diatur platform. Host produksi di luar Vercel ditolak sampai sumber IP tepercaya disediakan. `next dev` memakai bucket lokal bersama.
+
+Setelah akun dibuat, mahasiswa masuk dan mengajukan kode gabung 12 karakter dari dosen melalui **Kelas saya**. Pengajuan tidak membuka materi. Dosen memeriksa NIM di **Kelas > Mahasiswa > Pengajuan masuk**, kemudian menyetujui atau menolak dengan alasan. Kode tidak membuka daftar kelas lain atau pendaftaran lintas institusi.
+
+### Admin pertama
+
+`npm run pilot:bootstrap -- --organization-only` menyiapkan institusi UNISMUH secara idempoten, tanpa akun, kelas, atau data penelitian. Gunakan UUID yang dicetak sebagai `STUDENT_REGISTRATION_ORGANIZATION_ID` di `.env.local` dan Vercel.
+
+Buat akun admin melalui Supabase Dashboard > Authentication > Users > Add user, dengan **Auto Confirm User** aktif. Setelah itu hubungkan UUID Auth ke profil dan peran admin:
+
+```powershell
+npm run pilot:bootstrap -- --admin-user=<UUID-AUTH> --name="Nama Admin" --identifier="Identitas Admin"
+```
+
+Skrip ini tidak menerima kata sandi, tidak membuat akun Auth, menolak organisasi/identifier yang tidak cocok, dan hanya digunakan untuk admin pertama. Admin kemudian membuat akun dosen, fakultas/prodi, periode akademik, dan mata kuliah melalui aplikasi. Jalankan `npm run ai:index` setelah admin tersedia untuk memasang templat prompt AI. Jangan gunakan seed development pada database pilot.

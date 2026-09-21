@@ -5,8 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
 // Kredensial dimuat oleh proses induk (lihat skrip test:e2e), karena
 // process.loadEnvFile() di dalam config tidak terbaca oleh worker Playwright.
 
-const PORT = 3000; // LOCK-TECH-004: pengembangan lokal di localhost:3000
-const BASE_URL = `http://localhost:${PORT}`;
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 
 const STUDENT_STATE = "playwright/.auth/student.json";
 const LECTURER_STATE = "playwright/.auth/lecturer.json";
@@ -105,6 +104,7 @@ export default defineConfig({
         "**/smoke.spec.ts",
         "**/design-system.spec.ts",
         "**/auth-guest.spec.ts",
+        "**/registration.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },
