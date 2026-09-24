@@ -81,6 +81,7 @@ const referenceSchema = z.object({
  * dosen mengira saran AI tertulis di RPS-nya.
  */
 export const quickSetupDraftSchema = z.object({
+  kind: z.never().optional(),
   course: z
     .object({
       title: trimmed(3, 300).optional(),

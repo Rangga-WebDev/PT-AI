@@ -3,6 +3,7 @@
 import "server-only";
 
 import { normalizeVector } from "@/lib/ai/vector";
+import { STAGE_ORDER, STAGE_LABEL } from "@/lib/constants/stages";
 
 import type { AiProvider } from "./types";
 
@@ -98,6 +99,43 @@ function reviewSample(prompt: string) {
  */
 export const fakeProvider: AiProvider = {
   async generateStructured({ prompt }) {
+    if (prompt.includes("=== RENCANA ENAM UNIT ===")) {
+      const sourceExcerpt = (
+        prompt
+          .split("=== ISI DOKUMEN ===")[1]
+          ?.split("=== AKHIR DOKUMEN ===")[0] ?? ""
+      )
+        .trim()
+        .slice(0, 300);
+      return {
+        text: JSON.stringify({
+          kind: "six_unit_plan",
+          warnings: ["Draf dari penyedia uji, bukan model sungguhan."],
+          units: Array.from({ length: 6 }, (_, index) => ({
+            title: `Latihan kewarganegaraan ${index + 1}`,
+            objective:
+              "Menilai bukti dan menyusun argumentasi tentang partisipasi warga.",
+            sourceExcerpt,
+            case: {
+              title: `Diskusi kebijakan ${index + 1}`,
+              context: "Kasus hipotetis untuk pengujian draf pembelajaran.",
+              body: "Warga membahas rencana kebijakan bersama. Sebagian mendukung dan sebagian mempertanyakan dasar buktinya. Telaah materi sumber sebelum menyusun posisi Anda.",
+              keyQuestion:
+                "Bukti apa yang diperlukan untuk menilai usulan kebijakan?",
+            },
+            activities: STAGE_ORDER.map((stageKey) => ({
+              stageKey,
+              title: STAGE_LABEL[stageKey],
+              prompt: `Tuliskan ${STAGE_LABEL[stageKey].toLowerCase()} Anda atas kasus dan periksa alasan serta buktinya.`,
+              responseSchema: stageKey === "explanation" ? "cer" : "free_text",
+            })),
+          })),
+        }),
+        inputTokens: 300,
+        outputTokens: 1200,
+        latencyMs: 1,
+      };
+    }
     if (prompt.includes("=== KARYA MAHASISWA ===")) {
       return {
         text: JSON.stringify(reviewSample(prompt)),

@@ -3,6 +3,14 @@
 import "server-only";
 
 import {
+  unitPlanMetadataSchema,
+  unitPlanSchema,
+  UNIT_PLAN_KIND,
+  type UnitPlanDraftView,
+} from "@/lib/ai/unit-plan";
+import { requireLecturerOfClass } from "@/lib/supabase/auth";
+import { unwrap } from "./shared";
+import {
   quickSetupDraftSchema,
   type QuickSetupDocumentType,
   type QuickSetupDraft,
@@ -121,4 +129,68 @@ export async function getQuickSetupDraft(
     .maybeSingle();
 
   return data ? toDraftView(data as DraftRow) : null;
+}
+
+function toUnitPlanView(row: DraftRow): UnitPlanDraftView | null {
+  const meta = unitPlanMetadataSchema.safeParse(row.instruction);
+  if (!meta.success || !["draft", "approved", "discarded"].includes(row.status))
+    return null;
+  try {
+    const plan = unitPlanSchema.safeParse(JSON.parse(row.output));
+    if (!plan.success) return null;
+    return {
+      id: row.id,
+      status: row.status as UnitPlanDraftView["status"],
+      updatedAt: row.updated_at,
+      createdAt: row.created_at,
+      model: row.model,
+      promptVersion: row.prompt_version,
+      meta: meta.data,
+      plan: plan.data,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function listUnitPlanDrafts(classId: string) {
+  await requireLecturerOfClass(classId);
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase
+      .from("ai_material_drafts")
+      .select(SELECT_COLUMNS)
+      .eq("class_id", classId)
+      .eq("instruction->>kind", UNIT_PLAN_KIND)
+      .neq("status", "discarded")
+      .order("created_at", { ascending: false })
+      .limit(10),
+    "listUnitPlanDrafts",
+  );
+  return rows
+    .map(toUnitPlanView)
+    .filter((row): row is UnitPlanDraftView => row !== null)
+    .map(({ id, status, createdAt, meta }) => ({
+      id,
+      status,
+      createdAt,
+      meta,
+    }));
+}
+
+export async function getUnitPlanDraft(
+  draftId: string,
+  classId: string,
+): Promise<UnitPlanDraftView | null> {
+  await requireLecturerOfClass(classId);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("ai_material_drafts")
+    .select(SELECT_COLUMNS)
+    .eq("id", draftId)
+    .eq("class_id", classId)
+    .eq("instruction->>kind", UNIT_PLAN_KIND)
+    .maybeSingle();
+  if (error) unwrap({ data, error }, "getUnitPlanDraft");
+  return data ? toUnitPlanView(data) : null;
 }

@@ -2,6 +2,13 @@
 
 import "server-only";
 
+import { createHash } from "node:crypto";
+import {
+  hasTraceableUnitExcerpts,
+  unitPlanProviderSchema,
+  unitPlanSchema,
+  type UnitPlan,
+} from "@/lib/ai/unit-plan";
 import {
   quickSetupDraftSchema,
   quickSetupProviderSchema,
@@ -16,6 +23,9 @@ import {
   buildQuickSetupPrompt,
   QUICK_SETUP_PROMPT_VERSION,
   QUICK_SETUP_SYSTEM_INSTRUCTION,
+  buildUnitPlanPrompt,
+  UNIT_PLAN_PROMPT_VERSION,
+  UNIT_PLAN_SYSTEM_INSTRUCTION,
 } from "./quick-setup-prompt";
 
 export type QuickSetupFailure =
@@ -25,6 +35,8 @@ export type QuickSetupFailure =
   | "extraction_failed"
   | "provider_error"
   | "invalid_output"
+  | "module_not_found"
+  | "untraceable_output"
   | "unknown";
 
 export const QUICK_SETUP_MESSAGE: Record<QuickSetupFailure, string> = {
@@ -38,6 +50,9 @@ export const QUICK_SETUP_MESSAGE: Record<QuickSetupFailure, string> = {
     "Layanan AI sedang tidak dapat dihubungi. Coba lagi beberapa saat.",
   invalid_output:
     "Keluaran AI tidak sesuai format yang diizinkan sehingga tidak disimpan. Silakan coba lagi.",
+  module_not_found: "Pertemuan tidak tersedia pada kelas ini.",
+  untraceable_output:
+    "Kutipan pada draf AI tidak sesuai materi sumber. Draf tidak disimpan; coba lagi.",
   unknown: "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.",
 };
 
@@ -69,7 +84,9 @@ export type QuickSetupGeneration =
  * dibaca ulang memakai sesi dosen, sehingga RLS yang memutuskan apakah dokumen
  * itu memang miliknya. Baris yang tidak terlihat berarti tidak berhak.
  */
-async function loadReadableSource(request: QuickSetupRequest) {
+async function loadReadableSource(
+  request: Pick<QuickSetupRequest, "classId" | "resourceId">,
+) {
   const supabase = await createClient();
 
   const { data } = await supabase
@@ -180,4 +197,110 @@ function safeParseGeneration(text: string): QuickSetupDraft | null {
     });
     return null;
   }
+}
+
+export async function generateSixUnitDraft(request: {
+  classId: string;
+  moduleId: string;
+  resourceId: string;
+  instruction?: string | undefined;
+}): Promise<
+  | {
+      ok: true;
+      draft: UnitPlan;
+      provenance: QuickSetupProvenance & {
+        moduleId: string;
+        moduleTitle: string;
+        sourceTextHash: string;
+      };
+    }
+  | { ok: false; reason: QuickSetupFailure }
+> {
+  try {
+    await requireLecturerOfClass(request.classId);
+  } catch {
+    return { ok: false, reason: "forbidden" };
+  }
+
+  const supabase = await createClient();
+  const { data: module } = await supabase
+    .from("modules")
+    .select(
+      "id, title, status, classes(name, status, deleted_at, courses(name))",
+    )
+    .eq("id", request.moduleId)
+    .eq("class_id", request.classId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (
+    !module ||
+    module.status === "archived" ||
+    !module.classes ||
+    module.classes.deleted_at ||
+    module.classes.status === "archived"
+  )
+    return { ok: false, reason: "module_not_found" };
+
+  const source = await loadReadableSource(request);
+  if (!source) return { ok: false, reason: "resource_not_found" };
+  if (
+    source.extraction_status !== "succeeded" ||
+    !source.extracted_text?.trim()
+  ) {
+    return {
+      ok: false,
+      reason:
+        source.extraction_status === "pending"
+          ? "extraction_pending"
+          : "extraction_failed",
+    };
+  }
+  const prompt = buildUnitPlanPrompt({
+    sourceText: source.extracted_text,
+    sourceTitle: source.title,
+    moduleTitle: module.title,
+    courseName: module.classes.courses.name,
+    instruction: request.instruction,
+  });
+  let output: string;
+  try {
+    const generation = await getProvider().generateStructured({
+      systemInstruction: UNIT_PLAN_SYSTEM_INSTRUCTION,
+      prompt: prompt.prompt,
+      schema: unitPlanProviderSchema as never,
+    });
+    output = generation.text;
+  } catch {
+    console.error("[ai] six-unit provider failed");
+    return { ok: false, reason: "provider_error" };
+  }
+  let draft: UnitPlan;
+  try {
+    draft = unitPlanSchema.parse(JSON.parse(output));
+  } catch {
+    return { ok: false, reason: "invalid_output" };
+  }
+  if (!hasTraceableUnitExcerpts(draft, prompt.sourceText))
+    return { ok: false, reason: "untraceable_output" };
+
+  return {
+    ok: true,
+    draft,
+    provenance: {
+      moduleId: module.id,
+      moduleTitle: module.title,
+      resourceId: source.id,
+      resourceTitle: source.title,
+      checksum: source.checksum,
+      extractedAt: source.extracted_at,
+      documentType: "reading",
+      instruction: request.instruction?.trim() || null,
+      model: CHAT_MODEL,
+      promptVersion: UNIT_PLAN_PROMPT_VERSION,
+      truncated: prompt.truncated,
+      sourceTextHash: createHash("sha256")
+        .update(source.extracted_text)
+        .digest("hex"),
+    },
+  };
 }

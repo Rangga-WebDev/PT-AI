@@ -33,7 +33,8 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-const { generateQuickSetupDraft } = await import("@/server/ai/quick-setup");
+const { generateQuickSetupDraft, generateSixUnitDraft } =
+  await import("@/server/ai/quick-setup");
 const { setProvider } = await import("@/server/ai/provider");
 const { quickSetupDraftSchema } = await import("@/lib/ai/quick-setup-schema");
 
@@ -311,5 +312,118 @@ describe("provenance", () => {
       "Diskusi kasus status kewarganegaraan",
     ]);
     expect(meeting.ptaiCandidate).toBe(true);
+  });
+});
+
+describe("generator enam unit PT-AI", () => {
+  const moduleId = "33333333-3333-4333-8333-333333333333";
+  const sixRequest = () => ({ ...request(), moduleId });
+
+  beforeEach(async () => {
+    const { fakeProvider } = await import("@/server/ai/fake-provider");
+    setProvider(fakeProvider);
+    maybeSingle.mockImplementation((table: string) =>
+      table === "modules"
+        ? {
+            data: {
+              id: moduleId,
+              title: "Kewarganegaraan",
+              status: "draft",
+              classes: {
+                name: "Kelas A",
+                status: "published",
+                deleted_at: null,
+                courses: { name: "PKn" },
+              },
+            },
+          }
+        : resource(),
+    );
+  });
+
+  it("menghasilkan enam unit utuh yang berbeda dari draf pertemuan", async () => {
+    const result = await generateSixUnitDraft(sixRequest());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.draft.units).toHaveLength(6);
+    expect(result.draft.units.flatMap((unit) => unit.activities)).toHaveLength(
+      36,
+    );
+    expect(quickSetupDraftSchema.safeParse(result.draft).success).toBe(false);
+    expect(result.provenance.moduleId).toBe(moduleId);
+    expect(result.provenance.sourceTextHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("menolak dosen asing sebelum membaca sumber", async () => {
+    requireLecturerOfClass.mockRejectedValue(new AuthorizationError());
+    expect(await generateSixUnitDraft(sixRequest())).toEqual({
+      ok: false,
+      reason: "forbidden",
+    });
+    expect(maybeSingle).not.toHaveBeenCalled();
+  });
+
+  it("menolak pertemuan di luar kelas", async () => {
+    maybeSingle.mockResolvedValue({ data: null });
+    expect(await generateSixUnitDraft(sixRequest())).toEqual({
+      ok: false,
+      reason: "module_not_found",
+    });
+  });
+
+  it("menolak sumber yang belum terbaca", async () => {
+    const original = maybeSingle.getMockImplementation()!;
+    maybeSingle.mockImplementation((table: string) =>
+      table === "learning_resources"
+        ? resource({ extraction_status: "pending", extracted_text: null })
+        : original(table),
+    );
+    expect(await generateSixUnitDraft(sixRequest())).toEqual({
+      ok: false,
+      reason: "extraction_pending",
+    });
+  });
+
+  it("menolak jumlah unit yang tidak lengkap", async () => {
+    setProvider(
+      stubProvider(
+        JSON.stringify({ kind: "six_unit_plan", units: [], warnings: [] }),
+      ),
+    );
+    expect(await generateSixUnitDraft(sixRequest())).toEqual({
+      ok: false,
+      reason: "invalid_output",
+    });
+  });
+
+  it("menolak kutipan yang tidak berasal dari sumber", async () => {
+    const valid = await generateSixUnitDraft(sixRequest());
+    if (!valid.ok) throw new Error("fixture tidak valid");
+    valid.draft.units[0]!.sourceExcerpt =
+      "Kutipan rekaan yang tidak ada pada isi dokumen.";
+    setProvider(stubProvider(JSON.stringify(valid.draft)));
+    expect(await generateSixUnitDraft(sixRequest())).toEqual({
+      ok: false,
+      reason: "untraceable_output",
+    });
+  });
+
+  it("tidak membocorkan detail penyedia pada log", async () => {
+    setProvider({
+      async generateStructured() {
+        throw new Error("private-key-secret");
+      },
+      async embed() {
+        return [];
+      },
+    });
+    expect(await generateSixUnitDraft(sixRequest())).toEqual({
+      ok: false,
+      reason: "provider_error",
+    });
+    expect(console.error).toHaveBeenCalledExactlyOnceWith(
+      "[ai] six-unit provider failed",
+    );
   });
 });

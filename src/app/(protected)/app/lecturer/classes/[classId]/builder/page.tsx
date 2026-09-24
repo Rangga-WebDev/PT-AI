@@ -8,6 +8,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { UnitPlanLauncher } from "@/features/course-builder/components/unit-plan-launcher";
 import { InlineAction } from "@/features/administration/components/action-form";
 import {
   CreateModuleForm,
@@ -21,6 +22,8 @@ import { PUBLICATION_LABEL } from "@/lib/constants/stages";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import { getClassDetail } from "@/server/repositories/classes";
 import { listModulesWithUnits } from "@/server/repositories/content";
+import { listClassMaterials } from "@/server/repositories/materials";
+import { listUnitPlanDrafts } from "@/server/repositories/ai-drafts";
 
 const UNIT_KIND_LABEL: Record<string, string> = {
   core: "Inti",
@@ -35,9 +38,11 @@ export default async function CourseBuilderPage({
 
   await requireLecturerOfClass(classId);
 
-  const [classItem, modules] = await Promise.all([
+  const [classItem, modules, materials, unitDrafts] = await Promise.all([
     getClassDetail(classId),
     listModulesWithUnits(classId),
+    listClassMaterials(classId),
+    listUnitPlanDrafts(classId),
   ]);
 
   if (!classItem) notFound();
@@ -64,6 +69,59 @@ export default async function CourseBuilderPage({
       />
 
       <div className="flex flex-col gap-5">
+        <UnitPlanLauncher
+          classId={classId}
+          modules={modules
+            .filter((module) => module.status !== "archived")
+            .map((module) => ({
+              id: module.id,
+              label: `${module.sequence}. ${module.title}`,
+            }))}
+          documents={materials
+            .filter((material) => material.extractionStatus === "succeeded")
+            .map((material) => ({ id: material.id, title: material.title }))}
+        />
+        {unitDrafts.length > 0 ? (
+          <section
+            aria-labelledby="unit-drafts-heading"
+            className="flex flex-col gap-3"
+          >
+            <h2
+              id="unit-drafts-heading"
+              className="font-heading text-h4 font-semibold"
+            >
+              Rancangan unit tersimpan
+            </h2>
+            <ul className="divide-y divide-border">
+              {unitDrafts.map((draft) => (
+                <li
+                  key={draft.id}
+                  className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
+                >
+                  <div className="min-w-0">
+                    <p className="wrap-break-word font-medium">
+                      {draft.meta.moduleTitle}
+                    </p>
+                    <p className="wrap-break-word text-muted-foreground">
+                      {draft.meta.resourceTitle} ·{" "}
+                      {draft.status === "approved"
+                        ? "Sudah dibuat"
+                        : "Menunggu tinjauan"}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/app/lecturer/classes/${classId}/builder/drafts/${draft.id}`}
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    {draft.status === "approved"
+                      ? "Lihat rancangan"
+                      : "Tinjau 6 unit"}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         <AnalyticsCard
           title="Tambah pertemuan"
           description="Pertemuan mengelompokkan unit berpikir kritis dalam satu kelas."

@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(43);
 
 create or replace function pg_temp.make_user(p_id uuid, p_email text)
 returns void
@@ -282,6 +282,84 @@ select is(
   0,
   'Penyusunan bahan oleh dosen tidak mencemari ai_interactions'
 );
+
+create function pg_temp.unit_plan() returns jsonb language sql as $$
+  select jsonb_build_object('kind','six_unit_plan','warnings','[]'::jsonb,'units',(
+    select jsonb_agg(jsonb_build_object(
+      'title','Unit AI ' || units.sequence,
+      'objective','Menganalisis bukti dalam partisipasi warga negara.',
+      'sourceExcerpt','Isi RPS yang benar-benar terbaca.',
+      'case',jsonb_build_object('title','Kebijakan publik ' || units.sequence,
+        'context','Kasus hipotetis untuk latihan kelas.',
+        'body','Warga menimbang dasar bukti suatu kebijakan. Mahasiswa memeriksa asumsi sebelum menyimpulkan pendapatnya sendiri.',
+        'keyQuestion','Apa bukti yang diperlukan untuk menilai klaim ini?'),
+      'activities',(
+        select jsonb_agg(jsonb_build_object('stageKey',stage.key,'title','Latihan ' || stage.key,
+          'prompt','Tuliskan penalaran Anda sendiri berdasarkan bukti pada sumber.',
+          'responseSchema','free_text') order by stage.sequence)
+        from (values(1,'interpretation'),(2,'analysis'),(3,'evaluation'),(4,'inference'),(5,'explanation'),(6,'reflection')) stage(sequence,key)
+      )) order by units.sequence) from generate_series(1,6) units(sequence)
+  ));
+$$;
+
+insert into public.modules(id,class_id,title,sequence,status,created_by) values
+('e0000000-cccc-4ccc-8ccc-000000000050','e0000000-cccc-4ccc-8ccc-000000000006','Pertemuan Unit AI',1,'published','e0000003-cccc-4ccc-8ccc-000000000003'),
+('e0000000-cccc-4ccc-8ccc-000000000051','e0000000-cccc-4ccc-8ccc-000000000016','Pertemuan Asing',1,'published','e0000006-cccc-4ccc-8ccc-000000000006');
+insert into public.learning_units(id,module_id,title,objective,sequence,created_by) values
+('e0000000-cccc-4ccc-8ccc-000000000060','e0000000-cccc-4ccc-8ccc-000000000050','Unit lama','Tujuan yang tidak boleh ditimpa.',1,'e0000003-cccc-4ccc-8ccc-000000000003');
+
+create function pg_temp.add_unit_draft(p_id uuid, p_module uuid, p_output jsonb) returns void language sql as $$
+  insert into public.ai_material_drafts(id,class_id,requested_by,source_resource_id,grounding,instruction,output,model,prompt_version)
+  values(p_id,'e0000000-cccc-4ccc-8ccc-000000000006','e0000003-cccc-4ccc-8ccc-000000000003',
+    'e0000000-cccc-4ccc-8ccc-000000000020','source_bound',
+    jsonb_build_object('kind','six_unit_plan','moduleId',p_module,
+      'sourceTextHash',encode(extensions.digest(convert_to('Isi RPS yang benar-benar terbaca.','UTF8'),'sha256'),'hex')),
+    p_output::text,'fake-test',1);
+$$;
+select pg_temp.add_unit_draft('e0000000-cccc-4ccc-8ccc-000000000070','e0000000-cccc-4ccc-8ccc-000000000050',pg_temp.unit_plan());
+select pg_temp.add_unit_draft('e0000000-cccc-4ccc-8ccc-000000000071','e0000000-cccc-4ccc-8ccc-000000000050',jsonb_set(pg_temp.unit_plan(),'{units,5,activities,5,stageKey}','"analysis"'));
+select pg_temp.add_unit_draft('e0000000-cccc-4ccc-8ccc-000000000072','e0000000-cccc-4ccc-8ccc-000000000050',pg_temp.unit_plan() #- '{units,5}');
+select pg_temp.add_unit_draft('e0000000-cccc-4ccc-8ccc-000000000073','e0000000-cccc-4ccc-8ccc-000000000050',pg_temp.unit_plan());
+select pg_temp.add_unit_draft('e0000000-cccc-4ccc-8ccc-000000000074','e0000000-cccc-4ccc-8ccc-000000000051',pg_temp.unit_plan());
+select pg_temp.add_unit_draft('e0000000-cccc-4ccc-8ccc-000000000075','e0000000-cccc-4ccc-8ccc-000000000050',pg_temp.unit_plan());
+update public.ai_material_drafts set instruction = instruction || jsonb_build_object('sourceTextHash', repeat('0',64)) where id='e0000000-cccc-4ccc-8ccc-000000000073';
+update public.ai_material_drafts set status='discarded' where id='e0000000-cccc-4ccc-8ccc-000000000075';
+
+select ok(not has_function_privilege('anon','public.apply_ai_unit_plan(uuid,timestamptz)','execute'),'Anon tidak dapat menerapkan unit AI');
+select pg_temp.act_as('e0000001-cccc-4ccc-8ccc-000000000001');
+select throws_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000070',now())$$,'42501','forbidden','Mahasiswa tidak dapat menerapkan draf');
+select pg_temp.act_as('e0000006-cccc-4ccc-8ccc-000000000006');
+select throws_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000070',now())$$,'42501','forbidden','Dosen kelas lain tidak dapat menerapkan draf');
+select pg_temp.act_as('e0000003-cccc-4ccc-8ccc-000000000003');
+select throws_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000074',now())$$,'23001','module_not_found','Pertemuan lintas kelas ditolak');
+select throws_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000070',now()-interval '1 day')$$,'23001','stale_draft','Tinjauan versi lama ditolak');
+select throws_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000071',now())$$,'22023','invalid_unit_plan','Tahap salah pada unit keenam membatalkan penerapan');
+select is((select count(*)::int from public.learning_units where module_id='e0000000-cccc-4ccc-8ccc-000000000050'),1,'Tidak ada unit parsial setelah kesalahan terakhir');
+select is((select status from public.ai_material_drafts where id='e0000000-cccc-4ccc-8ccc-000000000071'),'draft','Draf gagal tidak dianggap disetujui');
+select pg_temp.act_as_service();
+select is((select count(*)::int from public.audit_logs where subject_id='e0000000-cccc-4ccc-8ccc-000000000071'),0,'Tidak ada audit sukses palsu');
+select pg_temp.act_as('e0000003-cccc-4ccc-8ccc-000000000003');
+select throws_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000072',now())$$,'22023','invalid_unit_plan','Draf berisi lima unit ditolak');
+select throws_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000073',now())$$,'23001','source_changed','Sumber yang berubah tidak diterapkan diam-diam');
+select throws_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000075',now())$$,'23001','not_reviewable','Draf yang dibuang tidak dapat dipakai');
+select lives_ok($$select public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000070',now())$$,'Dosen menyetujui dan membuat enam unit atomik');
+select is((select count(*)::int from public.learning_units where module_id='e0000000-cccc-4ccc-8ccc-000000000050'),7,'Enam unit ditambahkan tanpa menimpa satu unit lama');
+select is((select count(*)::int from public.cases c join public.learning_units u on u.id=c.learning_unit_id where u.module_id='e0000000-cccc-4ccc-8ccc-000000000050'),6,'Setiap unit memiliki satu kasus');
+select is((select count(*)::int from public.learning_stages st join public.learning_units u on u.id=st.learning_unit_id where u.module_id='e0000000-cccc-4ccc-8ccc-000000000050' and u.id<>'e0000000-cccc-4ccc-8ccc-000000000060'),36,'Keenam unit masing-masing mempunyai enam tahap');
+select is((select count(*)::int from public.activities a join public.learning_stages st on st.id=a.learning_stage_id join public.learning_units u on u.id=st.learning_unit_id where u.module_id='e0000000-cccc-4ccc-8ccc-000000000050'),36,'Tersedia 36 aktivitas');
+select is((select count(*)::int from public.learning_units where module_id='e0000000-cccc-4ccc-8ccc-000000000050' and sequence>1 and status='draft'),6,'Semua unit baru berupa draf');
+select is((select count(*)::int from public.activities a join public.learning_stages st on st.id=a.learning_stage_id join public.learning_units u on u.id=st.learning_unit_id where u.module_id='e0000000-cccc-4ccc-8ccc-000000000050' and a.status='draft' and not a.allows_ai and a.requires_attempt_before_ai),36,'Aktivitas tetap draf dengan AI mahasiswa mati dan attempt-first aktif');
+select is((select title from public.learning_units where id='e0000000-cccc-4ccc-8ccc-000000000060'),'Unit lama','Judul unit lama tidak berubah');
+select is(public.apply_ai_unit_plan('e0000000-cccc-4ccc-8ccc-000000000070',now())->>'alreadyApplied','true','Permintaan ulang bersifat idempoten');
+select is((select count(*)::int from public.learning_units where module_id='e0000000-cccc-4ccc-8ccc-000000000050'),7,'Klik ulang tidak menggandakan unit');
+select pg_temp.act_as_service();
+select is((select jsonb_array_length(after->'unitIds') from public.audit_logs where action='ai_unit_plan_applied' and subject_id='e0000000-cccc-4ccc-8ccc-000000000070'),6,'Audit menyimpan identitas enam unit');
+select is((select count(*)::int from public.ai_interactions where student_id='e0000003-cccc-4ccc-8ccc-000000000003'),0,'Pembuatan unit tidak menambah interaksi AI mahasiswa');
+select pg_temp.act_as('e0000001-cccc-4ccc-8ccc-000000000001');
+select is((select count(*)::int from public.learning_units where module_id='e0000000-cccc-4ccc-8ccc-000000000050'),0,'Mahasiswa tidak melihat unit yang belum diterbitkan');
+select pg_temp.act_as('e0000003-cccc-4ccc-8ccc-000000000003');
+select is((select status from public.ai_material_drafts where id='e0000000-cccc-4ccc-8ccc-000000000070'),'approved','Persetujuan dosen tercatat bersama unit');
+select throws_ok($$update public.ai_material_drafts set output='{}' where id='e0000000-cccc-4ccc-8ccc-000000000070'$$,'23001',null,'Draf yang diterapkan tidak bisa diubah maknanya');
 
 select * from finish();
 rollback;

@@ -38,6 +38,13 @@ export async function signIn(
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
+    console.error(
+      `[auth] login gagal ${JSON.stringify({
+        code: error.code ?? null,
+        status: error.status ?? null,
+      })}`,
+    );
+
     // Rate limit bukan informasi sensitif; menyamarkannya sebagai "kata sandi
     // salah" membuat pengguna mengira kredensialnya keliru.
     if (error.status === 429) {

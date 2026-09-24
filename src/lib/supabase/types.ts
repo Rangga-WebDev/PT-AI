@@ -3535,6 +3535,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      apply_ai_unit_plan: {
+        Args: { p_draft_id: string; p_expected_updated_at: string };
+        Returns: Json;
+      };
       build_unit_snapshot: { Args: { p_unit_id: string }; Returns: Json };
       consume_registration_limit: {
         Args: { p_ip_hash: string; p_email_hash: string };

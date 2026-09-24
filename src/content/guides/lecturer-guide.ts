@@ -280,6 +280,20 @@ export const lecturerGuide: Guide = {
           text: "Buka kelas, lalu pilih PT-AI. Setiap pertemuan dapat berisi unit pembelajaran, dan setiap unit memiliki enam tahap berpikir kritis yang urutannya tetap.",
         },
         {
+          kind: "steps",
+          items: [
+            "Untuk menyusun enam unit sekaligus, siapkan satu pertemuan dan materi atau RPS yang sudah terbaca pada kelas tersebut.",
+            "Di Perancang PT-AI, pilih Pertemuan tujuan dan Materi sumber pada bagian Enam unit dengan AI. Isi Fokus tambahan bila diperlukan, lalu tekan Buat 6 unit dengan AI.",
+            "Tinjau tujuan, kutipan sumber, kasus, dan enam aktivitas pada setiap unit. Kasus hipotetis adalah usulan latihan, bukan peristiwa yang dinyatakan benar oleh sumber.",
+            "Sunting bagian yang perlu diperbaiki, lalu tekan Simpan perubahan. Centang Saya sudah meninjau keenam unit dan kasusnya, kemudian tekan Setujui dan buat 6 unit.",
+            "Buka struktur kelas untuk memeriksa keenam unit baru. Lengkapi sumber terkurasi dan rubrik sebelum menerbitkan aktivitas dan unit melalui kendali yang tersedia.",
+          ],
+        },
+        {
+          kind: "note",
+          text: "Satu paket berisi enam unit, enam kasus, dan 36 aktivitas, semuanya dibuat sebagai draf. Unit lama tidak ditimpa; penerapan ulang rancangan yang sama tidak membuat duplikat. Bantuan AI mahasiswa tetap mati secara bawaan sampai Anda mengaktifkannya pada aktivitas.",
+        },
+        {
           kind: "paragraph",
           text: "Di dalam satu unit, Anda menyiapkan kasus pemantik, sumber yang boleh dirujuk, dan aktivitas pada tiap tahap. Pada tiap aktivitas Anda menentukan instruksi tugas dan apakah bantuan AI diaktifkan beserta bentuk bantuannya.",
         },
