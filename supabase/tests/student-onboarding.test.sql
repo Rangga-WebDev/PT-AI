@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(40);
+select plan(41);
 
 create function pg_temp.act_as(p_id uuid) returns void language plpgsql as $$
 begin
@@ -26,7 +26,8 @@ insert into auth.users (id, email) values
 ('9da00000-0000-4000-8000-000000000021', 'dua@student.unismuh.ac.id'),
 ('9da00000-0000-4000-8000-000000000022', 'lain@student.unismuh.ac.id'),
 ('9da00000-0000-4000-8000-000000000023', 'duplikat@student.unismuh.ac.id'),
-('9da00000-0000-4000-8000-000000000024', 'salah@kampus.invalid');
+('9da00000-0000-4000-8000-000000000024', 'umum@gmail.invalid'),
+('9da00000-0000-4000-8000-000000000025', null);
 
 insert into public.profiles (id, organization_id, full_name, identifier) values
 ('9da00000-0000-4000-8000-000000000010', '9da00000-0000-4000-8000-000000000001', 'Dosen Pengampu', 'ON-LECT-1'),
@@ -46,9 +47,12 @@ select throws_ok($$select public.register_student_profile('9da00000-0000-4000-80
   '23505', null, 'NIM duplikat ditolak');
 select is((select count(*)::int from public.profiles where id = '9da00000-0000-4000-8000-000000000023'),
   0, 'Pendaftaran gagal tidak meninggalkan profil parsial');
-select throws_ok($$select public.register_student_profile('9da00000-0000-4000-8000-000000000024',
-  '9da00000-0000-4000-8000-000000000001', 'Domain Salah', '001234567891')$$,
-  '42501', null, 'Database ikut menolak domain di luar kampus');
+select lives_ok($$select public.register_student_profile('9da00000-0000-4000-8000-000000000024',
+  '9da00000-0000-4000-8000-000000000001', 'Surel Umum', '001234567891')$$,
+  'Surel di luar domain kampus tetap dapat mendaftar');
+select throws_ok($$select public.register_student_profile('9da00000-0000-4000-8000-000000000025',
+  '9da00000-0000-4000-8000-000000000001', 'Tanpa Surel', '001234567894')$$,
+  '42501', null, 'Akun Auth tanpa surel tidak dapat menjadi mahasiswa');
 select ok(not has_function_privilege('anon', 'public.register_student_profile(uuid,uuid,text,text)', 'execute'),
   'Anon tidak dapat membuat profil lewat RPC');
 select ok(not has_function_privilege('authenticated', 'public.register_student_profile(uuid,uuid,text,text)', 'execute'),

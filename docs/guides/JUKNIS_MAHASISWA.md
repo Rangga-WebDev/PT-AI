@@ -39,7 +39,7 @@ AI di sini bukan tempat meminta jawaban. Ia menemani proses berpikir Anda: meman
 ## 2. Masuk ke aplikasi
 
 1. Buka halaman masuk aplikasi.
-2. Bila belum memiliki akun, tekan Belum punya akun mahasiswa? Daftar. Isi nama lengkap, NIM, surel @student.unismuh.ac.id, dan kata sandi minimal 12 karakter.
+2. Bila belum memiliki akun, tekan Belum punya akun mahasiswa? Daftar. Isi nama lengkap, NIM, surel aktif apa pun (misalnya Gmail atau surel kampus), dan kata sandi minimal 12 karakter.
 3. Setelah akun berhasil dibuat, tekan Masuk ke akun. Pendaftaran tidak mengirim surel konfirmasi.
 4. Masukkan surel dan kata sandi akun mahasiswa Anda.
 5. Setelah masuk, Anda akan melihat menu Belajar di sisi kiri.

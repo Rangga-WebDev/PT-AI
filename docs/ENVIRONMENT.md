@@ -118,7 +118,7 @@ Otorisasinya memakai `CRON_SECRET`. Vercel mengirimkannya sendiri sebagai `Autho
 
 ### Pendaftaran mahasiswa
 
-`/register` menerima surel dengan domain tepat `student.unismuh.ac.id`, NIM 6-24 angka, dan kata sandi minimal 12 karakter. Peran selalu mahasiswa; dosen dan admin dibuat administrator. `STUDENT_REGISTRATION_ORGANIZATION_ID` harus menunjuk institusi yang aktif, bukan nilai dari formulir pengguna.
+`/register` menerima surel dengan domain apa pun (misalnya Gmail atau `student.unismuh.ac.id`), NIM 6-24 angka, dan kata sandi minimal 12 karakter. Peran selalu mahasiswa; dosen dan admin dibuat administrator. `STUDENT_REGISTRATION_ORGANIZATION_ID` harus menunjuk institusi yang aktif, bukan nilai dari formulir pengguna.
 
 Di Supabase Cloud, matikan **Allow new users to sign up** dan **Confirm email**. Perubahan `supabase/config.toml` hanya mengatur lingkungan lokal, tidak otomatis mengubah Cloud. Server memeriksa `/auth/v1/settings` dan menolak pendaftaran bila signup publik masih aktif atau pemeriksaan gagal. Akun dibuat melalui Admin API dengan `email_confirm: true`, tanpa mengirim surel konfirmasi. Ini bukan bukti kepemilikan surel; dosen wajib mencocokkan NIM dengan daftar resmi sebelum menyetujui kelas.
 

@@ -13,15 +13,21 @@ test.describe("Pendaftaran mahasiswa tanpa fixture", () => {
       page.getByRole("heading", { name: "Daftar mahasiswa" }),
     ).toBeVisible();
     await expect(page.getByLabel("NIM", { exact: true })).toBeVisible();
-    await expect(page.getByLabel("Surel mahasiswa")).toBeVisible();
+    await expect(page.getByLabel("Surel", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Surel", { exact: true })).toHaveAttribute(
+      "placeholder",
+      "nama@gmail.com",
+    );
     await expect(page.getByRole("combobox")).toHaveCount(0);
   });
 
-  test("domain asing ditolak server tanpa membuat akun", async ({ page }) => {
+  test("format surel tidak valid ditolak server tanpa membuat akun", async ({
+    page,
+  }) => {
     await page.goto("/register");
-    await page.getByLabel("Nama lengkap").fill("Validasi Domain");
+    await page.getByLabel("Nama lengkap").fill("Validasi Surel");
     await page.getByLabel("NIM", { exact: true }).fill("001234567890");
-    await page.getByLabel("Surel mahasiswa").fill("validasi@example.invalid");
+    await page.getByLabel("Surel", { exact: true }).fill("bukan-surel");
     await page
       .getByLabel("Kata sandi", { exact: true })
       .fill("Validasi-bukan-akun-2026");
@@ -32,9 +38,9 @@ test.describe("Pendaftaran mahasiswa tanpa fixture", () => {
       .getByRole("button", { name: "Daftar mahasiswa", exact: true })
       .click();
     await expect(
-      page.getByText("Gunakan surel @student.unismuh.ac.id.", { exact: true }),
+      page.getByText("Format surel tidak valid.", { exact: true }),
     ).toBeVisible();
-    await expect(page.getByLabel("Surel mahasiswa")).toHaveAttribute(
+    await expect(page.getByLabel("Surel", { exact: true })).toHaveAttribute(
       "aria-invalid",
       "true",
     );

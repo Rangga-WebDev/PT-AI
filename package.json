@@ -21,6 +21,7 @@
     "db:seed:academics": "node --env-file-if-exists=.env.local scripts/seed-dev-academics.mjs",
     "pilot:bootstrap": "node --env-file-if-exists=.env.local scripts/bootstrap-pilot.mjs",
     "data:retention": "node --env-file-if-exists=.env.local scripts/apply-retention.mjs",
+    "research:import-preliminary": "node --env-file-if-exists=.env.local scripts/import-preliminary-study.mjs",
     "ai:index": "node --env-file-if-exists=.env.local scripts/index-ai-sources.mjs",
     "ai:check": "node --env-file-if-exists=.env.local scripts/check-ai-pipeline.mjs",
     "check:sql": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-sql-consistency.ps1",

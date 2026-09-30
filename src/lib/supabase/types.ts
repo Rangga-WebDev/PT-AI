@@ -3712,6 +3712,15 @@ export type Database = {
         Returns: undefined;
       };
       research_participant_count: { Args: never; Returns: number };
+      preliminary_study_overview: { Args: never; Returns: Json };
+      preliminary_study_respondents: {
+        Args: { p_dataset_id: string };
+        Returns: Json;
+      };
+      preliminary_study_respondent: {
+        Args: { p_respondent_id: string };
+        Returns: Json;
+      };
     };
     Enums: {
       ai_function:

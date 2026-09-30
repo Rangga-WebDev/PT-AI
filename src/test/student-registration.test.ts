@@ -107,14 +107,21 @@ describe("pendaftaran mahasiswa melalui server", () => {
     expect(JSON.stringify(args)).not.toContain(input.email);
     expect(JSON.stringify(args)).not.toContain("127.0.0.1");
   });
-  it("menolak domain tiruan sebelum RPC dan Auth API", async () => {
+  it("menerima surel Gmail dan menyimpannya dalam huruf kecil", async () => {
     expect(
-      (
-        await registerStudent(
-          { ...input, email: "mhs@student.unismuh.ac.id.evil.com" },
-          "127.0.0.1",
-        )
-      ).ok,
+      await registerStudent(
+        { ...input, email: " Mahasiswa.Baru@Gmail.com " },
+        "127.0.0.1",
+      ),
+    ).toEqual({ ok: true });
+    expect(mocks.createUser).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "mahasiswa.baru@gmail.com" }),
+    );
+  });
+  it("menolak format surel tidak valid sebelum RPC dan Auth API", async () => {
+    expect(
+      (await registerStudent({ ...input, email: "bukan-surel" }, "127.0.0.1"))
+        .ok,
     ).toBe(false);
     expect(mocks.rpc).not.toHaveBeenCalled();
     expect(mocks.createUser).not.toHaveBeenCalled();

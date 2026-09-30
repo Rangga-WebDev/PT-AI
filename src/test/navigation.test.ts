@@ -69,6 +69,26 @@ describe("prioritas navigasi", () => {
     expect(LECTURER_NAV[1]?.title).toBe("Perkakas");
   });
 
+  it("memisahkan studi pendahuluan dari menu kelas pada bagian Penelitian", () => {
+    for (const [sections, href] of [
+      [LECTURER_NAV, "/app/lecturer/preliminary-study"],
+      [ADMIN_NAV, "/app/admin/preliminary-study"],
+    ] as const) {
+      const research = sections.find(
+        (section) => section.title === "Penelitian",
+      );
+      expect(research?.items.map((item) => item.href)).toEqual([href]);
+      expect(mobileBarItems(sections).map((item) => item.href)).not.toContain(
+        href,
+      );
+    }
+    expect(
+      STUDENT_NAV.flatMap((section) => section.items).some((item) =>
+        item.href.includes("preliminary-study"),
+      ),
+    ).toBe(false);
+  });
+
   it("menempatkan Panduan pada bilah bawah mahasiswa", () => {
     const bar = mobileBarItems(STUDENT_NAV).map((item) => item.href);
 

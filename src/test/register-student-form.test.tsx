@@ -17,10 +17,7 @@ describe("formulir pendaftaran mahasiswa", () => {
       "inputmode",
       "numeric",
     );
-    expect(screen.getByLabelText("Surel mahasiswa")).toHaveAttribute(
-      "type",
-      "email",
-    );
+    expect(screen.getByLabelText("Surel")).toHaveAttribute("type", "email");
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   });
   it("menutup pendaftaran ketika institusi belum dikonfigurasi", () => {
@@ -36,10 +33,7 @@ describe("formulir pendaftaran mahasiswa", () => {
     render(<RegisterStudentForm />);
     await user.type(screen.getByLabelText("Nama lengkap"), "Mahasiswa Satu");
     await user.type(screen.getByLabelText("NIM"), "001234567890");
-    await user.type(
-      screen.getByLabelText("Surel mahasiswa"),
-      "mhs@student.unismuh.ac.id",
-    );
+    await user.type(screen.getByLabelText("Surel"), "mahasiswa@gmail.com");
     await user.type(
       screen.getByLabelText("Kata sandi", { exact: true }),
       "sandi-mahasiswa-2026",

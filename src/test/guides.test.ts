@@ -178,8 +178,9 @@ describe("panduan mahasiswa", () => {
     expect(text).toContain("bukan menggantikannya");
   });
 
-  it("menjelaskan pendaftaran kampus dan pengajuan yang menunggu persetujuan dosen", () => {
-    expect(text).toContain("@student.unismuh.ac.id");
+  it("menjelaskan pendaftaran dengan surel apa pun dan pengajuan yang menunggu persetujuan dosen", () => {
+    expect(text).toContain("surel aktif apa pun");
+    expect(text).toContain("gmail");
     expect(text).toContain("ajukan masuk");
     expect(text).toContain("bukan persetujuan otomatis");
   });

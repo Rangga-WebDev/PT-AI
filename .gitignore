@@ -51,3 +51,7 @@ next-env.d.ts
 # sumber referensi penelitian: simpan versi .md, bukan biner
 *.docx
 backup/
+# data mentah penelitian (jawaban responden) tidak pernah masuk git
+*.csv
+*.xlsx
+Instrumen_Berpikir_Kritis_*/

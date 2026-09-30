@@ -30,7 +30,7 @@ export const studentGuide: Guide = {
           kind: "steps",
           items: [
             "Buka halaman masuk aplikasi.",
-            "Bila belum memiliki akun, tekan Belum punya akun mahasiswa? Daftar. Isi nama lengkap, NIM, surel @student.unismuh.ac.id, dan kata sandi minimal 12 karakter.",
+            "Bila belum memiliki akun, tekan Belum punya akun mahasiswa? Daftar. Isi nama lengkap, NIM, surel aktif apa pun (misalnya Gmail atau surel kampus), dan kata sandi minimal 12 karakter.",
             "Setelah akun berhasil dibuat, tekan Masuk ke akun. Pendaftaran tidak mengirim surel konfirmasi.",
             "Masukkan surel dan kata sandi akun mahasiswa Anda.",
             "Setelah masuk, Anda akan melihat menu Belajar di sisi kiri.",

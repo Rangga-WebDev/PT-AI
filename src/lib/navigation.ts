@@ -156,6 +156,16 @@ export const LECTURER_NAV: NavSection[] = [
       },
     ],
   },
+  {
+    title: "Penelitian",
+    items: [
+      {
+        label: "Studi pendahuluan",
+        href: "/app/lecturer/preliminary-study",
+        icon: "analytics",
+      },
+    ],
+  },
 ];
 
 export const ADMIN_NAV: NavSection[] = [
@@ -203,6 +213,16 @@ export const ADMIN_NAV: NavSection[] = [
         href: "/app/admin/classes",
         icon: "classes",
         onMobileBar: true,
+      },
+    ],
+  },
+  {
+    title: "Penelitian",
+    items: [
+      {
+        label: "Studi pendahuluan",
+        href: "/app/admin/preliminary-study",
+        icon: "analytics",
       },
     ],
   },

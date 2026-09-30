@@ -26,7 +26,7 @@ const fields = [
   },
   {
     name: "email",
-    label: "Surel mahasiswa",
+    label: "Surel",
     type: "email",
     autoComplete: "email",
     maxLength: 254,
@@ -94,7 +94,7 @@ export function RegisterStudentForm({
               inputMode={field.name === "identifier" ? "numeric" : undefined}
               placeholder={
                 field.name === "email"
-                  ? "nama@student.unismuh.ac.id"
+                  ? "nama@gmail.com"
                   : field.name === "password"
                     ? "Minimal 12 karakter"
                     : undefined

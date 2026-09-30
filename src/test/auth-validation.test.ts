@@ -77,15 +77,23 @@ describe("registerStudentSchema", () => {
 
   it.each([
     "mahasiswa@gmail.com",
+    "mahasiswa@student.unismuh.ac.id",
     "mahasiswa@unismuh.ac.id",
-    "mahasiswa@sub.student.unismuh.ac.id",
-    "mahasiswa@student.unismuh.ac.id.example.com",
-    "mahasiswa@fakestudent.unismuh.ac.id",
-  ])("menolak domain di luar kampus: %s", (address) => {
+    "mahasiswa@yahoo.co.id",
+  ])("menerima surel domain apa pun: %s", (address) => {
     expect(
       registerStudentSchema.safeParse({ ...valid, email: address }).success,
-    ).toBe(false);
+    ).toBe(true);
   });
+
+  it.each(["", "mahasiswa", "mahasiswa@", "@gmail.com", "mhs @gmail.com"])(
+    "menolak format surel tidak valid: %s",
+    (address) => {
+      expect(
+        registerStudentSchema.safeParse({ ...valid, email: address }).success,
+      ).toBe(false);
+    },
+  );
 
   it.each(["", "12345", "1056ABC123", "1".repeat(25)])(
     "menolak NIM tidak valid: %s",

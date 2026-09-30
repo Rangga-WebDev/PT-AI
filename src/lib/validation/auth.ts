@@ -22,8 +22,8 @@ export const signInSchema = z.object({
   password,
 });
 
-export const STUDENT_EMAIL_DOMAIN = "student.unismuh.ac.id";
-
+// Domain surel sengaja tidak dibatasi (Gmail pun boleh); akses kelas tetap
+// menunggu persetujuan dosen atas NIM.
 export const registerStudentSchema = z
   .object({
     fullName: z.string().trim().min(2, "Nama lengkap wajib diisi.").max(150),
@@ -31,13 +31,7 @@ export const registerStudentSchema = z
       .string()
       .trim()
       .regex(/^[0-9]{6,24}$/, "NIM harus terdiri dari 6 sampai 24 angka."),
-    email: email
-      .max(254, "Surel terlalu panjang.")
-      .toLowerCase()
-      .refine(
-        (value) => value.split("@")[1] === STUDENT_EMAIL_DOMAIN,
-        `Gunakan surel @${STUDENT_EMAIL_DOMAIN}.`,
-      ),
+    email: email.max(254, "Surel terlalu panjang.").toLowerCase(),
     password: newPassword,
     confirmPassword: z.string(),
   })
