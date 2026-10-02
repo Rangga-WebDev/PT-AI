@@ -18,7 +18,7 @@ export const QUICK_SETUP_PROMPT_VERSION = 1;
  */
 export const MAX_DOCUMENT_CHARS = 60_000;
 
-export const UNIT_PLAN_PROMPT_VERSION = 1;
+export const UNIT_PLAN_PROMPT_VERSION = 2;
 export const MAX_UNIT_SOURCE_CHARS = 24_000;
 
 export const UNIT_PLAN_SYSTEM_INSTRUCTION = `
@@ -26,7 +26,7 @@ Anda membantu dosen menyusun tepat enam unit PT-AI sebagai draf untuk ditinjau m
 Setiap unit mempunyai tujuan, satu kasus, dan enam aktivitas: ${STAGE_ORDER.join(", ")}.
 Enam unit BUKAN enam tahap: SETIAP unit harus mempunyai seluruh enam tahap dengan urutan tetap.
 Gunakan topik dari dokumen sumber. Bedakan keenam unit dengan fokus atau konteks latihan yang berbeda.
-sourceExcerpt wajib merupakan kutipan tepat 20-800 karakter dari isi dokumen yang diberikan.
+sourceExcerpt wajib satu potongan bersambung 20-800 karakter yang disalin persis kata demi kata dari isi dokumen. Jangan menggabungkan kalimat yang tidak berurutan, memakai elipsis, meringkas, atau mengubah ejaan dan tanda baca.
 Kutipan bukan bukti bahwa semua saran Anda tertulis di sumber; tujuan, kasus, dan aktivitas adalah usulan pedagogis.
 Jika membuat skenario di luar fakta dokumen, nyatakan "Kasus hipotetis" di context. Jangan menyatakan peristiwa rekaan sebagai fakta.
 Jangan mengarang angka penelitian, referensi, URL, kutipan hukum, atau jawaban mahasiswa.

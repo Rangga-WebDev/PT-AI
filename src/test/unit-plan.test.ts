@@ -2,7 +2,12 @@
 
 import { describe, expect, it } from "vitest";
 
-import { hasTraceableUnitExcerpts, unitPlanSchema } from "@/lib/ai/unit-plan";
+import {
+  hasTraceableUnitExcerpts,
+  trimUntraceableExcerpts,
+  unitPlanProviderSchema,
+  unitPlanSchema,
+} from "@/lib/ai/unit-plan";
 import { STAGE_ORDER } from "@/lib/constants/stages";
 
 function plan() {
@@ -31,6 +36,15 @@ function plan() {
 }
 
 describe("draf enam unit AI", () => {
+  it("skema penyedia hanya membatasi jumlah pada satu tingkat array", () => {
+    // Batas jumlah pada units dan activities sekaligus ditolak Gemini: 400 INVALID_ARGUMENT.
+    const activities =
+      unitPlanProviderSchema.properties.units.items.properties.activities;
+    expect(unitPlanProviderSchema.properties.units.minItems).toBe(6);
+    expect(activities).not.toHaveProperty("minItems");
+    expect(activities).not.toHaveProperty("maxItems");
+  });
+
   it("menerima tepat enam unit dengan 36 aktivitas terurut", () => {
     const result = unitPlanSchema.parse(plan());
     expect(result.units).toHaveLength(6);
@@ -87,5 +101,54 @@ describe("draf enam unit AI", () => {
         "Partisipasi warga memerlukan informasi yang dapat diverifikasi.",
       ),
     ).toBe(false);
+  });
+
+  describe("pemangkasan kutipan sambungan", () => {
+    const source =
+      "Kalimat pertama tentang hak warga negara. Kalimat kedua tentang kewajiban warga. Kalimat ketiga tentang musyawarah di desa.";
+
+    it("memangkas kalimat tak berurutan ke bagian bersambung terpanjang dan mencatatnya", () => {
+      const draft = unitPlanSchema.parse(plan());
+      draft.units.forEach((unit) => {
+        unit.sourceExcerpt = "Kalimat kedua tentang kewajiban warga.";
+      });
+      draft.units[1]!.sourceExcerpt =
+        "Kalimat pertama tentang hak warga negara. Kalimat ketiga tentang musyawarah di desa.";
+      draft.units[2]!.sourceExcerpt =
+        "Kalimat kedua tentang kewajiban warga. Kalimat ketiga tentang musyawarah di desa. … Kalimat pertama tentang hak warga negara.";
+
+      const result = trimUntraceableExcerpts(draft, source);
+
+      expect(result.units[1]!.sourceExcerpt).toBe(
+        "Kalimat ketiga tentang musyawarah di desa.",
+      );
+      expect(result.units[2]!.sourceExcerpt).toBe(
+        "Kalimat kedua tentang kewajiban warga. Kalimat ketiga tentang musyawarah di desa.",
+      );
+      expect(hasTraceableUnitExcerpts(result, source)).toBe(true);
+      expect(result.warnings).toEqual([
+        "Kutipan sumber unit 2, 3 dipangkas ke bagian yang persis sama dengan dokumen.",
+      ]);
+      expect(unitPlanSchema.safeParse(result).success).toBe(true);
+    });
+
+    it("membiarkan kutipan yang sudah tepat tanpa catatan", () => {
+      const draft = unitPlanSchema.parse(plan());
+      draft.units.forEach((unit) => {
+        unit.sourceExcerpt = "Kalimat kedua tentang kewajiban warga.";
+      });
+      expect(trimUntraceableExcerpts(draft, source)).toBe(draft);
+    });
+
+    it("tidak menyelamatkan kutipan rekaan", () => {
+      const draft = unitPlanSchema.parse(plan());
+      draft.units[0]!.sourceExcerpt =
+        "Kutipan rekaan yang tidak ada di sumber.";
+      const result = trimUntraceableExcerpts(draft, source);
+      expect(result.units[0]!.sourceExcerpt).toBe(
+        "Kutipan rekaan yang tidak ada di sumber.",
+      );
+      expect(hasTraceableUnitExcerpts(result, source)).toBe(false);
+    });
   });
 });

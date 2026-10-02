@@ -87,16 +87,60 @@ export const UNIT_PLAN_ERROR: Record<string, string> = {
   untraceable_output: "Kutipan harus tetap sesuai dengan materi sumber.",
 };
 
+// Sama dengan normalisasi pada apply_ai_unit_plan (migrasi 0037).
+const normalizeQuote = (value: string) =>
+  value.normalize("NFC").replace(/\s+/g, " ").trim();
+
 export function hasTraceableUnitExcerpts(
   plan: UnitPlan,
   sourceText: string,
 ): boolean {
-  const normalize = (value: string) =>
-    value.normalize("NFC").replace(/\s+/g, " ").trim();
-  const source = normalize(sourceText);
+  const source = normalizeQuote(sourceText);
   return plan.units.every((unit) =>
-    source.includes(normalize(unit.sourceExcerpt)),
+    source.includes(normalizeQuote(unit.sourceExcerpt)),
   );
+}
+
+/**
+ * Model kadang menyambung kalimat sumber yang tidak berurutan. Kutipan seperti
+ * itu dipangkas ke rangkaian kalimat bersambung terpanjang yang persis ada di
+ * sumber; kutipan tanpa bagian yang cocok dibiarkan agar tetap ditolak.
+ */
+export function trimUntraceableExcerpts(
+  plan: UnitPlan,
+  sourceText: string,
+): UnitPlan {
+  const source = normalizeQuote(sourceText);
+  const trimmed: number[] = [];
+  const units = plan.units.map((unit, index) => {
+    const excerpt = normalizeQuote(unit.sourceExcerpt);
+    if (source.includes(excerpt)) return unit;
+
+    const sentences = excerpt
+      .split(/(?<=[.!?])\s+|\s*(?:\.{3}|…)\s*/)
+      .map((sentence) => sentence.trim())
+      .filter(Boolean);
+    let best = "";
+    for (let start = 0; start < sentences.length; start += 1) {
+      for (let end = start + 1; end <= sentences.length; end += 1) {
+        const candidate = sentences.slice(start, end).join(" ");
+        if (candidate.length > 800 || !source.includes(candidate)) break;
+        if (candidate.length > best.length) best = candidate;
+      }
+    }
+    if (best.length < 20) return unit;
+    trimmed.push(index + 1);
+    return { ...unit, sourceExcerpt: best };
+  });
+
+  if (trimmed.length === 0) return plan;
+  const note = `Kutipan sumber unit ${trimmed.join(", ")} dipangkas ke bagian yang persis sama dengan dokumen.`;
+  return {
+    ...plan,
+    units,
+    warnings:
+      plan.warnings.length < 10 ? [...plan.warnings, note] : plan.warnings,
+  };
 }
 
 export const unitPlanProviderSchema = {
@@ -124,9 +168,8 @@ export const unitPlanProviderSchema = {
             required: ["title", "context", "body", "keyQuestion"],
           },
           activities: {
+            // Gemini menolak (400) minItems/maxItems pada dua array bersarang; Zod menegakkan enam tahap.
             type: "ARRAY",
-            minItems: STAGE_ORDER.length,
-            maxItems: STAGE_ORDER.length,
             items: {
               type: "OBJECT",
               properties: {

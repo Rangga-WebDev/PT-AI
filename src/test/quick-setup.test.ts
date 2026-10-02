@@ -423,7 +423,25 @@ describe("generator enam unit PT-AI", () => {
       reason: "provider_error",
     });
     expect(console.error).toHaveBeenCalledExactlyOnceWith(
-      "[ai] six-unit provider failed",
+      '[ai] six-unit provider failed {"status":null}',
+    );
+  });
+
+  it("mencatat kode status penyedia tanpa isi pesannya", async () => {
+    setProvider({
+      async generateStructured() {
+        throw Object.assign(new Error("private-key-secret"), { status: 400 });
+      },
+      async embed() {
+        return [];
+      },
+    });
+    expect(await generateSixUnitDraft(sixRequest())).toEqual({
+      ok: false,
+      reason: "provider_error",
+    });
+    expect(console.error).toHaveBeenCalledExactlyOnceWith(
+      '[ai] six-unit provider failed {"status":400}',
     );
   });
 });

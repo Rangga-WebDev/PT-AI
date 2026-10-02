@@ -5,6 +5,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import {
   hasTraceableUnitExcerpts,
+  trimUntraceableExcerpts,
   unitPlanProviderSchema,
   unitPlanSchema,
   type UnitPlan,
@@ -270,8 +271,14 @@ export async function generateSixUnitDraft(request: {
       schema: unitPlanProviderSchema as never,
     });
     output = generation.text;
-  } catch {
-    console.error("[ai] six-unit provider failed");
+  } catch (error) {
+    const status =
+      typeof (error as { status?: unknown } | null)?.status === "number"
+        ? (error as { status: number }).status
+        : null;
+    console.error(
+      `[ai] six-unit provider failed ${JSON.stringify({ status })}`,
+    );
     return { ok: false, reason: "provider_error" };
   }
   let draft: UnitPlan;
@@ -280,6 +287,7 @@ export async function generateSixUnitDraft(request: {
   } catch {
     return { ok: false, reason: "invalid_output" };
   }
+  draft = trimUntraceableExcerpts(draft, prompt.sourceText);
   if (!hasTraceableUnitExcerpts(draft, prompt.sourceText))
     return { ok: false, reason: "untraceable_output" };
 
