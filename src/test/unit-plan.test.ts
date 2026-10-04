@@ -120,7 +120,7 @@ describe("draf enam unit AI", () => {
       const result = trimUntraceableExcerpts(draft, source);
 
       expect(result.units[1]!.sourceExcerpt).toBe(
-        "Kalimat ketiga tentang musyawarah di desa.",
+        "Kalimat pertama tentang hak warga negara.",
       );
       expect(result.units[2]!.sourceExcerpt).toBe(
         "Kalimat kedua tentang kewajiban warga. Kalimat ketiga tentang musyawarah di desa.",
@@ -138,6 +138,25 @@ describe("draf enam unit AI", () => {
         unit.sourceExcerpt = "Kalimat kedua tentang kewajiban warga.";
       });
       expect(trimUntraceableExcerpts(draft, source)).toBe(draft);
+    });
+
+    it("memangkas baris tabel yang disisipi kata oleh model tanpa memotong kata", () => {
+      const rps =
+        "12 | Proyek mini, diskusi (TM). PT: produk proyek mini. Kewarganegaraan digital: literasi digital, hoaks, etika bermedia | 5";
+      const draft = unitPlanSchema.parse(plan());
+      draft.units.forEach((unit) => {
+        unit.sourceExcerpt =
+          "Proyek mini, diskusi (TM). PT: produk proyek mini.";
+      });
+      draft.units[0]!.sourceExcerpt =
+        "Kewarganegaraan digital: literasi digital, hoaks, dan etika bermedia";
+
+      const result = trimUntraceableExcerpts(draft, rps);
+
+      expect(result.units[0]!.sourceExcerpt).toBe(
+        "Kewarganegaraan digital: literasi digital, hoaks",
+      );
+      expect(hasTraceableUnitExcerpts(result, rps)).toBe(true);
     });
 
     it("tidak menyelamatkan kutipan rekaan", () => {

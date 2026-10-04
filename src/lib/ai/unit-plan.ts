@@ -101,10 +101,64 @@ export function hasTraceableUnitExcerpts(
   );
 }
 
+const MIN_SNAPPED_EXCERPT = 40;
+
+/** Substring bersama terpanjang; posisi dihitung pada `source`. */
+function longestCommonSubstring(excerpt: string, source: string) {
+  let previous = new Uint16Array(source.length + 1);
+  let current = new Uint16Array(source.length + 1);
+  let length = 0;
+  let end = 0;
+  for (let i = 1; i <= excerpt.length; i += 1) {
+    const char = excerpt.charCodeAt(i - 1);
+    for (let j = 1; j <= source.length; j += 1) {
+      if (char === source.charCodeAt(j - 1)) {
+        const run = previous[j - 1]! + 1;
+        current[j] = run;
+        if (run > length) {
+          length = run;
+          end = j;
+        }
+      } else current[j] = 0;
+    }
+    [previous, current] = [current, previous];
+  }
+  return { start: end - length, end };
+}
+
+/** Bagian sumber terpanjang yang dikutip model, dirapikan ke batas kata atau kalimat. */
+function snapToSource(excerpt: string, source: string): string | null {
+  let { start, end } = longestCommonSubstring(excerpt, source);
+  // Kata yang hanya sebagian sama dibuang agar kutipan tidak memuat kata yang tidak dikutip model.
+  if (start > 0 && source[start - 1] !== " ") {
+    const space = source.indexOf(" ", start);
+    start = space === -1 || space >= end ? end : space + 1;
+  }
+  if (end < source.length && source[end] !== " ") {
+    const space = source.lastIndexOf(" ", end - 1);
+    end = space < start ? start : space;
+  }
+  let fragment = source
+    .slice(start, end)
+    .trim()
+    .replace(/[\s,;:(–-]+$/u, "");
+  const lastSentenceEnd = Math.max(
+    ...[". ", "! ", "? "].map((mark) => fragment.lastIndexOf(mark)),
+  );
+  // Sisa kalimat yang terpotong pendek dibuang; sisa panjang tetap relevan.
+  if (
+    lastSentenceEnd + 1 >= MIN_SNAPPED_EXCERPT &&
+    fragment.length - lastSentenceEnd - 1 < 25 &&
+    !/[.!?]$/.test(fragment)
+  )
+    fragment = fragment.slice(0, lastSentenceEnd + 1);
+  return fragment.length >= MIN_SNAPPED_EXCERPT ? fragment : null;
+}
+
 /**
- * Model kadang menyambung kalimat sumber yang tidak berurutan. Kutipan seperti
- * itu dipangkas ke rangkaian kalimat bersambung terpanjang yang persis ada di
- * sumber; kutipan tanpa bagian yang cocok dibiarkan agar tetap ditolak.
+ * Model kadang menyambung kalimat tak berurutan atau mengubah satu-dua kata saat
+ * mengutip. Kutipan seperti itu dipangkas ke bagian terpanjang yang persis ada
+ * di sumber; kutipan tanpa bagian cocok yang memadai dibiarkan agar tetap ditolak.
  */
 export function trimUntraceableExcerpts(
   plan: UnitPlan,
@@ -115,22 +169,10 @@ export function trimUntraceableExcerpts(
   const units = plan.units.map((unit, index) => {
     const excerpt = normalizeQuote(unit.sourceExcerpt);
     if (source.includes(excerpt)) return unit;
-
-    const sentences = excerpt
-      .split(/(?<=[.!?])\s+|\s*(?:\.{3}|…)\s*/)
-      .map((sentence) => sentence.trim())
-      .filter(Boolean);
-    let best = "";
-    for (let start = 0; start < sentences.length; start += 1) {
-      for (let end = start + 1; end <= sentences.length; end += 1) {
-        const candidate = sentences.slice(start, end).join(" ");
-        if (candidate.length > 800 || !source.includes(candidate)) break;
-        if (candidate.length > best.length) best = candidate;
-      }
-    }
-    if (best.length < 20) return unit;
+    const snapped = snapToSource(excerpt, source);
+    if (!snapped) return unit;
     trimmed.push(index + 1);
-    return { ...unit, sourceExcerpt: best };
+    return { ...unit, sourceExcerpt: snapped };
   });
 
   if (trimmed.length === 0) return plan;
