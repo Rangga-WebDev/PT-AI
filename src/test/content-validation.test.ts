@@ -3,13 +3,80 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  activityAiSchema,
   activitySchema,
   caseSchema,
   learningUnitSchema,
   rubricCriterionSchema,
   stageUpdateSchema,
 } from "@/lib/validation/content";
-import { STAGE_LABEL, STAGE_ORDER } from "@/lib/constants/stages";
+import {
+  AI_FUNCTION_LABEL,
+  STAGE_LABEL,
+  STAGE_ORDER,
+} from "@/lib/constants/stages";
+
+const ID = "3f2504e0-4f89-41d3-9a0c-0305e82c3301";
+
+describe("Skema pengaturan AI aktivitas", () => {
+  it("menerima AI aktif dengan fungsi yang dikenal", () => {
+    const result = activityAiSchema.safeParse({
+      activityId: ID,
+      allowsAi: true,
+      allowedAiFunctions: ["guiding_questions", "hint"],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("mewajibkan minimal satu fungsi saat AI diaktifkan", () => {
+    const result = activityAiSchema.safeParse({
+      unitId: ID,
+      allowsAi: true,
+      allowedAiFunctions: [],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.flatten().fieldErrors["allowedAiFunctions"]?.[0],
+      ).toBe("Pilih minimal satu fungsi AI.");
+    }
+  });
+
+  it("menolak fungsi AI di luar enum", () => {
+    const result = activityAiSchema.safeParse({
+      activityId: ID,
+      allowsAi: true,
+      allowedAiFunctions: ["write_answer"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("mewajibkan tepat satu sasaran: aktivitas atau unit", () => {
+    const both = activityAiSchema.safeParse({
+      activityId: ID,
+      unitId: ID,
+      allowsAi: false,
+      allowedAiFunctions: [],
+    });
+    const none = activityAiSchema.safeParse({
+      allowsAi: false,
+      allowedAiFunctions: [],
+    });
+    expect(both.success).toBe(false);
+    expect(none.success).toBe(false);
+  });
+
+  it("mencakup seluruh fungsi yang ditampilkan di formulir", () => {
+    for (const value of Object.keys(AI_FUNCTION_LABEL)) {
+      const result = activityAiSchema.safeParse({
+        activityId: ID,
+        allowsAi: true,
+        allowedAiFunctions: [value],
+      });
+      expect(result.success).toBe(true);
+    }
+  });
+});
 
 describe("Skema validasi konten", () => {
   it("menolak tujuan pembelajaran yang terlalu pendek", () => {

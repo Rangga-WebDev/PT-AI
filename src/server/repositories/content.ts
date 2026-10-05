@@ -32,6 +32,7 @@ export interface LearningUnitView {
   closesAt: string | null;
   hasCase: boolean;
   activityCount: number;
+  publishedActivityCount: number;
 }
 
 export interface StageView {
@@ -80,7 +81,7 @@ export async function listModulesWithUnits(
          learning_units(
            id, title, objective, sequence, status, unit_kind, opens_at, closes_at,
            cases(id),
-           learning_stages(activities(id))
+           learning_stages(activities(id, status))
          )`,
       )
       .eq("class_id", classId)
@@ -112,12 +113,24 @@ export async function listModulesWithUnits(
           (total, stage) => total + stage.activities.length,
           0,
         ),
+        publishedActivityCount: unit.learning_stages.reduce(
+          (total, stage) =>
+            total +
+            stage.activities.filter(
+              (activity) => activity.status === "published",
+            ).length,
+          0,
+        ),
       })),
   }));
 }
 
 export async function getUnitDetail(unitId: string): Promise<{
-  unit: LearningUnitView & { moduleTitle: string; classId: string };
+  unit: LearningUnitView & {
+    moduleTitle: string;
+    moduleStatus: ModuleView["status"];
+    classId: string;
+  };
   caseDetail: CaseView | null;
   stages: StageView[];
 } | null> {
@@ -127,7 +140,7 @@ export async function getUnitDetail(unitId: string): Promise<{
     .from("learning_units")
     .select(
       `id, title, objective, sequence, status, unit_kind, opens_at, closes_at,
-       modules(title, class_id),
+       modules(title, status, class_id),
        cases(id, title, context, body, key_question),
        learning_stages(
          id, stage_key, sequence, title, focus, is_enabled,
@@ -177,6 +190,13 @@ export async function getUnitDetail(unitId: string): Promise<{
     (total, stage) => total + stage.activities.length,
     0,
   );
+  const publishedActivityCount = stages.reduce(
+    (total, stage) =>
+      total +
+      stage.activities.filter((activity) => activity.status === "published")
+        .length,
+    0,
+  );
 
   return {
     unit: {
@@ -190,7 +210,9 @@ export async function getUnitDetail(unitId: string): Promise<{
       closesAt: data.closes_at,
       hasCase: data.cases !== null,
       activityCount,
+      publishedActivityCount,
       moduleTitle: data.modules.title,
+      moduleStatus: data.modules.status,
       classId: data.modules.class_id,
     },
     caseDetail: data.cases

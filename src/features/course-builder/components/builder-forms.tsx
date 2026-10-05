@@ -7,6 +7,7 @@ import {
   createInstructionAction,
   createLearningUnitAction,
   createModuleAction,
+  setActivityAiAction,
   setActivityRubricAction,
   updateStageAction,
   upsertCaseAction,
@@ -29,6 +30,72 @@ import {
 
 const selectClass =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+
+const DEFAULT_AI_FUNCTIONS = ["guiding_questions", "hint"];
+
+/** Bantuan AI diatur per aktivitas, atau sekaligus untuk seluruh aktivitas unit. */
+export function ActivityAiForm({
+  target,
+  allowsAi,
+  allowedFunctions,
+  submitLabel = "Simpan AI",
+}: {
+  target: { activityId: string } | { unitId: string };
+  allowsAi: boolean;
+  allowedFunctions: string[];
+  submitLabel?: string;
+}) {
+  const [state, formAction, pending] = useActionState(setActivityAiAction, {});
+  const checked =
+    allowedFunctions.length > 0 ? allowedFunctions : DEFAULT_AI_FUNCTIONS;
+
+  return (
+    <form action={formAction} className="flex flex-col gap-2">
+      {"activityId" in target ? (
+        <input type="hidden" name="activityId" value={target.activityId} />
+      ) : (
+        <input type="hidden" name="unitId" value={target.unitId} />
+      )}
+      <label className="flex items-center gap-2 text-sm text-foreground">
+        <input
+          type="checkbox"
+          name="allowsAi"
+          defaultChecked={allowsAi}
+          className="size-4 rounded border-input"
+        />
+        Izinkan bantuan AI
+      </label>
+      <fieldset className="flex flex-wrap gap-x-4 gap-y-1.5">
+        <legend className="sr-only">Fungsi AI yang diizinkan</legend>
+        {Object.entries(AI_FUNCTION_LABEL).map(([value, label]) => (
+          <label
+            key={value}
+            className="flex items-center gap-1.5 text-xs text-subtle"
+          >
+            <input
+              type="checkbox"
+              name="allowedAiFunctions"
+              value={value}
+              defaultChecked={checked.includes(value)}
+              className="size-3.5 rounded border-input"
+            />
+            {label}
+          </label>
+        ))}
+      </fieldset>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="submit" size="sm" variant="outline" disabled={pending}>
+          {pending ? "Menyimpan…" : submitLabel}
+        </Button>
+        {state.error ? (
+          <span className="text-xs text-destructive">{state.error}</span>
+        ) : state.ok && state.message ? (
+          <span className="text-xs text-subtle">{state.message}</span>
+        ) : null}
+      </div>
+    </form>
+  );
+}
 
 /** Rubrik aktivitas dapat diganti kapan saja, bukan hanya saat pembuatan. */
 export function ActivityRubricForm({

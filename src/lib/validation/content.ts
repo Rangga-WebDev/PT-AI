@@ -64,6 +64,38 @@ export const activityRubricSchema = z.object({
   rubricId: z.string().uuid().optional().or(z.literal("")),
 });
 
+export const AI_FUNCTION_VALUES = [
+  "guiding_questions",
+  "rubric_feedback",
+  "hint",
+  "counter_argument",
+  "error_classification",
+  "learning_path",
+] as const;
+
+/** Sasarannya satu aktivitas atau seluruh aktivitas dalam satu unit. */
+export const activityAiSchema = z
+  .object({
+    activityId: uuid("Aktivitas").optional(),
+    unitId: uuid("Unit").optional(),
+    allowsAi: z.boolean(),
+    allowedAiFunctions: z.array(
+      z.enum(AI_FUNCTION_VALUES, { message: "Fungsi AI tidak valid." }),
+    ),
+  })
+  .refine((value) => Boolean(value.activityId) !== Boolean(value.unitId), {
+    message: "Pilih satu aktivitas atau satu unit.",
+    path: ["activityId"],
+  })
+  .refine((value) => !value.allowsAi || value.allowedAiFunctions.length > 0, {
+    message: "Pilih minimal satu fungsi AI.",
+    path: ["allowedAiFunctions"],
+  });
+
+export const unitPublishSchema = z.object({
+  unitId: uuid("Unit"),
+});
+
 export const activityInstructionSchema = z.object({
   activityId: uuid("Aktivitas"),
   audience: z.enum(["student", "lecturer"], {

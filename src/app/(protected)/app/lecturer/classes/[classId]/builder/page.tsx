@@ -17,6 +17,7 @@ import {
 import {
   publishModuleAction,
   publishUnitAction,
+  publishUnitWithActivitiesAction,
 } from "@/actions/courses/content";
 import { PUBLICATION_LABEL } from "@/lib/constants/stages";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
@@ -191,58 +192,80 @@ export default async function CourseBuilderPage({
                     </div>
                   </div>
 
+                  {module.status !== "published" &&
+                  module.units.some((unit) => unit.status === "published") ? (
+                    <p className="border-l-2 border-destructive pl-3 text-xs text-foreground">
+                      Pertemuan masih draf, jadi unit di dalamnya belum terlihat
+                      mahasiswa.
+                    </p>
+                  ) : null}
+
                   {module.units.length === 0 ? (
                     <p className="text-xs text-subtle">
                       Belum ada unit pada pertemuan ini.
                     </p>
                   ) : (
                     <ul className="flex flex-col gap-2">
-                      {module.units.map((unit) => (
-                        <li
-                          key={unit.id}
-                          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
-                        >
-                          <div className="flex min-w-0 flex-col">
-                            <Link
-                              href={`/app/lecturer/classes/${classId}/builder/units/${unit.id}`}
-                              className="text-sm text-foreground underline underline-offset-4"
-                            >
-                              {unit.sequence}. {unit.title}
-                            </Link>
-                            <span className="text-xs text-subtle">
-                              {UNIT_KIND_LABEL[unit.unitKind] ?? unit.unitKind}{" "}
-                              · {unit.hasCase ? "kasus siap" : "kasus kosong"} ·{" "}
-                              {unit.activityCount} aktivitas
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <StatusBadge
-                              status={
-                                unit.status === "published"
-                                  ? "published"
-                                  : "draft"
-                              }
-                            >
-                              {PUBLICATION_LABEL[unit.status]}
-                            </StatusBadge>
-                            <InlineAction
-                              action={publishUnitAction}
-                              label={
-                                unit.status === "published"
-                                  ? "Jadikan draf"
-                                  : "Terbitkan unit"
-                              }
-                              fields={{
-                                id: unit.id,
-                                status:
-                                  unit.status === "published"
-                                    ? "draft"
-                                    : "published",
-                              }}
-                            />
-                          </div>
-                        </li>
-                      ))}
+                      {module.units.map((unit) => {
+                        const draftCount =
+                          unit.activityCount - unit.publishedActivityCount;
+                        const isPublished = unit.status === "published";
+                        return (
+                          <li
+                            key={unit.id}
+                            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
+                          >
+                            <div className="flex min-w-0 flex-col">
+                              <Link
+                                href={`/app/lecturer/classes/${classId}/builder/units/${unit.id}`}
+                                className="text-sm text-foreground underline underline-offset-4"
+                              >
+                                {unit.sequence}. {unit.title}
+                              </Link>
+                              <span className="text-xs text-subtle">
+                                {UNIT_KIND_LABEL[unit.unitKind] ??
+                                  unit.unitKind}{" "}
+                                · {unit.hasCase ? "kasus siap" : "kasus kosong"}{" "}
+                                · {unit.publishedActivityCount} dari{" "}
+                                {unit.activityCount} aktivitas terbit
+                              </span>
+                              {isPublished &&
+                              unit.activityCount > 0 &&
+                              unit.publishedActivityCount === 0 ? (
+                                <span className="text-xs text-destructive">
+                                  Belum ada aktivitas terbit — mahasiswa belum
+                                  dapat menjawab.
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <StatusBadge
+                                status={isPublished ? "published" : "draft"}
+                              >
+                                {PUBLICATION_LABEL[unit.status]}
+                              </StatusBadge>
+                              {!isPublished || draftCount > 0 ? (
+                                <InlineAction
+                                  action={publishUnitWithActivitiesAction}
+                                  label={
+                                    isPublished
+                                      ? `Terbitkan ${draftCount} aktivitas draf`
+                                      : "Terbitkan unit & aktivitas"
+                                  }
+                                  fields={{ unitId: unit.id }}
+                                />
+                              ) : null}
+                              {isPublished ? (
+                                <InlineAction
+                                  action={publishUnitAction}
+                                  label="Jadikan draf"
+                                  fields={{ id: unit.id, status: "draft" }}
+                                />
+                              ) : null}
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </li>

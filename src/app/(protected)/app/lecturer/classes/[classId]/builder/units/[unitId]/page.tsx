@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/shared/states/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { InlineAction } from "@/features/administration/components/action-form";
 import {
+  ActivityAiForm,
   ActivityRubricForm,
   CaseForm,
   CreateActivityForm,
@@ -20,7 +21,10 @@ import {
   AttachSourceForm,
   CreateCaseClaimForm,
 } from "@/features/verification/components/case-source-forms";
-import { publishActivityAction } from "@/actions/courses/content";
+import {
+  publishActivityAction,
+  publishUnitWithActivitiesAction,
+} from "@/actions/courses/content";
 import { isRubricComplete } from "@/lib/assessment/rubric-scoring";
 import {
   ACTIVITY_TYPE_LABEL,
@@ -83,6 +87,39 @@ export default async function BuilderUnitPage({
       : `${rubric.title} (belum lengkap)`,
   }));
 
+  const activities = detail.stages.flatMap((stage) => stage.activities);
+  const draftCount = activities.filter(
+    (activity) => activity.status === "draft",
+  ).length;
+  const isPublished = detail.unit.status === "published";
+  const publishLabel = !isPublished
+    ? draftCount > 0
+      ? `Terbitkan unit & ${draftCount} aktivitas`
+      : "Terbitkan unit"
+    : draftCount > 0
+      ? `Terbitkan ${draftCount} aktivitas draf`
+      : "Terbitkan ulang";
+
+  const notices: string[] = [];
+  if (detail.unit.moduleStatus !== "published") {
+    notices.push(
+      `Pertemuan “${detail.unit.moduleTitle}” masih draf, jadi unit ini belum terlihat mahasiswa. Terbitkan pertemuannya di halaman perancang.`,
+    );
+  }
+  if (isPublished && detail.unit.publishedActivityCount === 0) {
+    notices.push(
+      "Unit sudah terbit, tetapi belum ada aktivitas yang terbit. Mahasiswa belum dapat menjawab.",
+    );
+  } else if (isPublished && draftCount > 0) {
+    notices.push(
+      `${draftCount} aktivitas masih draf dan belum terlihat mahasiswa.`,
+    );
+  }
+
+  const aiActivities = activities.filter((activity) => activity.allowsAi);
+  const unitAiOn =
+    activities.length > 0 && aiActivities.length === activities.length;
+
   return (
     <PageContainer>
       <PageHeader
@@ -100,6 +137,67 @@ export default async function BuilderUnitPage({
       />
 
       <div className="flex flex-col gap-5">
+        <AnalyticsCard
+          title="Penerbitan untuk mahasiswa"
+          description="Mahasiswa hanya dapat menjawab aktivitas yang terbit, di dalam unit dan pertemuan yang juga terbit."
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-foreground">
+                Unit {PUBLICATION_LABEL[detail.unit.status]?.toLowerCase()} ·{" "}
+                {detail.unit.publishedActivityCount} dari{" "}
+                {detail.unit.activityCount} aktivitas terbit
+              </p>
+              {detail.unit.activityCount > 0 ? (
+                <InlineAction
+                  action={publishUnitWithActivitiesAction}
+                  label={publishLabel}
+                  fields={{ unitId }}
+                />
+              ) : null}
+            </div>
+
+            {notices.length > 0 ? (
+              <ul className="flex flex-col gap-1.5">
+                {notices.map((notice) => (
+                  <li
+                    key={notice}
+                    className="border-l-2 border-destructive pl-3 text-sm text-foreground"
+                  >
+                    {notice}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            {isPublished ? (
+              <p className="text-xs text-subtle">
+                Perubahan kasus atau tahap baru terlihat mahasiswa setelah unit
+                diterbitkan ulang.
+              </p>
+            ) : null}
+
+            {activities.length > 0 ? (
+              <div className="flex flex-col gap-2 border-t border-border pt-4">
+                <p className="text-sm text-foreground">
+                  Bantuan AI untuk semua aktivitas unit
+                </p>
+                <p className="text-xs text-subtle">
+                  {aiActivities.length} dari {activities.length} aktivitas
+                  mengizinkan AI. Mahasiswa tetap wajib mengirim jawaban mandiri
+                  sebelum AI merespons.
+                </p>
+                <ActivityAiForm
+                  target={{ unitId }}
+                  allowsAi={unitAiOn}
+                  allowedFunctions={aiActivities[0]?.allowedAiFunctions ?? []}
+                  submitLabel="Terapkan ke semua aktivitas"
+                />
+              </div>
+            ) : null}
+          </div>
+        </AnalyticsCard>
+
         <AnalyticsCard
           title="Kasus pemantik"
           description="Satu kasus per unit menjadi bahan penalaran di seluruh tahap."
@@ -241,6 +339,11 @@ export default async function BuilderUnitPage({
                             activityId={activity.id}
                             currentRubricId={activity.rubricId}
                             rubrics={rubricOptions}
+                          />
+                          <ActivityAiForm
+                            target={{ activityId: activity.id }}
+                            allowsAi={activity.allowsAi}
+                            allowedFunctions={activity.allowedAiFunctions}
                           />
                         </div>
                         <div className="flex items-center gap-2">

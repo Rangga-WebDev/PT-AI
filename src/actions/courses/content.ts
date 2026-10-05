@@ -11,6 +11,7 @@ import {
 } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
+  activityAiSchema,
   activityInstructionSchema,
   activityRubricSchema,
   activitySchema,
@@ -19,6 +20,7 @@ import {
   moduleSchema,
   publicationSchema,
   stageUpdateSchema,
+  unitPublishSchema,
 } from "@/lib/validation/content";
 import { isUniqueViolation } from "@/server/repositories/shared";
 
@@ -70,6 +72,44 @@ async function classOfStage(stageId: string): Promise<string | null> {
     .eq("id", stageId)
     .maybeSingle();
   return data?.learning_units.modules.class_id ?? null;
+}
+
+async function locateActivity(
+  activityId: string,
+): Promise<{ unitId: string; classId: string } | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("activities")
+    .select(
+      "learning_stages(learning_unit_id, learning_units(modules(class_id)))",
+    )
+    .eq("id", activityId)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    unitId: data.learning_stages.learning_unit_id,
+    classId: data.learning_stages.learning_units.modules.class_id,
+  };
+}
+
+/**
+ * Mahasiswa membaca snapshot versi terbit, bukan baris hidup, sehingga
+ * perubahan aktivitas pada unit terbit harus dibekukan ulang agar terlihat.
+ */
+async function refreezePublishedUnit(unitId: string): Promise<unknown> {
+  const supabase = await createClient();
+  const { data: unit } = await supabase
+    .from("learning_units")
+    .select("status")
+    .eq("id", unitId)
+    .maybeSingle();
+
+  if (unit?.status !== "published") return null;
+
+  const { error } = await supabase.rpc("publish_unit_version", {
+    p_unit_id: unitId,
+  });
+  return error;
 }
 
 export async function createModuleAction(
@@ -431,6 +471,167 @@ export async function publishUnitAction(
   }
 }
 
+/**
+ * Aktivitas hasil AI tersimpan sebagai draf. Menerbitkan unitnya saja membuat
+ * mahasiswa melihat unit tanpa tugas, jadi keduanya diterbitkan bersama.
+ */
+export async function publishUnitWithActivitiesAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const parsed = unitPublishSchema.safeParse({
+      unitId: formData.get("unitId"),
+    });
+
+    if (!parsed.success) {
+      return { fieldErrors: parsed.error.flatten().fieldErrors };
+    }
+
+    const { unitId } = parsed.data;
+    const classId = await classOfUnit(unitId);
+    if (!classId) return { error: "Unit tidak ditemukan." };
+
+    await requireLecturerOfClass(classId);
+    const supabase = await createClient();
+
+    const { data: unit } = await supabase
+      .from("learning_units")
+      .select("cases(id), learning_stages(activities(id, status))")
+      .eq("id", unitId)
+      .maybeSingle();
+
+    if (!unit?.cases) {
+      return {
+        error: "Unit belum memiliki kasus. Tulis kasus sebelum menerbitkan.",
+      };
+    }
+
+    const activities = unit.learning_stages.flatMap(
+      (stage) => stage.activities,
+    );
+    if (activities.length === 0) {
+      return {
+        error:
+          "Unit belum memiliki aktivitas. Tambahkan minimal satu aktivitas sebelum menerbitkan.",
+      };
+    }
+
+    const draftIds = activities
+      .filter((activity) => activity.status === "draft")
+      .map((activity) => activity.id);
+
+    if (draftIds.length > 0) {
+      const { error } = await supabase
+        .from("activities")
+        .update({ status: "published" })
+        .in("id", draftIds);
+      if (error) return fail(error);
+    }
+
+    const { error: unitError } = await supabase
+      .from("learning_units")
+      .update({ status: "published" })
+      .eq("id", unitId);
+    if (unitError) return fail(unitError);
+
+    const { error: versionError } = await supabase.rpc("publish_unit_version", {
+      p_unit_id: unitId,
+    });
+    if (versionError) return fail(versionError);
+
+    revalidatePath(`/app/lecturer/classes/${classId}/builder`, "layout");
+    return {
+      ok: true,
+      message:
+        draftIds.length > 0
+          ? `Unit dan ${draftIds.length} aktivitas diterbitkan.`
+          : "Unit diterbitkan ulang dengan isi terbaru.",
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+/** Unit hasil AI mematikan bantuan AI; dosen menyalakannya setelah meninjau. */
+export async function setActivityAiAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const parsed = activityAiSchema.safeParse({
+      activityId: formData.get("activityId") || undefined,
+      unitId: formData.get("unitId") || undefined,
+      allowsAi: formData.get("allowsAi") === "on",
+      allowedAiFunctions: formData.getAll("allowedAiFunctions").map(String),
+    });
+
+    if (!parsed.success) {
+      const flat = parsed.error.flatten();
+      return {
+        error:
+          flat.fieldErrors.allowedAiFunctions?.[0] ??
+          flat.fieldErrors.activityId?.[0] ??
+          "Pengaturan AI tidak valid.",
+      };
+    }
+
+    const { activityId, unitId, allowsAi, allowedAiFunctions } = parsed.data;
+
+    let location: { unitId: string; classId: string } | null = null;
+    if (activityId) {
+      location = await locateActivity(activityId);
+    } else if (unitId) {
+      const classId = await classOfUnit(unitId);
+      location = classId ? { unitId, classId } : null;
+    }
+    if (!location) return { error: "Aktivitas atau unit tidak ditemukan." };
+
+    await requireLecturerOfClass(location.classId);
+    const supabase = await createClient();
+
+    const values = {
+      allows_ai: allowsAi,
+      allowed_ai_functions: allowsAi ? allowedAiFunctions : [],
+    };
+
+    if (activityId) {
+      const { error } = await supabase
+        .from("activities")
+        .update(values)
+        .eq("id", activityId);
+      if (error) return fail(error);
+    } else {
+      const { data: stages, error: stageError } = await supabase
+        .from("learning_stages")
+        .select("id")
+        .eq("learning_unit_id", location.unitId);
+      if (stageError) return fail(stageError);
+
+      const { error } = await supabase
+        .from("activities")
+        .update(values)
+        .in(
+          "learning_stage_id",
+          (stages ?? []).map((stage) => stage.id),
+        )
+        .is("deleted_at", null);
+      if (error) return fail(error);
+    }
+
+    const freezeError = await refreezePublishedUnit(location.unitId);
+    if (freezeError) return fail(freezeError);
+
+    revalidatePath("/app/lecturer/classes", "layout");
+    return {
+      ok: true,
+      message: allowsAi ? "Bantuan AI diaktifkan." : "Bantuan AI dimatikan.",
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
 export async function publishModuleAction(
   _prevState: FormState,
   formData: FormData,
@@ -487,7 +688,10 @@ export async function publishActivityAction(
       return { fieldErrors: parsed.error.flatten().fieldErrors };
     }
 
-    await requireRoleOrThrow("lecturer");
+    const location = await locateActivity(parsed.data.id);
+    if (!location) return { error: "Aktivitas tidak ditemukan." };
+
+    await requireLecturerOfClass(location.classId);
     const supabase = await createClient();
 
     const { error } = await supabase
@@ -496,6 +700,9 @@ export async function publishActivityAction(
       .eq("id", parsed.data.id);
 
     if (error) return fail(error);
+
+    const freezeError = await refreezePublishedUnit(location.unitId);
+    if (freezeError) return fail(freezeError);
 
     revalidatePath("/app/lecturer/classes", "layout");
     return { ok: true, message: "Status aktivitas diperbarui." };
@@ -522,18 +729,11 @@ export async function setActivityRubricAction(
       return { fieldErrors: parsed.error.flatten().fieldErrors };
     }
 
+    const location = await locateActivity(parsed.data.activityId);
+    if (!location) return { error: "Aktivitas tidak ditemukan." };
+
+    await requireLecturerOfClass(location.classId);
     const supabase = await createClient();
-    const { data: activity } = await supabase
-      .from("activities")
-      .select("learning_stages(learning_units(modules(class_id)))")
-      .eq("id", parsed.data.activityId)
-      .maybeSingle();
-
-    const classId =
-      activity?.learning_stages.learning_units.modules.class_id ?? null;
-    if (!classId) return { error: "Aktivitas tidak ditemukan." };
-
-    await requireLecturerOfClass(classId);
 
     const { error } = await supabase
       .from("activities")
@@ -541,6 +741,9 @@ export async function setActivityRubricAction(
       .eq("id", parsed.data.activityId);
 
     if (error) return fail(error);
+
+    const freezeError = await refreezePublishedUnit(location.unitId);
+    if (freezeError) return fail(freezeError);
 
     revalidatePath("/app/lecturer/classes", "layout");
     return {
