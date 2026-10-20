@@ -12,6 +12,8 @@ export const RATE_LIMITS = {
   material_upload: { limit: 20, windowSeconds: 3_600 },
   quick_setup: { limit: 10, windowSeconds: 3_600 },
   ai_review: { limit: 60, windowSeconds: 3_600 },
+  class_message: { limit: 100, windowSeconds: 3_600 },
+  password_reset: { limit: 30, windowSeconds: 3_600 },
 } as const;
 
 export type RateLimitAction = keyof typeof RATE_LIMITS;
@@ -23,6 +25,10 @@ export const RATE_LIMIT_MESSAGE: Record<RateLimitAction, string> = {
     "Terlalu banyak penyusunan draf dalam satu jam terakhir. Coba lagi nanti.",
   ai_review:
     "Terlalu banyak permintaan bantuan AI dalam satu jam terakhir. Coba lagi nanti.",
+  class_message:
+    "Terlalu banyak pesan dalam satu jam terakhir. Coba lagi nanti.",
+  password_reset:
+    "Terlalu banyak pengaturan ulang kata sandi dalam satu jam terakhir. Coba lagi nanti.",
 };
 
 /**

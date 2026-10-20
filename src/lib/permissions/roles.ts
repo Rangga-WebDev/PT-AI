@@ -14,6 +14,8 @@ export interface CurrentUser {
   identifier: string;
   organizationId: string;
   roles: RoleKey[];
+  /** Kata sandi sementara dari dosen/administrator belum diganti pemiliknya. */
+  mustChangePassword: boolean;
 }
 
 export function hasRole(user: CurrentUser, ...roles: RoleKey[]): boolean {

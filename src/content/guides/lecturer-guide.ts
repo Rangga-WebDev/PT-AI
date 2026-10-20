@@ -41,6 +41,33 @@ export const lecturerGuide: Guide = {
       ],
     },
     {
+      id: "kata-sandi",
+      title: "Kata sandi dosen dan mahasiswa",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "Untuk mengganti kata sandi Anda sendiri, tekan Kata sandi di bagian atas layar. Bila lupa, tekan Lupa kata sandi? di halaman masuk, atau minta administrator mengatur ulang kata sandi Anda.",
+        },
+        {
+          kind: "paragraph",
+          text: "Mahasiswa yang lupa kata sandi dan tidak menerima surel dapat Anda bantu:",
+        },
+        {
+          kind: "steps",
+          items: [
+            "Buka kelas, lalu pilih Mahasiswa.",
+            "Pada baris mahasiswa tersebut, tekan Atur ulang kata sandi, lalu Ya, atur ulang.",
+            "Sampaikan kata sandi sementara yang tampil kepada mahasiswa secara langsung. Kata sandi itu hanya ditampilkan sekali.",
+            "Setelah masuk dengan kata sandi sementara, mahasiswa langsung diminta membuat kata sandi pribadi.",
+          ],
+        },
+        {
+          kind: "note",
+          text: "Anda hanya dapat mengatur ulang kata sandi mahasiswa yang terdaftar aktif di kelas Anda. Setiap pengaturan ulang tercatat atas nama Anda.",
+        },
+      ],
+    },
+    {
       id: "membuat-kelas",
       title: "Membuat kelas",
       blocks: [
@@ -446,8 +473,8 @@ export const lecturerGuide: Guide = {
           kind: "steps",
           items: [
             "Tekan Bantu review dengan AI.",
-            "Baca usulan beserta bukti dan alasannya.",
-            "Tekan Gunakan saran bila setuju; tingkat itu akan terpilih pada formulir.",
+            "Baca usulan beserta bukti dan alasannya. Usulan muncul satu per satu untuk tiap dimensi selagi AI menyusunnya.",
+            "Tekan Gunakan saran bila setuju; tingkat itu akan terpilih pada formulir. Tombol ini aktif setelah usulan untuk semua dimensi selesai.",
             "Ubah pilihan Anda kapan saja, atau abaikan usulan sepenuhnya.",
             "Tekan Pakai sebagai draf catatan bila ingin menyunting saran umpan balik.",
             "Tekan Simpan penilaian.",
@@ -456,6 +483,51 @@ export const lecturerGuide: Guide = {
         {
           kind: "note",
           text: "Tidak ada yang tersimpan sampai Anda menekan Simpan penilaian. Nilai yang tercatat selalu nilai yang Anda pilih, bukan usulan AI.",
+        },
+      ],
+    },
+    {
+      id: "periksa-semua",
+      title: "Memeriksa semua respons sekaligus",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "Bila banyak respons awal menunggu, buka menu Review. Bagian Periksa semua dengan AI menampilkan setiap respons yang belum Anda nilai.",
+        },
+        {
+          kind: "steps",
+          items: [
+            "Tekan Periksa semua dengan AI. AI menyusun usulan tingkat rubrik dan catatan untuk tiap respons.",
+            "Periksa tiap baris: nilai rubrik usulan, hasil ketuntasan, dan catatan untuk mahasiswa. Ubah yang perlu diubah.",
+            "Hilangkan centang Sertakan saat menyimpan pada baris yang ingin Anda tinjau sendiri, lalu buka Tinjau pada baris itu.",
+            "Tekan tombol simpan di bawah daftar, misalnya Simpan 12 penilaian, untuk menyimpan semua baris yang masih dicentang.",
+          ],
+        },
+        {
+          kind: "note",
+          text: "Hasil ketuntasan awal diambil dari nilai rubrik terhadap ambang ketuntasan aktivitas, atau ambang bawaan yang dapat Anda ubah di bagian atas. Respons tanpa rubrik, atau yang menurut AI buktinya belum cukup, harus dinilai lewat Tinjau. Setiap respons memakai satu kuota bantuan AI; bila kuota per jam habis, sisa respons dapat diperiksa kemudian.",
+        },
+      ],
+    },
+    {
+      id: "diskusi",
+      title: "Berdiskusi dengan kelas",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "Setiap kelas memiliki menu Diskusi. Diskusi kelas dipakai untuk hal umum mata kuliah, dan setiap pertemuan memiliki ruang diskusinya sendiri. Semua anggota kelas membaca pesan yang sama, dan pesan baru tampil tanpa memuat ulang halaman.",
+        },
+        {
+          kind: "steps",
+          items: [
+            "Buka kelas, lalu pilih Diskusi.",
+            "Pilih Diskusi kelas atau salah satu pertemuan. Ruang diskusi pertemuan juga dapat dibuka dari tautan di menu Pertemuan.",
+            "Tulis pesan, lalu tekan Kirim atau Enter.",
+          ],
+        },
+        {
+          kind: "note",
+          text: "Anda dapat menghapus pesan siapa pun di kelas Anda. Diskusi pertemuan yang belum terbit hanya terlihat oleh dosen.",
         },
       ],
     },

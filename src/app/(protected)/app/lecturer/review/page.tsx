@@ -9,8 +9,12 @@ import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/shared/states/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { buttonVariants } from "@/components/ui/button";
+import { BulkAiReview } from "@/features/assessment/components/bulk-ai-review";
 import { requireLecturerAccess } from "@/lib/supabase/auth";
-import { listReviewQueue } from "@/server/repositories/attempts";
+import {
+  listPendingAssessments,
+  listReviewQueue,
+} from "@/server/repositories/attempts";
 
 export const metadata: Metadata = {
   title: "Antrean review",
@@ -18,7 +22,10 @@ export const metadata: Metadata = {
 
 export default async function LecturerReviewPage() {
   await requireLecturerAccess();
-  const queue = await listReviewQueue();
+  const [queue, pending] = await Promise.all([
+    listReviewQueue(),
+    listPendingAssessments(),
+  ]);
 
   return (
     <PageContainer>
@@ -28,6 +35,8 @@ export default async function LecturerReviewPage() {
         description="Respons awal mahasiswa pada kelas yang Anda ampu. Respons bersifat permanen dan tidak dapat diubah siapa pun."
       />
       <div className="flex flex-col gap-5">
+        {pending.length > 0 ? <BulkAiReview items={pending} /> : null}
+
         <AnalyticsCard
           title="Respons awal masuk"
           description="Diurutkan dari yang terbaru."
@@ -52,7 +61,13 @@ export default async function LecturerReviewPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <StatusBadge status="verified">Baseline</StatusBadge>
+                      {item.assessed ? (
+                        <StatusBadge status="verified">
+                          Sudah dinilai
+                        </StatusBadge>
+                      ) : (
+                        <StatusBadge status="draft">Belum dinilai</StatusBadge>
+                      )}
                       <Link
                         href={`/app/lecturer/review/${item.attemptId}`}
                         className={buttonVariants({

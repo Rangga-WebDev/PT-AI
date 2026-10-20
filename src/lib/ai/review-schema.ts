@@ -23,7 +23,7 @@ const evidenceRefSchema = z.object({
   excerpt: z.string().trim().min(1).max(600),
 });
 
-const criterionSuggestionSchema = z.object({
+export const criterionSuggestionSchema = z.object({
   criterionId: z.string().trim().min(1),
   suggestedScore: z.number().nullable(),
   confidence: z.enum(REVIEW_CONFIDENCE),

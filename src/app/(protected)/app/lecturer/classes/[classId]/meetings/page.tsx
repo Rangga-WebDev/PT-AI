@@ -61,7 +61,13 @@ export default async function LecturerClassMeetingsPage({
           description="Belum ada struktur pertemuan. Susun sendiri di perancang materi, atau terapkan draf dari Quick Setup."
         />
       ) : (
-        <MeetingList modules={modules} showStatus />
+        <MeetingList
+          modules={modules}
+          showStatus
+          discussionHref={(moduleId) =>
+            `/app/lecturer/classes/${classId}/discussion?pertemuan=${moduleId}`
+          }
+        />
       )}
     </ClassShell>
   );

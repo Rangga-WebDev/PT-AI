@@ -26,6 +26,8 @@ const AUTH_ROUTES = ["/", "/login", "/register", "/forgot-password"];
 function buildSecurityHeaders(nonce: string): Record<string, string> {
   const isDev = process.env.NODE_ENV === "development";
   const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  // Realtime diskusi kelas memakai WebSocket ke host Supabase yang sama.
+  const realtimeOrigin = supabaseOrigin.replace(/^http/, "ws");
 
   const csp = [
     "default-src 'self'",
@@ -34,7 +36,7 @@ function buildSecurityHeaders(nonce: string): Record<string, string> {
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' blob: data:",
     "font-src 'self'",
-    `connect-src 'self' ${supabaseOrigin}`.trim(),
+    `connect-src 'self' ${supabaseOrigin} ${realtimeOrigin}`.trim(),
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

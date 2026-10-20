@@ -43,13 +43,13 @@ export function RequestResetForm() {
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="reset-email">Surel institusi</Label>
+        <Label htmlFor="reset-email">Surel</Label>
         <Input
           id="reset-email"
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="nama@kampus.ac.id"
+          placeholder="nama@gmail.com"
           required
         />
         {state.fieldErrors?.["email"] ? (

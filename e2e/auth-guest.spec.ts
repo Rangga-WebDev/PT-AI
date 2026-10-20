@@ -51,7 +51,7 @@ test.describe("Autentikasi — tamu", () => {
     page,
   }) => {
     await page.goto("/forgot-password");
-    await page.getByLabel("Surel institusi").fill("tidak.ada@ptai.test");
+    await page.getByLabel("Surel", { exact: true }).fill("tidak.ada@ptai.test");
     await page.getByRole("button", { name: "Kirim tautan" }).click();
 
     await expect(page.getByRole("status")).toContainText(

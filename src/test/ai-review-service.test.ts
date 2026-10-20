@@ -5,6 +5,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthorizationError } from "@/lib/errors";
+import type { ReviewStep } from "@/server/ai/lecturer-review";
 import type { AiProvider } from "@/server/ai/types";
 
 const requireLecturerOfClass = vi.fn();
@@ -58,8 +59,45 @@ vi.mock("@/server/repositories/revisions", () => ({
   listLecturerFeedback: (id: string) => listLecturerFeedback(id),
 }));
 
-const { requestReviewSuggestion } = await import("@/server/ai/lecturer-review");
+const { prepareReview, streamReview } =
+  await import("@/server/ai/lecturer-review");
 const { setProvider } = await import("@/server/ai/provider");
+
+async function collectSteps(lecturerId = "lecturer"): Promise<ReviewStep[]> {
+  const prepared = await prepareReview(ATTEMPT_ID);
+  if (!prepared.ok) throw new Error(prepared.reason);
+  const steps: ReviewStep[] = [];
+  for await (const step of streamReview(prepared, lecturerId)) {
+    steps.push(step);
+  }
+  return steps;
+}
+
+/** Bentuk hasil akhir aliran, setara satu permintaan tanpa aliran. */
+async function requestReviewSuggestion(attemptId: string, lecturerId: string) {
+  const prepared = await prepareReview(attemptId);
+  if (!prepared.ok) return { ok: false as const, reason: prepared.reason };
+
+  for await (const step of streamReview(prepared, lecturerId)) {
+    if (step.type === "error") {
+      return { ok: false as const, reason: step.reason };
+    }
+    if (step.type === "done") {
+      return {
+        ok: true as const,
+        data: { suggestion: step.suggestion, packet: prepared.packet },
+      };
+    }
+  }
+  throw new Error("Aliran berakhir tanpa peristiwa akhir.");
+}
+
+function auditRow(action: string) {
+  const call = auditInsert.mock.calls.find(
+    ([row]) => (row as { action: string }).action === action,
+  );
+  return call?.[0] as { after: Record<string, unknown> } | undefined;
+}
 
 const ATTEMPT_ID = "11111111-1111-4111-8111-111111111111";
 const CLASS_ID = "22222222-2222-4222-8222-222222222222";
@@ -388,9 +426,7 @@ describe("wewenang nilai akhir", () => {
       }),
     );
 
-    const row = auditInsert.mock.calls[0]![0] as {
-      after: Record<string, unknown>;
-    };
+    const row = auditRow("ai_review_suggestion")!;
     expect(row.after["evidenceIds"]).toContain(REVISION_ID);
     expect(row.after["rubricCriteriaIds"]).toContain(CRITERION_ID);
   });
@@ -400,9 +436,7 @@ describe("wewenang nilai akhir", () => {
   it("mencatat identitas pekerjaan, model, dan versi prompt", async () => {
     await requestReviewSuggestion(ATTEMPT_ID, "lecturer");
 
-    const row = auditInsert.mock.calls[0]![0] as {
-      after: Record<string, unknown>;
-    };
+    const row = auditRow("ai_review_suggestion")!;
     expect(row.after["studentId"]).toBe("student-1");
     expect(row.after["activityId"]).toBe("activity-1");
     expect(row.after["classId"]).toBe(CLASS_ID);
@@ -470,5 +504,132 @@ describe("bukti yang belum cukup", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.data.suggestion.criteria[0]?.suggestedScore).toBeNull();
+  });
+});
+
+describe("usulan yang mengalir per kriteria", () => {
+  const SECOND_ID = "66666666-6666-4666-8666-666666666666";
+
+  function streaming(chunks: string[]): AiProvider {
+    return {
+      async generateStructured() {
+        throw new Error("Jalur tanpa aliran tidak boleh dipakai.");
+      },
+      async *streamStructured({ prompt }) {
+        promptSeen = prompt;
+        for (const chunk of chunks) yield chunk;
+      },
+      async embed(texts) {
+        return texts.map(() => []);
+      },
+    };
+  }
+
+  const pieces = (text: string, size = 9) =>
+    Array.from({ length: Math.ceil(text.length / size) }, (_, index) =>
+      text.slice(index * size, (index + 1) * size),
+    );
+
+  function twoCriteria(secondEvidence: string) {
+    getAttemptReview.mockResolvedValue(
+      review({
+        rubric: {
+          id: "rubric-1",
+          title: "Rubrik berpikir kritis",
+          criteria: [
+            review().rubric.criteria[0],
+            {
+              ...review().rubric.criteria[0],
+              id: SECOND_ID,
+              code: "E1",
+              dimension: "evaluation",
+            },
+          ],
+        },
+      }),
+    );
+
+    const first = JSON.parse(validOutput()).criteria[0];
+    return validOutput({
+      criteria: [
+        first,
+        {
+          ...first,
+          criterionId: SECOND_ID,
+          evidence: [{ artifactId: secondEvidence, excerpt: "kutipan" }],
+        },
+      ],
+    });
+  }
+
+  it("mengirim kriteria sebelum hasil akhir memakai aliran penyedia", async () => {
+    setProvider(streaming(pieces(validOutput())));
+
+    const steps = await collectSteps();
+
+    expect(steps.map((step) => step.type)).toEqual(["criterion", "done"]);
+    expect(steps[0]).toMatchObject({
+      entry: { criterionId: CRITERION_ID, suggestedScore: 50 },
+    });
+  });
+
+  it("mencatat jejak setiap kriteria sebelum kriteria itu dikirim", async () => {
+    const order: string[] = [];
+    auditInsert.mockImplementation(async (row: { action: string }) => {
+      order.push(`jejak:${row.action}`);
+      return { error: null };
+    });
+    setProvider(streaming(pieces(validOutput())));
+
+    const prepared = await prepareReview(ATTEMPT_ID);
+    if (!prepared.ok) throw new Error(prepared.reason);
+    for await (const step of streamReview(prepared, "lecturer")) {
+      order.push(`kirim:${step.type}`);
+    }
+
+    expect(order).toEqual([
+      "jejak:ai_review_criterion_shown",
+      "kirim:criterion",
+      "jejak:ai_review_suggestion",
+      "kirim:done",
+    ]);
+    expect(auditRow("ai_review_criterion_shown")!.after["requestId"]).toBe(
+      auditRow("ai_review_suggestion")!.after["requestId"],
+    );
+  });
+
+  it("membatalkan seluruh hasil bila kriteria berikutnya tidak dapat ditelusuri", async () => {
+    setProvider(streaming(pieces(twoCriteria("artefak-karangan"))));
+
+    const steps = await collectSteps();
+
+    expect(steps.map((step) => step.type)).toEqual(["criterion", "error"]);
+    expect(steps[1]).toEqual({ type: "error", reason: "untraceable_citation" });
+    expect(auditRow("ai_review_suggestion")).toBeUndefined();
+  });
+
+  it("menahan kriteria yang jejaknya gagal dicatat", async () => {
+    auditInsert.mockResolvedValue({ error: { code: "42501" } });
+    setProvider(streaming(pieces(validOutput())));
+
+    const steps = await collectSteps();
+
+    expect(steps).toEqual([{ type: "error", reason: "provenance_failed" }]);
+  });
+
+  it("melaporkan penyedia yang terputus di tengah aliran", async () => {
+    const text = twoCriteria(REVISION_ID);
+    setProvider({
+      ...streaming([]),
+      async *streamStructured() {
+        yield text.slice(0, text.indexOf(SECOND_ID));
+        throw new Error("koneksi putus");
+      },
+    });
+
+    const steps = await collectSteps();
+
+    expect(steps.map((step) => step.type)).toEqual(["criterion", "error"]);
+    expect(steps[1]).toEqual({ type: "error", reason: "provider_error" });
   });
 });

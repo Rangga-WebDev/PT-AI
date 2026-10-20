@@ -3,23 +3,24 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import {
-  requestAiReviewAction,
-  type ReviewSuggestionState,
-} from "@/actions/assessment/ai-review";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { CONFIDENCE_LABEL } from "@/lib/ai/review-schema";
+import {
+  CONFIDENCE_LABEL,
+  type CriterionSuggestion,
+  type ReviewSuggestion,
+} from "@/lib/ai/review-schema";
+import { streamAiReview, type ReviewStreamEvent } from "@/lib/ai/review-stream";
 import { DIMENSION_LABEL, type CtDimension } from "@/lib/constants/stages";
 
-type Loaded = Extract<ReviewSuggestionState, { ok: true }>;
-type LoadedCriterion = Loaded["criteria"][number];
+type Meta = Extract<ReviewStreamEvent, { type: "meta" }>;
+type MetaCriterion = Meta["criteria"][number];
 
 /** Saran AI selalu tampil sebagai level rubrik, bukan angka lepas. */
 function levelLabel(
-  criterion: LoadedCriterion | undefined,
+  criterion: MetaCriterion | undefined,
   score: number,
 ): string {
   const level = criterion?.levels.find((item) => item.score === score);
@@ -29,7 +30,8 @@ function levelLabel(
 /**
  * Asisten penilaian, bukan percakapan. Ia hanya berjalan ketika dosen
  * memintanya, dan usulannya tidak pernah tersimpan sebagai nilai — yang
- * menyimpan tetap formulir penilaian di bawahnya.
+ * menyimpan tetap formulir penilaian di bawahnya. Usulan tampil per kriteria
+ * selagi AI menulis, tetapi baru dapat dipakai setelah seluruhnya lolos.
  */
 export function AiReviewPanel({
   attemptId,
@@ -42,21 +44,55 @@ export function AiReviewPanel({
   applyScore: (criterionId: string, score: number) => void;
   applyFeedback: (text: string) => void;
 }) {
-  const [state, setState] = useState<Loaded | null>(null);
+  const [meta, setMeta] = useState<Meta | null>(null);
+  const [entries, setEntries] = useState<CriterionSuggestion[]>([]);
+  const [final, setFinal] = useState<ReviewSuggestion | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [streaming, setStreaming] = useState(false);
+  const controller = useRef<AbortController | null>(null);
+
+  useEffect(() => () => controller.current?.abort(), []);
 
   function request() {
+    controller.current?.abort();
+    const current = new AbortController();
+    controller.current = current;
+
+    setMeta(null);
+    setEntries([]);
+    setFinal(null);
     setError(null);
-    startTransition(async () => {
-      const result = await requestAiReviewAction(attemptId);
-      if (result.ok) setState(result);
-      else setError(result.error);
-    });
+    setStreaming(true);
+
+    void streamAiReview(
+      attemptId,
+      (event) => {
+        if (current.signal.aborted) return;
+        if (event.type === "meta") {
+          setMeta(event);
+        } else if (event.type === "criterion") {
+          setEntries((list) => [...list, event.entry]);
+        } else if (event.type === "done") {
+          setFinal(event.suggestion);
+          setStreaming(false);
+        } else {
+          // Satu butir yang ditolak membatalkan seluruh hasil, termasuk yang sudah tampil.
+          setMeta(null);
+          setEntries([]);
+          setError(event.error);
+          setStreaming(false);
+        }
+      },
+      current.signal,
+    );
   }
 
+  const suggestions = new Map(
+    (final?.criteria ?? entries).map((entry) => [entry.criterionId, entry]),
+  );
+
   const artifactLabel = (id: string): string =>
-    state?.artifacts.find((item) => item.id === id)?.label ?? "Bukti";
+    meta?.artifacts.find((item) => item.id === id)?.label ?? "Bukti";
 
   return (
     <section
@@ -72,9 +108,9 @@ export function AiReviewPanel({
             Bantuan penilaian AI
           </h3>
           <p className="max-w-prose text-sm text-muted-foreground">
-            Usulan berdasarkan rubrik dan bukti yang tercatat. Keputusan nilai
-            tetap milik Anda; tidak ada yang tersimpan sampai Anda menekan
-            simpan.
+            Usulan berdasarkan rubrik dan bukti yang tercatat, muncul per
+            kriteria selagi AI menyusunnya. Keputusan nilai tetap milik Anda;
+            tidak ada yang tersimpan sampai Anda menekan simpan.
           </p>
         </div>
         <Button
@@ -82,12 +118,12 @@ export function AiReviewPanel({
           variant="ai"
           size="sm"
           onClick={request}
-          disabled={pending || !hasRubric}
+          disabled={streaming || !hasRubric}
         >
           <Sparkles aria-hidden="true" />
-          {pending
+          {streaming
             ? "Menganalisis…"
-            : state
+            : final
               ? "Minta ulang"
               : "Bantu review dengan AI"}
         </Button>
@@ -100,6 +136,14 @@ export function AiReviewPanel({
         </p>
       ) : null}
 
+      <p role="status" className="text-sm text-subtle empty:hidden">
+        {streaming
+          ? meta
+            ? `AI sudah mengusulkan ${entries.length} dari ${meta.criteria.length} kriteria…`
+            : "Menyiapkan bukti pekerjaan…"
+          : ""}
+      </p>
+
       {error ? (
         <p
           role="alert"
@@ -109,32 +153,38 @@ export function AiReviewPanel({
         </p>
       ) : null}
 
-      {state ? (
+      {meta ? (
         <div className="flex flex-col gap-6">
-          <ul className="flex flex-col gap-5">
-            {state.suggestion.criteria.map((entry) => {
-              const criterion = state.criteria.find(
-                (item) => item.id === entry.criterionId,
-              );
+          <ul className="flex flex-col gap-5" aria-busy={streaming}>
+            {meta.criteria.map((criterion) => {
+              const entry = suggestions.get(criterion.id);
 
               return (
                 <li
-                  key={entry.criterionId}
+                  key={criterion.id}
                   className="flex flex-col gap-2 border-b border-border pb-5 last:border-b-0"
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <span className="text-sm font-medium text-foreground">
-                      {criterion?.code} ·{" "}
-                      {DIMENSION_LABEL[criterion?.dimension as CtDimension] ??
-                        criterion?.dimension}
+                      {criterion.code} ·{" "}
+                      {DIMENSION_LABEL[criterion.dimension as CtDimension] ??
+                        criterion.dimension}
                     </span>
-                    <span className="font-mono text-xs text-subtle">
-                      {CONFIDENCE_LABEL[entry.confidence]}
-                    </span>
+                    {entry ? (
+                      <span className="font-mono text-xs text-subtle">
+                        {CONFIDENCE_LABEL[entry.confidence]}
+                      </span>
+                    ) : null}
                   </div>
 
-                  {entry.insufficientEvidence ||
-                  entry.suggestedScore === null ? (
+                  {!entry ? (
+                    <p className="text-sm text-subtle">
+                      {streaming
+                        ? "Menunggu usulan AI…"
+                        : "AI tidak memberi usulan untuk kriteria ini."}
+                    </p>
+                  ) : entry.insufficientEvidence ||
+                    entry.suggestedScore === null ? (
                     <StatusBadge status="evidence" withDot={false}>
                       Bukti belum cukup untuk menilai
                     </StatusBadge>
@@ -148,6 +198,7 @@ export function AiReviewPanel({
                         type="button"
                         variant="outline"
                         size="sm"
+                        disabled={!final}
                         onClick={() =>
                           applyScore(
                             entry.criterionId,
@@ -160,11 +211,13 @@ export function AiReviewPanel({
                     </div>
                   )}
 
-                  <p className="max-w-prose text-sm text-muted-foreground">
-                    {entry.rationale}
-                  </p>
+                  {entry ? (
+                    <p className="max-w-prose text-sm text-muted-foreground">
+                      {entry.rationale}
+                    </p>
+                  ) : null}
 
-                  {entry.evidence.length > 0 ? (
+                  {entry && entry.evidence.length > 0 ? (
                     <ul className="flex flex-col gap-1 border-l-2 border-ai/40 pl-3">
                       {entry.evidence.map((reference, index) => (
                         <li
@@ -184,56 +237,65 @@ export function AiReviewPanel({
             })}
           </ul>
 
-          {state.suggestion.overallObservations.length > 0 ? (
-            <div className="flex flex-col gap-1.5">
-              <h4 className="font-mono text-xs tracking-widest text-subtle uppercase">
-                Pengamatan menyeluruh
-              </h4>
-              <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
-                {state.suggestion.overallObservations.map((item, index) => (
-                  <li key={index}>— {item}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          <div className="flex flex-col gap-2">
-            <h4 className="font-mono text-xs tracking-widest text-subtle uppercase">
-              Saran umpan balik AI
-            </h4>
-            <p className="max-w-prose text-sm whitespace-pre-wrap text-muted-foreground">
-              {state.suggestion.suggestedFeedback}
+          {streaming && entries.length > 0 ? (
+            <p className="text-xs text-subtle">
+              “Gunakan saran” aktif setelah usulan untuk semua kriteria selesai
+              dan tercatat.
             </p>
-            <div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  applyFeedback(state.suggestion.suggestedFeedback)
-                }
-              >
-                Pakai sebagai draf catatan
-              </Button>
-            </div>
-          </div>
-
-          {state.suggestion.limitations.length > 0 ? (
-            <div className="flex flex-col gap-1.5">
-              <h4 className="font-mono text-xs tracking-widest text-subtle uppercase">
-                Keterbatasan yang disebut AI
-              </h4>
-              <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
-                {state.suggestion.limitations.map((item, index) => (
-                  <li key={index}>— {item}</li>
-                ))}
-              </ul>
-            </div>
           ) : null}
 
-          <p className="font-mono text-xs text-subtle">
-            {state.model} · prompt v{state.promptVersion}
-          </p>
+          {final ? (
+            <>
+              {final.overallObservations.length > 0 ? (
+                <div className="flex flex-col gap-1.5">
+                  <h4 className="font-mono text-xs tracking-widest text-subtle uppercase">
+                    Pengamatan menyeluruh
+                  </h4>
+                  <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+                    {final.overallObservations.map((item, index) => (
+                      <li key={index}>— {item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-2">
+                <h4 className="font-mono text-xs tracking-widest text-subtle uppercase">
+                  Saran umpan balik AI
+                </h4>
+                <p className="max-w-prose text-sm whitespace-pre-wrap text-muted-foreground">
+                  {final.suggestedFeedback}
+                </p>
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyFeedback(final.suggestedFeedback)}
+                  >
+                    Pakai sebagai draf catatan
+                  </Button>
+                </div>
+              </div>
+
+              {final.limitations.length > 0 ? (
+                <div className="flex flex-col gap-1.5">
+                  <h4 className="font-mono text-xs tracking-widest text-subtle uppercase">
+                    Keterbatasan yang disebut AI
+                  </h4>
+                  <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+                    {final.limitations.map((item, index) => (
+                      <li key={index}>— {item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <p className="font-mono text-xs text-subtle">
+                {meta.model} · prompt v{meta.promptVersion}
+              </p>
+            </>
+          ) : null}
         </div>
       ) : null}
     </section>

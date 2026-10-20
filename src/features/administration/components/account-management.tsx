@@ -5,6 +5,7 @@
 import {
   createAccountAction,
   grantRoleAction,
+  resetUserPasswordAction,
   revokeRoleAction,
 } from "@/actions/administration/accounts";
 import {
@@ -12,6 +13,7 @@ import {
   FieldError,
   InlineAction,
 } from "@/features/administration/components/action-form";
+import { TemporaryPasswordReset } from "@/features/auth/components/temporary-password-reset";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -100,7 +102,13 @@ export function CreateAccountForm({
   );
 }
 
-export function ProfileTable({ profiles }: { profiles: ProfileItem[] }) {
+export function ProfileTable({
+  profiles,
+  currentUserId,
+}: {
+  profiles: ProfileItem[];
+  currentUserId: string;
+}) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full min-w-[44rem] text-sm">
@@ -162,6 +170,17 @@ export function ProfileTable({ profiles }: { profiles: ProfileItem[] }) {
                     ),
                   )}
                 </div>
+                {profile.id !== currentUserId &&
+                !profile.roles.includes("admin") &&
+                (profile.roles.includes("student") ||
+                  profile.roles.includes("lecturer")) ? (
+                  <div className="mt-2">
+                    <TemporaryPasswordReset
+                      subjectName={profile.fullName}
+                      action={() => resetUserPasswordAction(profile.id)}
+                    />
+                  </div>
+                ) : null}
               </td>
             </tr>
           ))}

@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 
 import { EmptyState } from "@/components/shared/states/empty-state";
 import { buttonVariants } from "@/components/ui/button";
+import { resetStudentPasswordAction } from "@/actions/courses/student-password";
+import { TemporaryPasswordReset } from "@/features/auth/components/temporary-password-reset";
 import { ClassShell } from "@/features/classes/components/class-shell";
 import { EnrollStudentPanel } from "@/features/classes/components/enroll-student-panel";
 import { EnrollmentInbox } from "@/features/classes/components/enrollment-inbox";
@@ -68,12 +70,22 @@ export default async function LecturerClassStudentsPage({
                   {student.identifier}
                 </span>
               </span>
-              <Link
-                href={`/app/lecturer/classes/${classId}/students/${student.profileId}/portfolio`}
-                className={buttonVariants({ variant: "outline", size: "sm" })}
-              >
-                Lihat portofolio
-              </Link>
+              <div className="flex flex-wrap items-start gap-2">
+                <TemporaryPasswordReset
+                  subjectName={student.fullName}
+                  action={resetStudentPasswordAction.bind(
+                    null,
+                    classId,
+                    student.profileId,
+                  )}
+                />
+                <Link
+                  href={`/app/lecturer/classes/${classId}/students/${student.profileId}/portfolio`}
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  Lihat portofolio
+                </Link>
+              </div>
             </li>
           ))}
         </ul>

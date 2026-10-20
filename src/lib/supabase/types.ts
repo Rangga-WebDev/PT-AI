@@ -1603,6 +1603,60 @@ export type Database = {
           },
         ];
       };
+      class_messages: {
+        Row: {
+          author_id: string;
+          author_name: string;
+          author_role: string;
+          body: string;
+          class_id: string;
+          created_at: string;
+          deleted_at: string | null;
+          deleted_by: string | null;
+          id: string;
+          module_id: string | null;
+        };
+        Insert: {
+          author_id?: string;
+          author_name?: string;
+          author_role?: string;
+          body: string;
+          class_id: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          deleted_by?: string | null;
+          id?: string;
+          module_id?: string | null;
+        };
+        Update: {
+          author_id?: string;
+          author_name?: string;
+          author_role?: string;
+          body?: string;
+          class_id?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          deleted_by?: string | null;
+          id?: string;
+          module_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "class_messages_class_id_fkey";
+            columns: ["class_id"];
+            isOneToOne: false;
+            referencedRelation: "classes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "class_messages_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       consent_records: {
         Row: {
           consented_at: string | null;
@@ -3608,6 +3662,14 @@ export type Database = {
       can_student_read_activity: {
         Args: { p_activity_id: string };
         Returns: boolean;
+      };
+      can_use_class_discussion: {
+        Args: { p_class_id: string; p_module_id: string | null };
+        Returns: boolean;
+      };
+      delete_class_message: {
+        Args: { p_message_id: string };
+        Returns: undefined;
       };
       class_of_activity: { Args: { p_activity_id: string }; Returns: string };
       class_of_learning_unit: { Args: { p_unit_id: string }; Returns: string };

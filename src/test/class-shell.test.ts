@@ -157,6 +157,20 @@ describe("navigasi kelas", () => {
     expect(student).not.toContain("Mahasiswa");
   });
 
+  it("menempatkan Diskusi pada urutan yang sama untuk kedua peran", () => {
+    const lecturer = lecturerClassNav(CLASS_ID);
+    const student = studentClassNav(CLASS_ID);
+
+    expect(lecturer[4]).toMatchObject({
+      label: "Diskusi",
+      href: `/app/lecturer/classes/${CLASS_ID}/discussion`,
+    });
+    expect(student[4]).toMatchObject({
+      label: "Diskusi",
+      href: `/app/student/classes/${CLASS_ID}/discussion`,
+    });
+  });
+
   it("seluruh tautan mahasiswa menunjuk ke rute yang ada", () => {
     for (const item of studentClassNav(CLASS_ID)) {
       expect(item.available).toBe(true);

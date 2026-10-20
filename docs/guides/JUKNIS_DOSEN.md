@@ -9,22 +9,25 @@ Panduan ini mengikuti aplikasi yang berjalan sekarang. Setiap langkah menyebut m
 
 1. [Mengenal PT-AI](#mengenal)
 2. [Masuk ke aplikasi](#masuk)
-3. [Membuat kelas](#membuat-kelas)
-4. [Menambahkan mahasiswa](#menambahkan-mahasiswa)
-5. [Menyiapkan kelas](#menyiapkan-kelas)
-6. [Menambahkan materi](#menambahkan-materi)
-7. [Menyiapkan kelas dari RPS atau CPMK dengan AI](#quick-setup)
-8. [Memeriksa hasil Quick Setup](#memeriksa-draf)
-9. [Menerapkan struktur pertemuan](#menerapkan-pertemuan)
-10. [Menyiapkan aktivitas PT-AI](#aktivitas-ptai)
-11. [Menggunakan rubrik standar PT-AI](#rubrik)
-12. [Menerbitkan kelas](#menerbitkan-kelas)
-13. [Memantau portofolio mahasiswa](#portofolio)
-14. [Melakukan penilaian](#penilaian)
-15. [Menggunakan bantuan AI saat review](#bantuan-ai-review)
-16. [Memahami nilai dan enam dimensi berpikir kritis](#dimensi)
-17. [Hal yang tidak dilakukan AI](#batas-ai)
-18. [Kendala yang sering muncul](#kendala)
+3. [Kata sandi dosen dan mahasiswa](#kata-sandi)
+4. [Membuat kelas](#membuat-kelas)
+5. [Menambahkan mahasiswa](#menambahkan-mahasiswa)
+6. [Menyiapkan kelas](#menyiapkan-kelas)
+7. [Menambahkan materi](#menambahkan-materi)
+8. [Menyiapkan kelas dari RPS atau CPMK dengan AI](#quick-setup)
+9. [Memeriksa hasil Quick Setup](#memeriksa-draf)
+10. [Menerapkan struktur pertemuan](#menerapkan-pertemuan)
+11. [Menyiapkan aktivitas PT-AI](#aktivitas-ptai)
+12. [Menggunakan rubrik standar PT-AI](#rubrik)
+13. [Menerbitkan kelas](#menerbitkan-kelas)
+14. [Memantau portofolio mahasiswa](#portofolio)
+15. [Melakukan penilaian](#penilaian)
+16. [Menggunakan bantuan AI saat review](#bantuan-ai-review)
+17. [Memeriksa semua respons sekaligus](#periksa-semua)
+18. [Berdiskusi dengan kelas](#diskusi)
+19. [Memahami nilai dan enam dimensi berpikir kritis](#dimensi)
+20. [Hal yang tidak dilakukan AI](#batas-ai)
+21. [Kendala yang sering muncul](#kendala)
 
 <a id="mengenal"></a>
 
@@ -46,9 +49,25 @@ AI berperan sebagai pendamping proses: ia memancing pertanyaan, menunjukkan bukt
 > **Catatan.** Akun dosen dibuat oleh administrator kampus. Pendaftaran mandiri hanya tersedia untuk mahasiswa.
 
 
+<a id="kata-sandi"></a>
+
+## 3. Kata sandi dosen dan mahasiswa
+
+Untuk mengganti kata sandi Anda sendiri, tekan Kata sandi di bagian atas layar. Bila lupa, tekan Lupa kata sandi? di halaman masuk, atau minta administrator mengatur ulang kata sandi Anda.
+
+Mahasiswa yang lupa kata sandi dan tidak menerima surel dapat Anda bantu:
+
+1. Buka kelas, lalu pilih Mahasiswa.
+2. Pada baris mahasiswa tersebut, tekan Atur ulang kata sandi, lalu Ya, atur ulang.
+3. Sampaikan kata sandi sementara yang tampil kepada mahasiswa secara langsung. Kata sandi itu hanya ditampilkan sekali.
+4. Setelah masuk dengan kata sandi sementara, mahasiswa langsung diminta membuat kata sandi pribadi.
+
+> **Catatan.** Anda hanya dapat mengatur ulang kata sandi mahasiswa yang terdaftar aktif di kelas Anda. Setiap pengaturan ulang tercatat atas nama Anda.
+
+
 <a id="membuat-kelas"></a>
 
-## 3. Membuat kelas
+## 4. Membuat kelas
 
 1. Buka menu Kelas.
 2. Tekan tombol + Buat kelas.
@@ -70,7 +89,7 @@ Nama kelas disusun otomatis dari nama mata kuliah dan penanda yang Anda isi, mis
 
 <a id="menambahkan-mahasiswa"></a>
 
-## 4. Menambahkan mahasiswa
+## 5. Menambahkan mahasiswa
 
 1. Terbitkan kelas, lalu buka Mahasiswa dan salin Kode gabung.
 2. Bagikan kode kepada peserta kelas. Mahasiswa mendaftar akun dan mengajukan kode melalui Kelas saya.
@@ -93,7 +112,7 @@ Hasil pencarian hanya memuat akun mahasiswa di kampus Anda yang belum terdaftar 
 
 <a id="menyiapkan-kelas"></a>
 
-## 5. Menyiapkan kelas
+## 6. Menyiapkan kelas
 
 Setiap kelas memiliki bagian yang sama, dapat dibuka dari bilah di bawah nama kelas.
 
@@ -110,7 +129,7 @@ Setiap kelas memiliki bagian yang sama, dapat dibuka dari bilah di bawah nama ke
 
 <a id="menambahkan-materi"></a>
 
-## 6. Menambahkan materi
+## 7. Menambahkan materi
 
 Buka kelas, lalu pilih Materi. Tersedia tiga cara menambahkan bahan.
 
@@ -125,7 +144,7 @@ Setiap bahan bermula sebagai draf. Tekan Terbitkan agar mahasiswa dapat melihatn
 
 <a id="quick-setup"></a>
 
-## 7. Menyiapkan kelas dari RPS atau CPMK dengan AI
+## 8. Menyiapkan kelas dari RPS atau CPMK dengan AI
 
 Bila Anda sudah memiliki RPS atau daftar CPMK, AI dapat menyusunkan rancangan pertemuan dari dokumen itu.
 
@@ -141,7 +160,7 @@ Bila Anda sudah memiliki RPS atau daftar CPMK, AI dapat menyusunkan rancangan pe
 
 <a id="memeriksa-draf"></a>
 
-## 8. Memeriksa hasil Quick Setup
+## 9. Memeriksa hasil Quick Setup
 
 1. Pada bagian Draf tersimpan, tekan Tinjau draf.
 2. Baca daftar CPMK/Sub-CPMK, pertemuan, dan referensi yang dibaca AI.
@@ -155,7 +174,7 @@ Draf tetap tersimpan meskipun Anda menutup halaman, sehingga pemeriksaan dapat d
 
 <a id="menerapkan-pertemuan"></a>
 
-## 9. Menerapkan struktur pertemuan
+## 10. Menerapkan struktur pertemuan
 
 1. Pada draf yang sudah disetujui, tekan Terapkan ke kelas.
 2. Baca pratinjau daftar pertemuan yang akan dibuat.
@@ -168,7 +187,7 @@ Pertemuan dibuat sebagai draf. Pertemuan yang sudah ada tidak ditimpa, dan tidak
 
 <a id="aktivitas-ptai"></a>
 
-## 10. Menyiapkan aktivitas PT-AI
+## 11. Menyiapkan aktivitas PT-AI
 
 Buka kelas, lalu pilih PT-AI. Setiap pertemuan dapat berisi unit pembelajaran, dan setiap unit memiliki enam tahap berpikir kritis yang urutannya tetap.
 
@@ -189,7 +208,7 @@ Alur yang dijalani mahasiswa selalu sama: membaca kasus, menulis respons awal, b
 
 <a id="rubrik"></a>
 
-## 11. Menggunakan rubrik standar PT-AI
+## 12. Menggunakan rubrik standar PT-AI
 
 1. Buka menu Rubrik.
 2. Pada bagian Rubrik standar berpikir kritis PT-AI, tekan Gunakan template PT-AI.
@@ -209,7 +228,7 @@ Rubrik standar memuat enam dimensi berpikir kritis: Interpretasi, Analisis, Eval
 
 <a id="menerbitkan-kelas"></a>
 
-## 12. Menerbitkan kelas
+## 13. Menerbitkan kelas
 
 1. Buka Ringkasan kelas.
 2. Tekan Terbitkan kelas.
@@ -222,7 +241,7 @@ Setelah diterbitkan, mahasiswa yang sudah terdaftar dapat membuka kelas. Bila pe
 
 <a id="portofolio"></a>
 
-## 13. Memantau portofolio mahasiswa
+## 14. Memantau portofolio mahasiswa
 
 1. Buka kelas, lalu pilih Mahasiswa.
 2. Tekan Lihat portofolio pada nama mahasiswa.
@@ -235,7 +254,7 @@ Portofolio dapat memuat respons awal, bantuan AI yang diterima, verifikasi sumbe
 
 <a id="penilaian"></a>
 
-## 14. Melakukan penilaian
+## 15. Melakukan penilaian
 
 1. Buka menu Review, lalu pilih pekerjaan yang akan dinilai.
 2. Baca respons awal, revisi, dan refleksi mahasiswa.
@@ -250,7 +269,7 @@ Portofolio dapat memuat respons awal, bantuan AI yang diterima, verifikasi sumbe
 
 <a id="bantuan-ai-review"></a>
 
-## 15. Menggunakan bantuan AI saat review
+## 16. Menggunakan bantuan AI saat review
 
 Pada halaman penilaian terdapat panel Bantuan penilaian AI. Panel ini hanya bekerja bila Anda menekan Bantu review dengan AI.
 
@@ -271,8 +290,8 @@ Yang tidak dapat dilakukan AI:
 - menggantikan keputusan Anda.
 
 1. Tekan Bantu review dengan AI.
-2. Baca usulan beserta bukti dan alasannya.
-3. Tekan Gunakan saran bila setuju; tingkat itu akan terpilih pada formulir.
+2. Baca usulan beserta bukti dan alasannya. Usulan muncul satu per satu untuk tiap dimensi selagi AI menyusunnya.
+3. Tekan Gunakan saran bila setuju; tingkat itu akan terpilih pada formulir. Tombol ini aktif setelah usulan untuk semua dimensi selesai.
 4. Ubah pilihan Anda kapan saja, atau abaikan usulan sepenuhnya.
 5. Tekan Pakai sebagai draf catatan bila ingin menyunting saran umpan balik.
 6. Tekan Simpan penilaian.
@@ -280,9 +299,36 @@ Yang tidak dapat dilakukan AI:
 > **Catatan.** Tidak ada yang tersimpan sampai Anda menekan Simpan penilaian. Nilai yang tercatat selalu nilai yang Anda pilih, bukan usulan AI.
 
 
+<a id="periksa-semua"></a>
+
+## 17. Memeriksa semua respons sekaligus
+
+Bila banyak respons awal menunggu, buka menu Review. Bagian Periksa semua dengan AI menampilkan setiap respons yang belum Anda nilai.
+
+1. Tekan Periksa semua dengan AI. AI menyusun usulan tingkat rubrik dan catatan untuk tiap respons.
+2. Periksa tiap baris: nilai rubrik usulan, hasil ketuntasan, dan catatan untuk mahasiswa. Ubah yang perlu diubah.
+3. Hilangkan centang Sertakan saat menyimpan pada baris yang ingin Anda tinjau sendiri, lalu buka Tinjau pada baris itu.
+4. Tekan tombol simpan di bawah daftar, misalnya Simpan 12 penilaian, untuk menyimpan semua baris yang masih dicentang.
+
+> **Catatan.** Hasil ketuntasan awal diambil dari nilai rubrik terhadap ambang ketuntasan aktivitas, atau ambang bawaan yang dapat Anda ubah di bagian atas. Respons tanpa rubrik, atau yang menurut AI buktinya belum cukup, harus dinilai lewat Tinjau. Setiap respons memakai satu kuota bantuan AI; bila kuota per jam habis, sisa respons dapat diperiksa kemudian.
+
+
+<a id="diskusi"></a>
+
+## 18. Berdiskusi dengan kelas
+
+Setiap kelas memiliki menu Diskusi. Diskusi kelas dipakai untuk hal umum mata kuliah, dan setiap pertemuan memiliki ruang diskusinya sendiri. Semua anggota kelas membaca pesan yang sama, dan pesan baru tampil tanpa memuat ulang halaman.
+
+1. Buka kelas, lalu pilih Diskusi.
+2. Pilih Diskusi kelas atau salah satu pertemuan. Ruang diskusi pertemuan juga dapat dibuka dari tautan di menu Pertemuan.
+3. Tulis pesan, lalu tekan Kirim atau Enter.
+
+> **Catatan.** Anda dapat menghapus pesan siapa pun di kelas Anda. Diskusi pertemuan yang belum terbit hanya terlihat oleh dosen.
+
+
 <a id="dimensi"></a>
 
-## 16. Memahami nilai dan enam dimensi berpikir kritis
+## 19. Memahami nilai dan enam dimensi berpikir kritis
 
 - **Interpretasi** — memahami masalah.
 - **Analisis** — membongkar klaim, alasan, dan asumsi.
@@ -296,7 +342,7 @@ Tingkat yang Anda pilih pada setiap dimensi disimpan apa adanya, lalu diubah men
 
 <a id="batas-ai"></a>
 
-## 17. Hal yang tidak dilakukan AI
+## 20. Hal yang tidak dilakukan AI
 
 - AI tidak menerbitkan kelas, pertemuan, materi, maupun aktivitas.
 - AI tidak menetapkan nilai akhir maupun hasil ketuntasan.
@@ -309,7 +355,7 @@ Tingkat yang Anda pilih pada setiap dimensi disimpan apa adanya, lalu diubah men
 
 <a id="kendala"></a>
 
-## 18. Kendala yang sering muncul
+## 21. Kendala yang sering muncul
 
 - **Daftar mata kuliah kosong saat membuat kelas** — Mata kuliah belum didaftarkan administrator. Hubungi administrator kampus.
 - **Pencarian mahasiswa tidak menemukan siapa pun** — Pastikan ejaan nama atau NIM benar dan minimal dua huruf. Mahasiswa yang sudah terdaftar di kelas ini memang tidak ditampilkan.

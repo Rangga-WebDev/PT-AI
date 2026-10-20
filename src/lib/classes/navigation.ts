@@ -20,6 +20,7 @@ export function lecturerClassNav(classId: string): ClassNavItem[] {
     { label: "Materi", href: `${base}/materials`, available: true },
     { label: "Pertemuan", href: `${base}/meetings`, available: true },
     { label: "PT-AI", href: `${base}/builder`, available: true },
+    { label: "Diskusi", href: `${base}/discussion`, available: true },
     { label: "Mahasiswa", href: `${base}/students`, available: true },
     { label: "Review", href: "/app/lecturer/review", available: true },
     { label: "Progres", href: `${base}/analytics`, available: true },
@@ -34,6 +35,7 @@ export function studentClassNav(classId: string): ClassNavItem[] {
     { label: "Materi", href: `${base}/materials`, available: true },
     { label: "Pertemuan", href: `${base}/meetings`, available: true },
     { label: "PT-AI", href: `${base}/ptai`, available: true },
+    { label: "Diskusi", href: `${base}/discussion`, available: true },
     { label: "Portofolio", href: `${base}/portfolio`, available: true },
     { label: "Progres", href: "/app/student/progress", available: true },
   ];

@@ -9,6 +9,7 @@ import {
   CreateAccountForm,
   ProfileTable,
 } from "@/features/administration/components/account-management";
+import { requireAdminAccess } from "@/lib/supabase/auth";
 import { listStudyPrograms } from "@/server/repositories/organizations";
 import { listProfiles } from "@/server/repositories/profiles";
 
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminUsersPage() {
-  const [profiles, studyPrograms] = await Promise.all([
+  const [admin, profiles, studyPrograms] = await Promise.all([
+    requireAdminAccess(),
     listProfiles(),
     listStudyPrograms(),
   ]);
@@ -27,7 +29,7 @@ export default async function AdminUsersPage() {
       <PageHeader
         eyebrow="Administrasi"
         title="Pengguna dan peran"
-        description="Buat akun, lalu berikan atau cabut peran. Pencabutan peran menyimpan jejak, bukan menghapus riwayat."
+        description="Buat akun, berikan atau cabut peran, dan atur ulang kata sandi pengguna yang lupa. Pencabutan peran menyimpan jejak, bukan menghapus riwayat."
       />
 
       <div className="flex flex-col gap-8">
@@ -62,7 +64,7 @@ export default async function AdminUsersPage() {
           {profiles.length === 0 ? (
             <EmptyState description="Belum ada pengguna terdaftar." />
           ) : (
-            <ProfileTable profiles={profiles} />
+            <ProfileTable profiles={profiles} currentUserId={admin.id} />
           )}
         </section>
       </div>

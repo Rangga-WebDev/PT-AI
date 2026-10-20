@@ -113,6 +113,34 @@ export interface ReviewQueueRow {
   className: string;
   submittedAt: string;
   content: string;
+  assessed: boolean;
+}
+
+type ServerClient = Awaited<ReturnType<typeof createClient>>;
+
+// Daftar id aktivitas dikirim lewat query string; potongan menjaga URL pendek.
+const ACTIVITY_CHUNK = 80;
+
+/** Pasangan `aktivitas:mahasiswa` yang sudah punya keputusan ketuntasan dosen. */
+async function lecturerDecisions(
+  supabase: ServerClient,
+  activityIds: string[],
+): Promise<Set<string>> {
+  const decided = new Set<string>();
+
+  for (let start = 0; start < activityIds.length; start += ACTIVITY_CHUNK) {
+    const rows = unwrap(
+      await supabase
+        .from("mastery_results")
+        .select("activity_id, student_id")
+        .eq("evaluator_kind", "lecturer")
+        .in("activity_id", activityIds.slice(start, start + ACTIVITY_CHUNK)),
+      "lecturerDecisions",
+    );
+    for (const row of rows) decided.add(`${row.activity_id}:${row.student_id}`);
+  }
+
+  return decided;
 }
 
 /**
@@ -126,7 +154,7 @@ export async function listReviewQueue(): Promise<ReviewQueueRow[]> {
     await supabase
       .from("attempts")
       .select(
-        `id, content, submitted_at,
+        `id, activity_id, student_id, content, submitted_at,
          profiles!student_id(full_name, identifier),
          activities!inner(
            title,
@@ -145,6 +173,10 @@ export async function listReviewQueue(): Promise<ReviewQueueRow[]> {
     "listReviewQueue",
   );
 
+  const decided = await lecturerDecisions(supabase, [
+    ...new Set(rows.map((row) => row.activity_id)),
+  ]);
+
   return rows.map((row) => ({
     attemptId: row.id,
     studentName: row.profiles.full_name,
@@ -156,5 +188,77 @@ export async function listReviewQueue(): Promise<ReviewQueueRow[]> {
       row.activities.learning_stages.learning_units.modules.classes.name,
     submittedAt: row.submitted_at,
     content: row.content,
+    assessed: decided.has(`${row.activity_id}:${row.student_id}`),
   }));
+}
+
+export interface PendingAssessmentRow {
+  attemptId: string;
+  studentName: string;
+  studentIdentifier: string;
+  className: string;
+  unitTitle: string;
+  stageTitle: string;
+  activityTitle: string;
+  submittedAt: string;
+  hasRubric: boolean;
+  masteryThreshold: number | null;
+}
+
+/**
+ * Respons awal yang belum punya keputusan ketuntasan dosen, terlama lebih
+ * dulu. Keputusan sistem tidak dihitung: mutu tetap menunggu dosen.
+ */
+export async function listPendingAssessments(
+  limit = 200,
+): Promise<PendingAssessmentRow[]> {
+  const supabase = await createClient();
+
+  const attempts = unwrap(
+    await supabase
+      .from("attempts")
+      .select(
+        `id, activity_id, student_id, submitted_at,
+         profiles!student_id(full_name, identifier),
+         activities!inner(
+           title, rubric_id, mastery_threshold,
+           learning_stages!inner(
+             title,
+             learning_units!inner(
+               title,
+               modules!inner(classes!inner(name))
+             )
+           )
+         )`,
+      )
+      .eq("is_baseline", true)
+      .order("submitted_at", { ascending: true })
+      .limit(limit),
+    "listPendingAssessments",
+  );
+
+  if (attempts.length === 0) return [];
+
+  const decided = await lecturerDecisions(supabase, [
+    ...new Set(attempts.map((row) => row.activity_id)),
+  ]);
+
+  return attempts
+    .filter((row) => !decided.has(`${row.activity_id}:${row.student_id}`))
+    .map((row) => ({
+      attemptId: row.id,
+      studentName: row.profiles.full_name,
+      studentIdentifier: row.profiles.identifier,
+      className:
+        row.activities.learning_stages.learning_units.modules.classes.name,
+      unitTitle: row.activities.learning_stages.learning_units.title,
+      stageTitle: row.activities.learning_stages.title,
+      activityTitle: row.activities.title,
+      submittedAt: row.submitted_at,
+      hasRubric: row.activities.rubric_id !== null,
+      masteryThreshold:
+        row.activities.mastery_threshold === null
+          ? null
+          : Number(row.activities.mastery_threshold),
+    }));
 }

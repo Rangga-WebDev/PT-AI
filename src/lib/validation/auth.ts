@@ -54,6 +54,27 @@ export const updatePasswordSchema = z
     message: "Konfirmasi kata sandi tidak sama.",
   });
 
+// Kata sandi lama boleh kosong: pengguna yang baru masuk dengan kata sandi
+// sementara tidak ditanyai ulang. Aksinya yang menentukan kapan wajib.
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().max(128),
+    password: newPassword,
+    confirmPassword: z.string(),
+  })
+  .refine((value) => value.password === value.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Konfirmasi kata sandi tidak sama.",
+  })
+  .refine(
+    (value) =>
+      value.currentPassword === "" || value.password !== value.currentPassword,
+    {
+      path: ["password"],
+      message: "Kata sandi baru harus berbeda dari kata sandi saat ini.",
+    },
+  );
+
 export type SignInInput = z.infer<typeof signInSchema>;
 export type RegisterStudentInput = z.infer<typeof registerStudentSchema>;
 export type RequestPasswordResetInput = z.infer<

@@ -43,6 +43,28 @@ export const studentGuide: Guide = {
       ],
     },
     {
+      id: "kata-sandi",
+      title: "Lupa atau mengganti kata sandi",
+      blocks: [
+        {
+          kind: "steps",
+          items: [
+            "Pada halaman masuk, tekan Lupa kata sandi?, isi surel akun Anda, lalu tekan Kirim tautan.",
+            "Buka surel dari PT-AI dan tekan tautannya. Tautan dapat dibuka dari ponsel maupun laptop, dan hanya berlaku sekali.",
+            "Buat kata sandi baru minimal 12 karakter.",
+          ],
+        },
+        {
+          kind: "paragraph",
+          text: "Bila surel tidak datang, periksa folder Spam atau Promosi. Bila tetap tidak ada, minta dosen pengampu mengatur ulang kata sandi Anda. Dosen akan memberi kata sandi sementara; setelah masuk dengan kata sandi itu, Anda langsung diminta membuat kata sandi pribadi.",
+        },
+        {
+          kind: "paragraph",
+          text: "Untuk mengganti kata sandi kapan saja, tekan Kata sandi di bagian atas layar setelah masuk.",
+        },
+      ],
+    },
+    {
       id: "kelas-saya",
       title: "Membuka Kelas saya",
       blocks: [
@@ -108,6 +130,28 @@ export const studentGuide: Guide = {
         {
           kind: "paragraph",
           text: "Bagian Pertemuan memperlihatkan susunan pertemuan kelas beserta tujuannya, sehingga Anda tahu apa yang sedang dipelajari dan apa yang menyusul.",
+        },
+      ],
+    },
+    {
+      id: "diskusi",
+      title: "Berdiskusi di kelas",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "Menu Diskusi berisi Diskusi kelas untuk hal umum mata kuliah dan ruang diskusi untuk setiap pertemuan. Semua anggota kelas, termasuk dosen, membaca pesan yang sama, dan pesan baru tampil tanpa memuat ulang halaman.",
+        },
+        {
+          kind: "steps",
+          items: [
+            "Buka kelas, lalu pilih Diskusi.",
+            "Pilih Diskusi kelas atau salah satu pertemuan.",
+            "Tulis pertanyaan atau tanggapan, lalu tekan Kirim atau Enter.",
+          ],
+        },
+        {
+          kind: "note",
+          text: "Gunakan bahasa yang santun. Anda dapat menghapus pesan Anda sendiri, dan dosen dapat menghapus pesan yang tidak sesuai.",
         },
       ],
     },

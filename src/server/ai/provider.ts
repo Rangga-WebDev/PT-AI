@@ -9,7 +9,7 @@ import { normalizeVector } from "@/lib/ai/vector";
 import { fakeProvider } from "./fake-provider";
 import type { AiProvider } from "./types";
 
-export type { AiProvider, GenerationResult } from "./types";
+export type { AiProvider, GenerationResult, StructuredRequest } from "./types";
 
 /**
  * Satu-satunya titik keluar ke penyedia AI (LOCK-TECH-022). Modul ini
@@ -64,6 +64,23 @@ export const geminiProvider: AiProvider = {
       outputTokens: response.usageMetadata?.candidatesTokenCount ?? 0,
       latencyMs: Date.now() - startedAt,
     };
+  },
+
+  async *streamStructured({ systemInstruction, prompt, schema }) {
+    const stream = await getClient().models.generateContentStream({
+      model: CHAT_MODEL,
+      contents: prompt,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: schema,
+      },
+    });
+
+    for await (const chunk of stream) {
+      const text = chunk.text;
+      if (text) yield text;
+    }
   },
 
   async embed(texts) {

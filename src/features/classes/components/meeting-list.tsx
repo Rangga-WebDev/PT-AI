@@ -1,5 +1,7 @@
 /** @format */
 
+import Link from "next/link";
+
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { ModuleView } from "@/server/repositories/content";
 
@@ -11,9 +13,11 @@ import type { ModuleView } from "@/server/repositories/content";
 export function MeetingList({
   modules,
   showStatus,
+  discussionHref,
 }: {
   modules: ModuleView[];
   showStatus: boolean;
+  discussionHref?: (moduleId: string) => string;
 }) {
   return (
     <ol className="flex flex-col">
@@ -47,6 +51,15 @@ export function MeetingList({
             <p className="text-sm text-subtle">
               {module.units.length} unit PT-AI di dalam pertemuan ini
             </p>
+          ) : null}
+
+          {discussionHref ? (
+            <Link
+              href={discussionHref(module.id)}
+              className="self-start text-sm text-foreground underline underline-offset-4"
+            >
+              Diskusi pertemuan {module.sequence}
+            </Link>
           ) : null}
         </li>
       ))}

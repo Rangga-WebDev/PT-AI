@@ -1,17 +1,20 @@
 /** @format */
 
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ScoringForm } from "@/features/assessment/components/scoring-form";
+
+type Emit = (event: unknown) => void;
 
 const submitted: unknown[] = [];
 const submitMasteryAssessmentAction = vi.fn(async (input: unknown) => {
   submitted.push(input);
   return { ok: true };
 });
-const requestAiReviewAction = vi.fn();
+const streamAiReview =
+  vi.fn<(attemptId: string, onEvent: Emit) => Promise<void>>();
 
 vi.mock("@/actions/assessment/scoring", () => ({
   submitMasteryAssessmentAction: (input: unknown) =>
@@ -23,8 +26,9 @@ vi.mock("@/actions/assessment/branching", () => ({
   recordBranchingDecisionAction: vi.fn(async () => ({ ok: true })),
 }));
 
-vi.mock("@/actions/assessment/ai-review", () => ({
-  requestAiReviewAction: (id: string) => requestAiReviewAction(id),
+vi.mock("@/lib/ai/review-stream", () => ({
+  streamAiReview: (attemptId: string, onEvent: Emit) =>
+    streamAiReview(attemptId, onEvent),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -75,35 +79,49 @@ const PROPS = {
   errorCategories: [],
 };
 
-function suggestion(score: number) {
+function entry(score: number) {
   return {
-    ok: true,
+    criterionId: ANALYSIS,
+    suggestedScore: score,
+    confidence: "medium" as const,
+    evidence: [],
+    rationale: "Mahasiswa menguraikan klaim beserta asumsinya.",
+    insufficientEvidence: false,
+  };
+}
+
+const META = {
+  type: "meta",
+  criteria: CRITERIA.map((criterion) => ({
+    id: criterion.id,
+    code: criterion.code,
+    description: criterion.description,
+    dimension: criterion.dimension,
+    weight: criterion.weight,
+    levels: criterion.levels,
+  })),
+  artifacts: [],
+  model: "model-uji",
+  promptVersion: 1,
+};
+
+function done(score: number) {
+  return {
+    type: "done",
     suggestion: {
-      criteria: [
-        {
-          criterionId: ANALYSIS,
-          suggestedScore: score,
-          confidence: "medium" as const,
-          evidence: [],
-          rationale: "Mahasiswa menguraikan klaim beserta asumsinya.",
-          insufficientEvidence: false,
-        },
-      ],
+      criteria: [entry(score)],
       overallObservations: [],
       suggestedFeedback: "Perkuat penelusuran bukti pada revisi berikutnya.",
       limitations: [],
     },
-    criteria: CRITERIA.map((criterion) => ({
-      id: criterion.id,
-      code: criterion.code,
-      description: criterion.description,
-      dimension: criterion.dimension,
-      weight: criterion.weight,
-      levels: criterion.levels,
-    })),
-    artifacts: [],
-    model: "model-uji",
-    promptVersion: 1,
+  };
+}
+
+function emitAll(score: number) {
+  return async (_attemptId: string, onEvent: Emit) => {
+    onEvent(META);
+    onEvent({ type: "criterion", entry: entry(score) });
+    onEvent(done(score));
   };
 }
 
@@ -112,7 +130,7 @@ const pick = (descriptor: string) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
-  requestAiReviewAction.mockResolvedValue(suggestion(3));
+  streamAiReview.mockImplementation(emitAll(3));
 });
 
 describe("penilaian berbasis level rubrik", () => {
@@ -277,5 +295,79 @@ describe("saran AI sebagai level, bukan nilai akhir", () => {
     expect(
       screen.getByRole("button", { name: /Bantu review dengan AI/ }),
     ).toBeDisabled();
+  });
+});
+
+describe("saran AI yang mengalir", () => {
+  it("menampilkan kriteria begitu dinilai, sebelum analisis selesai", async () => {
+    let finish: () => void = () => {};
+    streamAiReview.mockImplementation(async (_attemptId, onEvent) => {
+      onEvent(META);
+      onEvent({ type: "criterion", entry: entry(3) });
+      await new Promise<void>((resolve) => {
+        finish = () => {
+          onEvent(done(3));
+          resolve();
+        };
+      });
+    });
+    const user = userEvent.setup();
+    render(
+      <ScoringForm
+        {...PROPS}
+        aiReview={{ attemptId: PROPS.attemptId, hasRubric: true }}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /Bantu review dengan AI/ }),
+    );
+
+    expect(await screen.findByText("Saran AI: 3 — Baik")).toBeInTheDocument();
+    expect(
+      screen.getByText("AI sudah mengusulkan 1 dari 2 kriteria…"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Menunggu usulan AI…")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Gunakan saran" }),
+    ).toBeDisabled();
+
+    act(() => finish());
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Gunakan saran" }),
+      ).toBeEnabled(),
+    );
+    expect(
+      screen.getByText("AI tidak memberi usulan untuk kriteria ini."),
+    ).toBeInTheDocument();
+  });
+
+  it("menghapus usulan yang sudah tampil bila hasil akhirnya ditolak", async () => {
+    streamAiReview.mockImplementation(async (_attemptId, onEvent) => {
+      onEvent(META);
+      onEvent({ type: "criterion", entry: entry(3) });
+      onEvent({ type: "error", error: "Hasilnya ditolak." });
+    });
+    const user = userEvent.setup();
+    render(
+      <ScoringForm
+        {...PROPS}
+        aiReview={{ attemptId: PROPS.attemptId, hasRubric: true }}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /Bantu review dengan AI/ }),
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Hasilnya ditolak.",
+    );
+    expect(screen.queryByText("Saran AI: 3 — Baik")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Bantu review dengan AI/ }),
+    ).toBeEnabled();
   });
 });

@@ -9,21 +9,23 @@ Panduan ini mengikuti aplikasi yang berjalan sekarang. Setiap langkah menyebut m
 
 1. [Mengenal PT-AI](#mengenal)
 2. [Masuk ke aplikasi](#masuk)
-3. [Membuka Kelas saya](#kelas-saya)
-4. [Membaca Ringkasan kelas](#ringkasan)
-5. [Membuka Materi](#materi)
-6. [Melihat Pertemuan](#pertemuan)
-7. [Memulai aktivitas PT-AI](#memulai-ptai)
-8. [Memberikan respons awal](#respons-awal)
-9. [Menggunakan bantuan AI](#bantuan-ai)
-10. [Melakukan verifikasi sumber](#verifikasi)
-11. [Memperbaiki jawaban](#revisi)
-12. [Menulis refleksi](#refleksi)
-13. [Melihat Portofolio](#portofolio)
-14. [Melihat umpan balik dan progres](#progres)
-15. [Enam dimensi berpikir kritis](#dimensi)
-16. [Penggunaan AI yang bertanggung jawab](#penggunaan-ai)
-17. [Kendala yang sering muncul](#kendala)
+3. [Lupa atau mengganti kata sandi](#kata-sandi)
+4. [Membuka Kelas saya](#kelas-saya)
+5. [Membaca Ringkasan kelas](#ringkasan)
+6. [Membuka Materi](#materi)
+7. [Melihat Pertemuan](#pertemuan)
+8. [Berdiskusi di kelas](#diskusi)
+9. [Memulai aktivitas PT-AI](#memulai-ptai)
+10. [Memberikan respons awal](#respons-awal)
+11. [Menggunakan bantuan AI](#bantuan-ai)
+12. [Melakukan verifikasi sumber](#verifikasi)
+13. [Memperbaiki jawaban](#revisi)
+14. [Menulis refleksi](#refleksi)
+15. [Melihat Portofolio](#portofolio)
+16. [Melihat umpan balik dan progres](#progres)
+17. [Enam dimensi berpikir kritis](#dimensi)
+18. [Penggunaan AI yang bertanggung jawab](#penggunaan-ai)
+19. [Kendala yang sering muncul](#kendala)
 
 <a id="mengenal"></a>
 
@@ -47,9 +49,22 @@ AI di sini bukan tempat meminta jawaban. Ia menemani proses berpikir Anda: meman
 > **Catatan.** Gunakan NIM Anda sendiri. NIM tidak dapat diganti sendiri setelah mendaftar; koreksi identitas dilakukan administrator kampus.
 
 
+<a id="kata-sandi"></a>
+
+## 3. Lupa atau mengganti kata sandi
+
+1. Pada halaman masuk, tekan Lupa kata sandi?, isi surel akun Anda, lalu tekan Kirim tautan.
+2. Buka surel dari PT-AI dan tekan tautannya. Tautan dapat dibuka dari ponsel maupun laptop, dan hanya berlaku sekali.
+3. Buat kata sandi baru minimal 12 karakter.
+
+Bila surel tidak datang, periksa folder Spam atau Promosi. Bila tetap tidak ada, minta dosen pengampu mengatur ulang kata sandi Anda. Dosen akan memberi kata sandi sementara; setelah masuk dengan kata sandi itu, Anda langsung diminta membuat kata sandi pribadi.
+
+Untuk mengganti kata sandi kapan saja, tekan Kata sandi di bagian atas layar setelah masuk.
+
+
 <a id="kelas-saya"></a>
 
-## 3. Membuka Kelas saya
+## 4. Membuka Kelas saya
 
 1. Tekan menu Kelas saya.
 2. Masukkan Kode gabung dari dosen, lalu tekan Ajukan masuk.
@@ -63,7 +78,7 @@ Materi kelas baru terbuka setelah dosen menyetujui pengajuan Anda dan kelas suda
 
 <a id="ringkasan"></a>
 
-## 4. Membaca Ringkasan kelas
+## 5. Membaca Ringkasan kelas
 
 Ringkasan adalah halaman pertama sebuah kelas. Dari bilah di bawah nama kelas, Anda dapat berpindah ke Materi, Pertemuan, PT-AI, Portofolio, dan Progres.
 
@@ -72,7 +87,7 @@ Ringkasan adalah halaman pertama sebuah kelas. Dari bilah di bawah nama kelas, A
 
 <a id="materi"></a>
 
-## 5. Membuka Materi
+## 6. Membuka Materi
 
 1. Pada kelas yang terbuka, pilih Materi.
 2. Pilih bahan yang ingin dibaca.
@@ -85,14 +100,27 @@ Bahan dapat berupa berkas, tautan ke sumber luar, atau catatan yang ditulis dose
 
 <a id="pertemuan"></a>
 
-## 6. Melihat Pertemuan
+## 7. Melihat Pertemuan
 
 Bagian Pertemuan memperlihatkan susunan pertemuan kelas beserta tujuannya, sehingga Anda tahu apa yang sedang dipelajari dan apa yang menyusul.
 
 
+<a id="diskusi"></a>
+
+## 8. Berdiskusi di kelas
+
+Menu Diskusi berisi Diskusi kelas untuk hal umum mata kuliah dan ruang diskusi untuk setiap pertemuan. Semua anggota kelas, termasuk dosen, membaca pesan yang sama, dan pesan baru tampil tanpa memuat ulang halaman.
+
+1. Buka kelas, lalu pilih Diskusi.
+2. Pilih Diskusi kelas atau salah satu pertemuan.
+3. Tulis pertanyaan atau tanggapan, lalu tekan Kirim atau Enter.
+
+> **Catatan.** Gunakan bahasa yang santun. Anda dapat menghapus pesan Anda sendiri, dan dosen dapat menghapus pesan yang tidak sesuai.
+
+
 <a id="memulai-ptai"></a>
 
-## 7. Memulai aktivitas PT-AI
+## 9. Memulai aktivitas PT-AI
 
 1. Pada kelas yang terbuka, pilih PT-AI.
 2. Pilih unit yang ingin dikerjakan.
@@ -103,7 +131,7 @@ Setiap unit terdiri atas enam tahap yang urutannya tetap: Interpretasi, Analisis
 
 <a id="respons-awal"></a>
 
-## 8. Memberikan respons awal
+## 10. Memberikan respons awal
 
 1. Baca kasus pemantik dan pertanyaan kuncinya.
 2. Baca instruksi aktivitas pada tahap itu.
@@ -117,7 +145,7 @@ Bantuan AI baru tersedia setelah respons awal Anda tersimpan. Urutan ini disenga
 
 <a id="bantuan-ai"></a>
 
-## 9. Menggunakan bantuan AI
+## 11. Menggunakan bantuan AI
 
 Bila dosen mengaktifkannya pada suatu aktivitas, bantuan AI muncul setelah respons awal Anda tersimpan. Bentuknya dapat berupa:
 
@@ -135,7 +163,7 @@ Setiap saran AI menunggu sikap Anda. Anda boleh menerimanya, menolaknya, atau me
 
 <a id="verifikasi"></a>
 
-## 10. Melakukan verifikasi sumber
+## 12. Melakukan verifikasi sumber
 
 1. Buka sumber yang disediakan pada tahap tersebut.
 2. Nilai sumber itu pada enam kriteria yang tersedia.
@@ -147,7 +175,7 @@ Verifikasi menuntut Anda menilai keenam kriteria, bukan sebagian. Tujuannya agar
 
 <a id="revisi"></a>
 
-## 11. Memperbaiki jawaban
+## 13. Memperbaiki jawaban
 
 1. Tulis jawaban Anda yang sudah diperbaiki.
 2. Pilih alasan revisi.
@@ -162,7 +190,7 @@ Anda boleh merevisi lebih dari sekali. Setiap revisi tersimpan berurutan beserta
 
 <a id="refleksi"></a>
 
-## 12. Menulis refleksi
+## 14. Menulis refleksi
 
 Refleksi menutup satu putaran belajar. Anda menjawab sembilan pertanyaan singkat:
 
@@ -183,7 +211,7 @@ Setelah semuanya terisi, tekan Simpan refleksi.
 
 <a id="portofolio"></a>
 
-## 13. Melihat Portofolio
+## 15. Melihat Portofolio
 
 1. Pada kelas yang terbuka, pilih Portofolio.
 2. Pilih pertemuan yang ingin dilihat.
@@ -195,7 +223,7 @@ Portofolio memperlihatkan kembali proses belajar Anda: respons awal, bantuan AI 
 
 <a id="progres"></a>
 
-## 14. Melihat umpan balik dan progres
+## 16. Melihat umpan balik dan progres
 
 Menu Progres memperlihatkan capaian Anda pada enam dimensi berpikir kritis beserta waktu pengukurannya. Umpan balik dosen atas setiap pekerjaan dapat dibaca kembali melalui Portofolio.
 
@@ -204,7 +232,7 @@ Menu Progres memperlihatkan capaian Anda pada enam dimensi berpikir kritis beser
 
 <a id="dimensi"></a>
 
-## 15. Enam dimensi berpikir kritis
+## 17. Enam dimensi berpikir kritis
 
 - **Interpretasi** — memahami masalah.
 - **Analisis** — membongkar klaim, alasan, dan asumsi.
@@ -216,7 +244,7 @@ Menu Progres memperlihatkan capaian Anda pada enam dimensi berpikir kritis beser
 
 <a id="penggunaan-ai"></a>
 
-## 16. Penggunaan AI yang bertanggung jawab
+## 18. Penggunaan AI yang bertanggung jawab
 
 - Tulis jawaban Anda sendiri terlebih dahulu.
 - Perlakukan saran AI sebagai klaim yang perlu diperiksa, bukan kebenaran.
@@ -229,7 +257,7 @@ Menu Progres memperlihatkan capaian Anda pada enam dimensi berpikir kritis beser
 
 <a id="kendala"></a>
 
-## 17. Kendala yang sering muncul
+## 19. Kendala yang sering muncul
 
 - **Kelas tidak muncul di Kelas saya** — Kelas mungkin belum diterbitkan dosen, atau nama Anda belum didaftarkan. Hubungi dosen pengampu.
 - **Tombol Simpan respons awal tidak aktif** — Jawaban Anda masih terlalu pendek. Tulis jawaban yang lebih utuh.

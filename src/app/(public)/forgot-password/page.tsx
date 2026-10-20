@@ -22,13 +22,19 @@ export default function ForgotPasswordPage() {
             Atur ulang kata sandi
           </h1>
           <p className="text-sm text-muted-foreground">
-            Masukkan surel institusi Anda. Tautan pengaturan ulang akan dikirim
-            ke surel tersebut.
+            Masukkan surel yang Anda pakai untuk masuk. Tautan pengaturan ulang
+            akan dikirim ke surel tersebut dan dapat dibuka dari perangkat mana
+            pun.
           </p>
         </div>
 
         <div className="flex flex-col gap-5 rounded-xl border border-border bg-card p-6">
           <RequestResetForm />
+          <p className="text-sm text-muted-foreground">
+            Tidak menerima surel dalam beberapa menit? Periksa folder Spam atau
+            Promosi. Bila tetap tidak ada, minta dosen pengampu (untuk
+            mahasiswa) atau administrator mengatur ulang kata sandi Anda.
+          </p>
           <Link
             href="/login"
             className="text-center text-sm text-primary underline-offset-4 hover:underline"

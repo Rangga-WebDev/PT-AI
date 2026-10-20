@@ -3,9 +3,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 import { toActionError, type ActionResult } from "@/lib/errors";
-import { requireAdminAccess } from "@/lib/supabase/auth";
+import type { PasswordResetResult } from "@/lib/auth/password-reset";
+import { requireAdminAccess, requireRoleOrThrow } from "@/lib/supabase/auth";
 import {
   accountSchema,
   roleAssignmentSchema,
@@ -15,6 +17,11 @@ import {
   grantRole,
   revokeRole,
 } from "@/server/services/account-service";
+import { resetPasswordAsAdmin } from "@/server/services/password-reset";
+import {
+  consumeRateLimit,
+  RATE_LIMIT_MESSAGE,
+} from "@/server/services/rate-limit";
 
 export interface FormState {
   ok?: boolean;
@@ -126,6 +133,34 @@ export async function revokeRoleAction(
     return { ok: true, message: "Peran berhasil dicabut." };
   } catch (error) {
     return toResultState(toActionError(error));
+  }
+}
+
+/** Untuk pengguna yang tidak dapat memakai tautan surel. */
+export async function resetUserPasswordAction(
+  profileId: unknown,
+): Promise<PasswordResetResult> {
+  try {
+    const admin = await requireRoleOrThrow("admin");
+
+    const parsed = z.string().uuid().safeParse(profileId);
+    if (!parsed.success) return { error: "Pengguna tidak valid." };
+
+    if (!(await consumeRateLimit("password_reset"))) {
+      return { error: RATE_LIMIT_MESSAGE.password_reset };
+    }
+
+    const temporaryPassword = await resetPasswordAsAdmin({
+      actorId: admin.id,
+      organizationId: admin.organizationId,
+      targetId: parsed.data,
+    });
+    return { temporaryPassword };
+  } catch (error) {
+    const result = toActionError(error);
+    return {
+      error: result.ok ? "Kata sandi gagal diatur ulang." : result.error,
+    };
   }
 }
 

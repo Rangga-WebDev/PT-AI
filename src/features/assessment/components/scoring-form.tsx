@@ -21,7 +21,7 @@ import { AiReviewPanel } from "./ai-review-panel";
 const selectClass =
   "h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
 
-const OUTCOME_LABEL = {
+export const OUTCOME_LABEL = {
   not_met: "Belum memenuhi",
   partially_met: "Sebagian memenuhi",
   met: "Memenuhi",

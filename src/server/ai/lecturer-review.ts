@@ -2,14 +2,20 @@
 
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+
 import {
+  validateCriteria,
   validateSuggestion,
   type EvidenceArtifact,
   type EvidencePacket,
 } from "@/lib/ai/evidence-packet";
+import { createArrayItemExtractor } from "@/lib/ai/json-stream";
 import {
+  criterionSuggestionSchema,
   reviewProviderSchema,
   reviewSuggestionSchema,
+  type CriterionSuggestion,
   type ReviewSuggestion,
 } from "@/lib/ai/review-schema";
 import { isRubricComplete } from "@/lib/assessment/rubric-scoring";
@@ -17,6 +23,7 @@ import { redactUnexpected } from "@/lib/errors/redact";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireLecturerOfClass } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/lib/supabase/types";
 import { getAttemptReview } from "@/server/repositories/mastery";
 import {
   getReflectionByAttempt,
@@ -24,7 +31,7 @@ import {
   listRevisions,
 } from "@/server/repositories/revisions";
 
-import { getProvider, CHAT_MODEL } from "./provider";
+import { getProvider, CHAT_MODEL, type StructuredRequest } from "./provider";
 import {
   buildReviewPrompt,
   REVIEW_PROMPT_VERSION,
@@ -58,16 +65,17 @@ export const REVIEW_MESSAGE: Record<ReviewFailure, string> = {
     "Jejak usulan AI gagal dicatat, sehingga usulannya tidak ditampilkan. Coba lagi beberapa saat.",
 };
 
-export interface ReviewOutcome {
-  suggestion: ReviewSuggestion;
+export interface PreparedReview {
   packet: EvidencePacket;
-  model: string;
-  promptVersion: number;
+  classId: string;
+  studentId: string;
+  activityId: string;
 }
 
-export type ReviewResult =
-  | { ok: true; data: ReviewOutcome }
-  | { ok: false; reason: ReviewFailure };
+export type ReviewStep =
+  | { type: "criterion"; entry: CriterionSuggestion }
+  | { type: "done"; suggestion: ReviewSuggestion }
+  | { type: "error"; reason: ReviewFailure };
 
 const REFLECTION_LABELS: [keyof ReflectionShape, string][] = [
   ["initialSummary", "Ringkasan jawaban awal"],
@@ -97,15 +105,10 @@ interface ReflectionShape {
  * Paket dibangun dari repositori yang sama dengan yang dipakai halaman review,
  * bukan dari pengumpulan artefak kedua dengan semantik yang sedikit berbeda.
  */
-async function buildPacket(attemptId: string): Promise<
-  | {
-      ok: true;
-      packet: EvidencePacket;
-      classId: string;
-      studentId: string;
-      activityId: string;
-    }
-  | { ok: false; reason: ReviewFailure }
+export async function prepareReview(
+  attemptId: string,
+): Promise<
+  ({ ok: true } & PreparedReview) | { ok: false; reason: ReviewFailure }
 > {
   const review = await getAttemptReview(attemptId);
   if (!review) return { ok: false, reason: "attempt_not_found" };
@@ -250,34 +253,82 @@ async function buildPacket(attemptId: string): Promise<
   };
 }
 
-export async function requestReviewSuggestion(
-  attemptId: string,
+/**
+ * Usulan dialirkan per kriteria. Tiap butir divalidasi dan dicatat sebelum
+ * dikirim; satu butir yang gagal tetap membatalkan seluruh hasil.
+ */
+export async function* streamReview(
+  prepared: PreparedReview,
   lecturerId: string,
-): Promise<ReviewResult> {
-  const built = await buildPacket(attemptId);
-  if (!built.ok) return { ok: false, reason: built.reason };
-
-  const { packet } = built;
-  let generation;
+): AsyncGenerator<ReviewStep> {
+  const { packet } = prepared;
+  const attemptId = packet.attemptId;
+  const requestId = randomUUID();
+  const extractor = createArrayItemExtractor("criteria");
+  const shown: CriterionSuggestion[] = [];
+  let text = "";
 
   try {
-    generation = await getProvider().generateStructured({
+    for await (const chunk of providerText({
       systemInstruction: REVIEW_SYSTEM_INSTRUCTION,
       prompt: buildReviewPrompt(packet),
       schema: reviewProviderSchema as never,
-    });
+    })) {
+      text += chunk;
+
+      for (const raw of extractor.push(chunk)) {
+        const entry = parseCriterion(raw);
+        if (!entry) {
+          console.error("[ai] review schema", {
+            at: new Date().toISOString(),
+            attemptId,
+            issues: "criterion_invalid",
+          });
+          yield { type: "error", reason: "invalid_output" };
+          return;
+        }
+
+        const rejections = validateCriteria(packet, [...shown, entry]);
+        if (rejections.length > 0) {
+          console.error("[ai] review citation", {
+            at: new Date().toISOString(),
+            attemptId,
+            rejections,
+          });
+          yield { type: "error", reason: "untraceable_citation" };
+          return;
+        }
+
+        // Butir baru boleh tampil setelah jejaknya tercatat, bukan sebelumnya.
+        const traced = await writeTrace("ai_review_criterion_shown", {
+          ...traceContext(prepared, lecturerId, requestId),
+          criterionId: entry.criterionId,
+          suggestedScore: entry.suggestedScore,
+          confidence: entry.confidence,
+          insufficientEvidence: entry.insufficientEvidence,
+        });
+        if (!traced) {
+          yield { type: "error", reason: "provenance_failed" };
+          return;
+        }
+
+        shown.push(entry);
+        yield { type: "criterion", entry };
+      }
+    }
   } catch (error) {
     console.error("[ai] review provider", {
       at: new Date().toISOString(),
       attemptId,
       message: error instanceof Error ? error.message : "unknown",
     });
-    return { ok: false, reason: "provider_error" };
+    yield { type: "error", reason: "provider_error" };
+    return;
   }
 
   const parsed = (() => {
     try {
-      return reviewSuggestionSchema.safeParse(JSON.parse(generation.text));
+      return reviewSuggestionSchema.safeParse(JSON.parse(text));
     } catch {
       return null;
     }
@@ -289,7 +340,8 @@ export async function requestReviewSuggestion(
       attemptId,
       issues: parsed?.error.issues.slice(0, 5) ?? "response_not_json",
     });
-    return { ok: false, reason: "invalid_output" };
+    yield { type: "error", reason: "invalid_output" };
+    return;
   }
 
   const validated = validateSuggestion(packet, parsed.data);
@@ -299,32 +351,67 @@ export async function requestReviewSuggestion(
       attemptId,
       rejections: validated.rejections,
     });
-    return { ok: false, reason: "untraceable_citation" };
+    yield { type: "error", reason: "untraceable_citation" };
+    return;
   }
 
-  const recorded = await recordSuggestion({
-    attemptId,
-    classId: built.classId,
-    studentId: built.studentId,
-    activityId: built.activityId,
-    lecturerId,
-    packet,
-    suggestion: validated.suggestion,
+  const recorded = await writeTrace("ai_review_suggestion", {
+    ...traceContext(prepared, lecturerId, requestId),
+    evidenceIds: packet.artifacts.map((item) => item.id),
+    rubricCriteriaIds: packet.criteria.map((item) => item.id),
+    suggestedFeedback: validated.suggestion.suggestedFeedback,
+    suggestion: validated.suggestion.criteria.map((item) => ({
+      criterionId: item.criterionId,
+      suggestedScore: item.suggestedScore,
+      confidence: item.confidence,
+      insufficientEvidence: item.insufficientEvidence,
+    })),
   });
 
   // Usulan yang tidak terekam berarti keputusan dosen kelak tidak dapat
   // ditelusuri ke saran yang melatarinya. Untuk penelitian, itu sama buruknya
   // dengan tidak punya usulan sama sekali.
-  if (!recorded) return { ok: false, reason: "provenance_failed" };
+  if (!recorded) {
+    yield { type: "error", reason: "provenance_failed" };
+    return;
+  }
 
+  yield { type: "done", suggestion: validated.suggestion };
+}
+
+async function* providerText(input: StructuredRequest): AsyncIterable<string> {
+  const provider = getProvider();
+  if (provider.streamStructured) {
+    yield* provider.streamStructured(input);
+    return;
+  }
+  yield (await provider.generateStructured(input)).text;
+}
+
+function parseCriterion(raw: string): CriterionSuggestion | null {
+  try {
+    const parsed = criterionSuggestionSchema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+function traceContext(
+  prepared: PreparedReview,
+  lecturerId: string,
+  requestId: string,
+) {
   return {
-    ok: true,
-    data: {
-      suggestion: validated.suggestion,
-      packet,
-      model: CHAT_MODEL,
-      promptVersion: REVIEW_PROMPT_VERSION,
-    },
+    at: new Date().toISOString(),
+    requestId,
+    attemptId: prepared.packet.attemptId,
+    classId: prepared.classId,
+    studentId: prepared.studentId,
+    activityId: prepared.activityId,
+    lecturerId,
+    model: CHAT_MODEL,
+    promptVersion: REVIEW_PROMPT_VERSION,
   };
 }
 
@@ -337,49 +424,24 @@ export async function requestReviewSuggestion(
  * Mengembalikan false bila jejak gagal ditulis, sehingga usulan tidak jadi
  * ditampilkan.
  */
-async function recordSuggestion(input: {
-  attemptId: string;
-  classId: string;
-  studentId: string;
-  activityId: string;
-  lecturerId: string;
-  packet: EvidencePacket;
-  suggestion: ReviewSuggestion;
-}): Promise<boolean> {
-  const entry = {
-    at: new Date().toISOString(),
-    attemptId: input.attemptId,
-    classId: input.classId,
-    studentId: input.studentId,
-    activityId: input.activityId,
-    lecturerId: input.lecturerId,
-    model: CHAT_MODEL,
-    promptVersion: REVIEW_PROMPT_VERSION,
-    evidenceIds: input.packet.artifacts.map((item) => item.id),
-    rubricCriteriaIds: input.packet.criteria.map((item) => item.id),
-    suggestedFeedback: input.suggestion.suggestedFeedback,
-    suggestion: input.suggestion.criteria.map((item) => ({
-      criterionId: item.criterionId,
-      suggestedScore: item.suggestedScore,
-      confidence: item.confidence,
-      insufficientEvidence: item.insufficientEvidence,
-    })),
-  };
-
+async function writeTrace(
+  action: "ai_review_suggestion" | "ai_review_criterion_shown",
+  after: ReturnType<typeof traceContext> & { [key: string]: Json },
+): Promise<boolean> {
   try {
     const { error } = await createAdminClient().from("audit_logs").insert({
-      actor_id: input.lecturerId,
+      actor_id: after.lecturerId,
       actor_role: "lecturer",
-      action: "ai_review_suggestion",
+      action,
       subject_table: "attempts",
-      subject_id: input.attemptId,
-      after: entry,
+      subject_id: after.attemptId,
+      after,
     });
 
     if (error) {
       console.error("[ai] review audit", {
         at: new Date().toISOString(),
-        attemptId: input.attemptId,
+        attemptId: after.attemptId,
         sqlstate: error.code ?? null,
       });
       return false;
@@ -389,7 +451,7 @@ async function recordSuggestion(input: {
   } catch (error) {
     console.error("[ai] review audit", {
       at: new Date().toISOString(),
-      attemptId: input.attemptId,
+      attemptId: after.attemptId,
       error: redactUnexpected(error),
     });
     return false;

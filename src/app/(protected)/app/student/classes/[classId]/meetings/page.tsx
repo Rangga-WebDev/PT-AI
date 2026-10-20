@@ -42,7 +42,13 @@ export default async function StudentClassMeetingsPage({
           description="Belum ada struktur pertemuan untuk kelas ini."
         />
       ) : (
-        <MeetingList modules={modules} showStatus={false} />
+        <MeetingList
+          modules={modules}
+          showStatus={false}
+          discussionHref={(moduleId) =>
+            `/app/student/classes/${classId}/discussion?pertemuan=${moduleId}`
+          }
+        />
       )}
 
       <p className="text-sm text-subtle">

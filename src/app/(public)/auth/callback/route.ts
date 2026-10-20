@@ -15,7 +15,11 @@ export async function GET(request: NextRequest) {
       : "/app";
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=tautan-tidak-valid`);
+    // Tautan alur implicit membawa token di fragmen (#) yang tidak terlihat
+    // server; peramban mempertahankan fragmen itu saat dialihkan.
+    return NextResponse.redirect(
+      `${origin}/auth/recovery?next=${encodeURIComponent(next)}`,
+    );
   }
 
   const supabase = await createClient();

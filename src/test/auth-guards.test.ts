@@ -16,6 +16,7 @@ function userWithRoles(...roles: CurrentUser["roles"]): CurrentUser {
     identifier: "123",
     organizationId: "org-1",
     roles,
+    mustChangePassword: false,
   };
 }
 

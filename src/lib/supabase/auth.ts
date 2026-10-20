@@ -59,13 +59,17 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     identifier: profile.identifier,
     organizationId: profile.organization_id,
     roles,
+    mustChangePassword: user.app_metadata?.["must_change_password"] === true,
   };
 });
+
+export const CHANGE_PASSWORD_PATH = "/app/account/password";
 
 /** Untuk Server Component: mengalihkan ke halaman masuk bila belum terautentikasi. */
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (user.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
   return user;
 }
 

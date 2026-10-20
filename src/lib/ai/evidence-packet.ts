@@ -71,12 +71,22 @@ export function validateSuggestion(
   packet: EvidencePacket,
   suggestion: ReviewSuggestion,
 ): SuggestionValidation {
+  const rejections = validateCriteria(packet, suggestion.criteria);
+  if (rejections.length > 0) return { ok: false, rejections };
+  return { ok: true, suggestion };
+}
+
+/** Dipakai juga saat usulan mengalir, sebelum butir berikutnya tiba. */
+export function validateCriteria(
+  packet: EvidencePacket,
+  criteria: CriterionSuggestion[],
+): CitationRejection[] {
   const criteriaById = new Map(packet.criteria.map((item) => [item.id, item]));
   const artifactIds = new Set(packet.artifacts.map((item) => item.id));
   const seen = new Set<string>();
   const rejections: CitationRejection[] = [];
 
-  for (const entry of suggestion.criteria) {
+  for (const entry of criteria) {
     const criterion = criteriaById.get(entry.criterionId);
 
     if (!criterion) {
@@ -113,8 +123,7 @@ export function validateSuggestion(
     }
   }
 
-  if (rejections.length > 0) return { ok: false, rejections };
-  return { ok: true, suggestion };
+  return rejections;
 }
 
 /** Butir yang ditandai kurang bukti tidak boleh sekaligus membawa skor. */

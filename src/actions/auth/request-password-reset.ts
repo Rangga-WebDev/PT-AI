@@ -2,10 +2,10 @@
 
 "use server";
 
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 
 import { requestPasswordResetSchema } from "@/lib/validation/auth";
-import { createClient } from "@/lib/supabase/server";
 
 import type { AuthFormState } from "./sign-in";
 
@@ -25,12 +25,35 @@ export async function requestPasswordReset(
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
-  const supabase = await createClient();
   const origin = (await headers()).get("origin") ?? "";
 
-  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${origin}/auth/callback?next=/reset-password`,
-  });
+  // Alur implicit: token ikut di tautan, bukan disimpan sebagai cookie PKCE di
+  // peramban peminta. Dengan begitu tautan dapat dibuka di perangkat lain.
+  const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        flowType: "implicit",
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    },
+  );
+
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    parsed.data.email,
+    { redirectTo: `${origin}/auth/callback?next=/reset-password` },
+  );
+
+  if (error) {
+    console.error(
+      `[auth] tautan atur ulang gagal dikirim ${JSON.stringify({
+        status: error.status ?? null,
+        code: error.code ?? null,
+      })}`,
+    );
+  }
 
   // Selalu melaporkan keberhasilan, terlepas dari apakah surel terdaftar,
   // agar halaman ini tidak dapat dipakai menebak akun.

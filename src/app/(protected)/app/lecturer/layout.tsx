@@ -1,7 +1,7 @@
 /** @format */
 
 import { AppShell } from "@/components/layout/app-shell";
-import { SignOutButton } from "@/features/auth/components/sign-out-button";
+import { AccountActions } from "@/features/auth/components/account-actions";
 import { LECTURER_NAV } from "@/lib/navigation";
 import { requireLecturerAccess } from "@/lib/supabase/auth";
 
@@ -14,7 +14,7 @@ export default async function LecturerLayout({
     <AppShell
       navSections={LECTURER_NAV}
       topbarTitle={user.fullName}
-      topbarActions={<SignOutButton />}
+      topbarActions={<AccountActions />}
     >
       {children}
     </AppShell>
